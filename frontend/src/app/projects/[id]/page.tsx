@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { projectsAPI, sprintsAPI } from '@/lib/api';
+import { projectsAPI, sprintsAPI, issuesAPI } from '@/lib/api';
 import { Project } from '@/types/project';
 import { Sprint } from '@/types/sprint';
+import { Issue } from '@/types/issue';
 import { KanbanBoard } from '@/components/kanban';
 import { Button, Badge, Select, Breadcrumb } from '@/components/common';
 import Link from 'next/link';
@@ -21,12 +22,20 @@ export default function ProjectDetailPage() {
   const [selectedSprintId, setSelectedSprintId] = useState<string>('all');
   const [view, setView] = useState<'board' | 'list'>('board');
   const [loading, setLoading] = useState(true);
+  const [issues, setIssues] = useState<Issue[]>([]);
+  const [loadingIssues, setLoadingIssues] = useState(false);
 
   useEffect(() => {
     if (projectId) {
       fetchProjectData();
     }
   }, [projectId]);
+
+  useEffect(() => {
+    if (projectId && view === 'list') {
+      fetchIssues();
+    }
+  }, [projectId, selectedSprintId, view]);
 
   const fetchProjectData = async () => {
     try {
@@ -47,6 +56,24 @@ export default function ProjectDetailPage() {
       console.error('Error fetching project data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchIssues = async () => {
+    setLoadingIssues(true);
+    try {
+      const params: any = { projectId };
+      if (selectedSprintId !== 'all') {
+        params.sprintId = selectedSprintId;
+      }
+      const response = await issuesAPI.getAll(params);
+      const issuesData = response.data.items || response.data.issues || response.data;
+      setIssues(Array.isArray(issuesData) ? issuesData : []);
+    } catch (error) {
+      console.error('Error fetching issues:', error);
+      setIssues([]);
+    } finally {
+      setLoadingIssues(false);
     }
   };
 
@@ -225,9 +252,60 @@ export default function ProjectDetailPage() {
               projectId={projectId}
               sprintId={selectedSprintId === 'all' ? undefined : selectedSprintId}
             />
+          ) : loadingIssues ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto"></div>
+                <p className="mt-4 text-gray-600">Loading issues...</p>
+              </div>
+            </div>
           ) : (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-              <p className="text-gray-600">List view coming soon...</p>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+              {issues.length === 0 ? (
+                <div className="px-6 py-12 text-center text-gray-500">
+                  <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                  <p className="text-lg font-medium">No issues found</p>
+                  <p className="text-sm mt-1">Create your first issue to get started</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-200">
+                  {issues.map((issue) => (
+                    <Link
+                      key={issue._id}
+                      href={`/issues/${issue._id}`}
+                      className="block px-6 py-4 hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Badge variant={issue.type as any}>{issue.type}</Badge>
+                            <Badge variant={issue.priority as any}>{issue.priority}</Badge>
+                            <span className="text-xs text-gray-500">{issue.key}</span>
+                          </div>
+                          <h3 className="text-sm font-medium text-gray-900 mb-1">
+                            {issue.title}
+                          </h3>
+                          <div className="flex items-center gap-4 text-xs text-gray-500">
+                            {issue.assignee && (
+                              <span>
+                                Assigned to: {typeof issue.assignee === 'object'
+                                  ? `${issue.assignee.firstName} ${issue.assignee.lastName}`
+                                  : 'Unknown'}
+                              </span>
+                            )}
+                            {!issue.assignee && <span>Unassigned</span>}
+                          </div>
+                        </div>
+                        <Badge variant={issue.status as any} dot>
+                          {issue.status.replace(/_/g, ' ')}
+                        </Badge>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
