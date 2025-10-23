@@ -63,7 +63,7 @@ export const Sidebar: React.FC = () => {
 
   const fetchProjects = async () => {
     try {
-      const response = await projectsAPI.getMyProjects();
+      const response = await projectsAPI.getAll();
       setProjects(response.data);
     } catch (error) {
       console.error('Error fetching projects:', error);

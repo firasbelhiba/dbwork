@@ -46,8 +46,8 @@ export default function IssuesPage() {
         usersAPI.getAll(),
       ]);
 
-      // Handle different response formats
-      const issuesData = issuesRes.data.issues || issuesRes.data;
+      // Handle different response formats - backend returns {items: [...], total, page, limit, pages}
+      const issuesData = issuesRes.data.items || issuesRes.data.issues || issuesRes.data;
       setIssues(Array.isArray(issuesData) ? issuesData : []);
       setProjects(Array.isArray(projectsRes.data) ? projectsRes.data : []);
       setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
@@ -66,7 +66,7 @@ export default function IssuesPage() {
     try {
       setLoading(true);
       const response = await issuesAPI.search(searchQuery, selectedProject);
-      const issuesData = response.data.issues || response.data;
+      const issuesData = response.data.items || response.data.issues || response.data;
       setIssues(Array.isArray(issuesData) ? issuesData : []);
     } catch (error) {
       console.error('Error searching issues:', error);

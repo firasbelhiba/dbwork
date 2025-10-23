@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { projectsAPI, issuesAPI, reportsAPI } from '@/lib/api';
 import { Project } from '@/types/project';
 import { Issue } from '@/types/issue';
+import { UserRole } from '@/types/user';
 import { Badge, Breadcrumb } from '@/components/common';
 import Link from 'next/link';
 
@@ -22,9 +23,15 @@ export default function DashboardPage() {
 
   const fetchDashboardData = async () => {
     try {
+      const isAdmin = user?.role === UserRole.ADMIN;
+
       const [projectsRes, issuesRes, statsRes] = await Promise.all([
-        projectsAPI.getMyProjects(),
-        issuesAPI.getAll({ assignee: user?._id, status: 'todo,in_progress', limit: 10 }),
+        // Admin sees all projects, regular users see only their projects
+        isAdmin ? projectsAPI.getAll() : projectsAPI.getMyProjects(),
+        // Admin sees all recent issues, regular users see only assigned issues
+        isAdmin
+          ? issuesAPI.getAll({ status: 'todo,in_progress', limit: 10 })
+          : issuesAPI.getAll({ assignee: user?._id, status: 'todo,in_progress', limit: 10 }),
         reportsAPI.getIssueStatistics(),
       ]);
 
@@ -71,7 +78,11 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
             Welcome back, {user?.firstName}!
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">Here's what's happening with your projects</p>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            {user?.role === UserRole.ADMIN
+              ? "Here's an overview of all projects and issues"
+              : "Here's what's happening with your projects"}
+          </p>
         </div>
 
         {/* Stats Grid */}
@@ -139,7 +150,9 @@ export default function DashboardPage() {
           {/* My Issues */}
           <div className="bg-white dark:bg-dark-400 rounded-lg shadow-sm border border-gray-200 dark:border-dark-300 transition-colors">
             <div className="px-6 py-4 border-b border-gray-200 dark:border-dark-300 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Assigned to Me</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                {user?.role === UserRole.ADMIN ? 'Recent Issues' : 'Assigned to Me'}
+              </h2>
               <Link href="/issues" className="text-sm text-primary-500 dark:text-primary-400 hover:text-primary-600 dark:hover:text-primary-300 font-medium">
                 View all
               </Link>
@@ -147,7 +160,7 @@ export default function DashboardPage() {
             <div className="divide-y divide-gray-200 dark:divide-dark-300">
               {assignedIssues.length === 0 ? (
                 <div className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
-                  No issues assigned to you
+                  {user?.role === UserRole.ADMIN ? 'No recent issues' : 'No issues assigned to you'}
                 </div>
               ) : (
                 assignedIssues.map((issue) => (
@@ -182,7 +195,9 @@ export default function DashboardPage() {
           {/* My Projects */}
           <div className="bg-white dark:bg-dark-400 rounded-lg shadow-sm border border-gray-200 dark:border-dark-300 transition-colors">
             <div className="px-6 py-4 border-b border-gray-200 dark:border-dark-300 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">My Projects</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                {user?.role === UserRole.ADMIN ? 'All Projects' : 'My Projects'}
+              </h2>
               <Link href="/projects" className="text-sm text-primary-500 dark:text-primary-400 hover:text-primary-600 dark:hover:text-primary-300 font-medium">
                 View all
               </Link>
