@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Input } from '@/components/common';
+import toast from 'react-hot-toast';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -19,8 +20,11 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
+      toast.success('Login successful!');
     } catch (err: any) {
-      setError(err.message || 'Login failed. Please try again.');
+      const errorMessage = err.message || 'Login failed. Please try again.';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

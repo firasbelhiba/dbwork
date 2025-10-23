@@ -7,6 +7,7 @@ import { Project } from '@/types/project';
 import { Button, Modal, Input, Textarea, Badge, Breadcrumb } from '@/components/common';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import toast from 'react-hot-toast';
 
 export default function ProjectsPage() {
   const { user } = useAuth();
@@ -44,12 +45,14 @@ export default function ProjectsPage() {
         ...formData,
         lead: user?._id,
       });
+      toast.success('Project created successfully!');
       setShowCreateModal(false);
       setFormData({ name: '', key: '', description: '' });
       fetchProjects();
     } catch (error: any) {
       console.error('Error creating project:', error);
-      alert(error.response?.data?.message || 'Failed to create project');
+      const errorMessage = error.response?.data?.message || 'Failed to create project';
+      toast.error(errorMessage);
     } finally {
       setCreating(false);
     }
@@ -163,10 +166,10 @@ export default function ProjectsPage() {
         title="Create New Project"
         footer={
           <>
-            <Button variant="outline" onClick={() => setShowCreateModal(false)}>
+            <Button variant="outline" onClick={() => setShowCreateModal(false)} disabled={creating}>
               Cancel
             </Button>
-            <Button onClick={handleCreate} loading={creating}>
+            <Button onClick={handleCreate} loading={creating} disabled={creating}>
               Create Project
             </Button>
           </>

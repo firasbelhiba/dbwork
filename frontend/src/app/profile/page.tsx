@@ -5,6 +5,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button, Input, Breadcrumb } from '@/components/common';
 import { useAuth } from '@/contexts/AuthContext';
 import { usersAPI } from '@/lib/api';
+import toast from 'react-hot-toast';
 
 export default function ProfilePage() {
   const { user, setUser } = useAuth();
@@ -60,10 +61,11 @@ export default function ProfilePage() {
 
       const response = await usersAPI.update(user!._id, updateData);
       setUser(response.data);
-      setSuccess('Profile updated successfully!');
+      toast.success('Profile updated successfully!');
     } catch (err: any) {
       console.error('Error updating profile:', err);
-      setError(err.response?.data?.message || 'Failed to update profile');
+      const errorMessage = err.response?.data?.message || 'Failed to update profile';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -76,12 +78,12 @@ export default function ProfilePage() {
 
     // Validate passwords
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setError('New passwords do not match');
+      toast.error('New passwords do not match');
       return;
     }
 
     if (passwordData.newPassword.length < 8) {
-      setError('New password must be at least 8 characters');
+      toast.error('New password must be at least 8 characters');
       return;
     }
 
@@ -92,7 +94,7 @@ export default function ProfilePage() {
         currentPassword: passwordData.currentPassword,
         password: passwordData.newPassword,
       });
-      setSuccess('Password changed successfully!');
+      toast.success('Password changed successfully!');
       setPasswordData({
         currentPassword: '',
         newPassword: '',
@@ -100,7 +102,8 @@ export default function ProfilePage() {
       });
     } catch (err: any) {
       console.error('Error changing password:', err);
-      setError(err.response?.data?.message || 'Failed to change password');
+      const errorMessage = err.response?.data?.message || 'Failed to change password';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -149,18 +152,6 @@ export default function ProfilePage() {
           <h1 className="text-3xl font-bold text-gray-900">Profile Settings</h1>
           <p className="text-gray-600 mt-1">Manage your account settings and preferences</p>
         </div>
-
-        {/* Success/Error Messages */}
-        {success && (
-          <div className="mb-6 p-4 bg-success-50 border-2 border-success-200 rounded-md">
-            <p className="text-sm text-success-700 font-medium">{success}</p>
-          </div>
-        )}
-        {error && (
-          <div className="mb-6 p-4 bg-danger-50 border-2 border-danger-200 rounded-md">
-            <p className="text-sm text-danger-700 font-medium">{error}</p>
-          </div>
-        )}
 
         {/* Profile Information */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-6">

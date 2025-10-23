@@ -10,6 +10,7 @@ import { Button, Badge, Select, Textarea, Breadcrumb } from '@/components/common
 import { useAuth } from '@/contexts/AuthContext';
 import { getInitials, formatDateTime, getRelativeTime } from '@/lib/utils';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 
 export default function IssueDetailPage() {
   const params = useParams();
@@ -52,10 +53,12 @@ export default function IssueDetailPage() {
     setSubmitting(true);
     try {
       await commentsAPI.create(issueId, { content: newComment });
+      toast.success('Comment added successfully!');
       setNewComment('');
       fetchIssueData();
     } catch (error) {
       console.error('Error adding comment:', error);
+      toast.error('Failed to add comment');
     } finally {
       setSubmitting(false);
     }
@@ -67,8 +70,10 @@ export default function IssueDetailPage() {
     try {
       await issuesAPI.update(issueId, { status: newStatus });
       setIssue({ ...issue, status: newStatus as any });
+      toast.success('Status updated successfully!');
     } catch (error) {
       console.error('Error updating status:', error);
+      toast.error('Failed to update status');
     }
   };
 

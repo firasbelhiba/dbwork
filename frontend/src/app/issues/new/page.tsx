@@ -9,6 +9,7 @@ import { User } from '@/types/user';
 import { Sprint } from '@/types/sprint';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import toast from 'react-hot-toast';
 
 export default function NewIssuePage() {
   const router = useRouter();
@@ -119,11 +120,15 @@ export default function NewIssuePage() {
       const response = await issuesAPI.create(issueData);
       const createdIssue = response.data;
 
+      toast.success('Issue created successfully!');
+
       // Redirect to the created issue
       router.push(`/issues/${createdIssue._id}`);
     } catch (err: any) {
       console.error('Error creating issue:', err);
-      setError(err.response?.data?.message || 'Failed to create issue. Please try again.');
+      const errorMessage = err.response?.data?.message || 'Failed to create issue. Please try again.';
+      toast.error(errorMessage);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
