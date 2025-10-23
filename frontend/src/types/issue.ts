@@ -46,6 +46,7 @@ export interface Issue {
   blockedBy: (Issue | string)[];
   blocks: (Issue | string)[];
   parentIssue: Issue | string | null;
+  subIssueCount?: number;
   order: number;
   createdAt: Date;
   updatedAt: Date;

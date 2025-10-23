@@ -32,9 +32,25 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-primary-500 items-center justify-center p-12">
-        <div className="max-w-md text-white">
+      {/* Left side - Branding with Video Background */}
+      <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center p-12 overflow-hidden">
+        {/* Video Background */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src="https://framerusercontent.com/assets/cpeoAMAZhrhIK2gI2jQM2aFEgkU.mp4" type="video/mp4" />
+        </video>
+
+        {/* Dark overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/40"></div>
+
+        {/* Content */}
+        <div className="max-w-md text-white relative z-10">
+          {/* Logo outside the box */}
           <div className="mb-8 flex justify-center">
             <Image
               src="/logo-vertical-white.png"
@@ -45,11 +61,15 @@ export default function LoginPage() {
               className="w-48 h-auto"
             />
           </div>
-          <h2 className="text-2xl font-semibold mb-6 text-center">Project Management</h2>
-          <p className="text-lg text-primary-50 text-center">
-            Streamline your workflow. Track issues, manage sprints, and deliver great products
-            with our comprehensive project management solution.
-          </p>
+
+          {/* Translucent black box for text only */}
+          <div className="bg-black/30 backdrop-blur-sm rounded-2xl p-8 shadow-2xl">
+            <h2 className="text-2xl font-semibold mb-6 text-center text-white">Project Management</h2>
+            <p className="text-lg text-white/90 text-center">
+              Streamline your workflow. Track issues, manage sprints, and deliver great products
+              with our comprehensive project management solution.
+            </p>
+          </div>
         </div>
       </div>
 

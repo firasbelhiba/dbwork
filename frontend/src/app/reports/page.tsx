@@ -1,14 +1,20 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { reportsAPI, projectsAPI, sprintsAPI } from '@/lib/api';
 import { Project } from '@/types/project';
 import { Sprint } from '@/types/sprint';
-import { Select, Breadcrumb } from '@/components/common';
+import { Select, Breadcrumb, LogoLoader, Button } from '@/components/common';
 import { BurndownChart, VelocityChart, IssueStatsPieChart } from '@/components/charts';
+import { useAuth } from '@/contexts/AuthContext';
+import { UserRole } from '@/types/user';
+import toast from 'react-hot-toast';
 
 export default function ReportsPage() {
+  const router = useRouter();
+  const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [sprints, setSprints] = useState<Sprint[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
@@ -22,10 +28,20 @@ export default function ReportsPage() {
   const [timeTracking, setTimeTracking] = useState<any>(null);
 
   const [loading, setLoading] = useState(true);
+  const [unauthorized, setUnauthorized] = useState(false);
 
   useEffect(() => {
-    fetchProjects();
-  }, []);
+    if (user) {
+      // Check if user is admin
+      if (user.role !== UserRole.ADMIN) {
+        setUnauthorized(true);
+        setLoading(false);
+        toast.error('You do not have access to this page');
+        return;
+      }
+      fetchProjects();
+    }
+  }, [user]);
 
   useEffect(() => {
     if (selectedProjectId) {
@@ -100,9 +116,27 @@ export default function ReportsPage() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-full">
+          <LogoLoader size="lg" text="Loading reports" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (unauthorized) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading reports...</p>
+            <div className="w-16 h-16 bg-danger-100 dark:bg-danger-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-danger-600 dark:text-danger-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Access Denied</h2>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">You don't have permission to view reports. Only administrators can access this page.</p>
+            <Button onClick={() => router.push('/dashboard')} className="mt-4">
+              Back to Dashboard
+            </Button>
           </div>
         </div>
       </DashboardLayout>

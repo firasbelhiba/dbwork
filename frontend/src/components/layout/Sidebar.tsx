@@ -6,6 +6,8 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { projectsAPI } from '@/lib/api';
 import { Project } from '@/types/project';
+import { UserRole } from '@/types/user';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface NavItem {
   name: string;
@@ -41,29 +43,36 @@ const mainNavItems: NavItem[] = [
       </svg>
     ),
   },
-  {
-    name: 'Reports',
-    href: '/reports',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-      </svg>
-    ),
-  },
 ];
+
+const reportsNavItem: NavItem = {
+  name: 'Reports',
+  href: '/reports',
+  icon: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+    </svg>
+  ),
+};
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
+  const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
-    fetchProjects();
-  }, []);
+    if (user) {
+      fetchProjects();
+    }
+  }, [user]);
 
   const fetchProjects = async () => {
     try {
-      const response = await projectsAPI.getAll();
+      // Admin sees all projects, regular users see only their projects
+      const response = user?.role === UserRole.ADMIN
+        ? await projectsAPI.getAll()
+        : await projectsAPI.getMyProjects();
       setProjects(response.data);
     } catch (error) {
       console.error('Error fetching projects:', error);
@@ -120,6 +129,42 @@ export const Sidebar: React.FC = () => {
               </Link>
             );
           })}
+
+          {/* Reports link - Admin only */}
+          {user?.role === UserRole.ADMIN && (
+            <Link
+              href={reportsNavItem.href}
+              className={cn(
+                'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                pathname === reportsNavItem.href || pathname.startsWith(reportsNavItem.href + '/')
+                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-400 hover:text-gray-900 dark:hover:text-gray-100'
+              )}
+              title={collapsed ? reportsNavItem.name : undefined}
+            >
+              {reportsNavItem.icon}
+              {!collapsed && <span>{reportsNavItem.name}</span>}
+            </Link>
+          )}
+
+          {/* Users link - Admin only */}
+          {user?.role === UserRole.ADMIN && (
+            <Link
+              href="/users"
+              className={cn(
+                'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                pathname === '/users' || pathname.startsWith('/users/')
+                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-400 hover:text-gray-900 dark:hover:text-gray-100'
+              )}
+              title={collapsed ? 'Users' : undefined}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              {!collapsed && <span>Users</span>}
+            </Link>
+          )}
         </div>
 
         {/* Projects section */}

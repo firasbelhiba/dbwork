@@ -102,6 +102,7 @@ IssueSchema.index({ labels: 1 });
 IssueSchema.index({ dueDate: 1 });
 IssueSchema.index({ createdAt: -1 });
 IssueSchema.index({ updatedAt: -1 });
+IssueSchema.index({ parentIssue: 1 });
 
 // Text index for search
 IssueSchema.index({ title: 'text', description: 'text', key: 'text' });

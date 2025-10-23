@@ -125,16 +125,4 @@ export class ProjectsController {
   removeMember(@Param('id') id: string, @Param('userId') userId: string) {
     return this.projectsService.removeMember(id, userId);
   }
-
-  @Patch(':id/members/:userId/role')
-  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
-  @ApiOperation({ summary: 'Update member role' })
-  @ApiResponse({ status: 200, description: 'Member role successfully updated' })
-  updateMemberRole(
-    @Param('id') id: string,
-    @Param('userId') userId: string,
-    @Body('role') role: string,
-  ) {
-    return this.projectsService.updateMemberRole(id, userId, role);
-  }
 }

@@ -2,17 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Badge, Button, Input, Select, Breadcrumb } from '@/components/common';
+import { Badge, Button, Input, Select, Breadcrumb, LogoLoader } from '@/components/common';
 import { issuesAPI, projectsAPI, usersAPI } from '@/lib/api';
 import { Issue, IssueType, IssuePriority, IssueStatus } from '@/types/issue';
 import { Project } from '@/types/project';
-import { User } from '@/types/user';
+import { User, UserRole } from '@/types/user';
 import { KanbanBoard } from '@/components/kanban';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function IssuesPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [issues, setIssues] = useState<Issue[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -24,32 +26,53 @@ export default function IssuesPage() {
   const [selectedType, setSelectedType] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [selectedPriority, setSelectedPriority] = useState<string>('');
-  const [selectedAssignee, setSelectedAssignee] = useState<string>('');
+  const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'list' | 'board'>('list');
+  const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
 
   useEffect(() => {
-    fetchData();
-  }, [selectedProject, selectedType, selectedStatus, selectedPriority, selectedAssignee]);
+    if (user) {
+      fetchData();
+    }
+  }, [user, selectedProject, selectedType, selectedStatus, selectedPriority, selectedAssignees]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
+      const isAdmin = user?.role === UserRole.ADMIN;
       const params: any = {};
+
       if (selectedProject) params.projectId = selectedProject;
       if (selectedType) params.type = selectedType;
       if (selectedStatus) params.status = selectedStatus;
       if (selectedPriority) params.priority = selectedPriority;
-      if (selectedAssignee) params.assignee = selectedAssignee;
+
+      // Handle multiple assignees - if multiple are selected, we need to filter on frontend
+      // Backend only supports single assignee filter, so we'll fetch all and filter client-side
+      if (selectedAssignees.length === 1) {
+        params.assignee = selectedAssignees[0];
+      }
 
       const [issuesRes, projectsRes, usersRes] = await Promise.all([
         issuesAPI.getAll(params),
-        projectsAPI.getAll(),
+        // Admin sees all projects, regular users see only their projects
+        isAdmin ? projectsAPI.getAll() : projectsAPI.getMyProjects(),
         usersAPI.getAll(),
       ]);
 
       // Handle different response formats - backend returns {items: [...], total, page, limit, pages}
       const issuesData = issuesRes.data.items || issuesRes.data.issues || issuesRes.data;
-      setIssues(Array.isArray(issuesData) ? issuesData : []);
+      let filteredIssues = Array.isArray(issuesData) ? issuesData : [];
+
+      // Client-side filtering for multiple assignees
+      if (selectedAssignees.length > 1) {
+        filteredIssues = filteredIssues.filter(issue => {
+          const assigneeId = typeof issue.assignee === 'object' ? issue.assignee?._id : issue.assignee;
+          return selectedAssignees.includes(assigneeId);
+        });
+      }
+
+      setIssues(filteredIssues);
       setProjects(Array.isArray(projectsRes.data) ? projectsRes.data : []);
       setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
     } catch (error) {
@@ -83,7 +106,25 @@ export default function IssuesPage() {
     setSelectedType('');
     setSelectedStatus('');
     setSelectedPriority('');
-    setSelectedAssignee('');
+    setSelectedAssignees([]);
+  };
+
+  const toggleAssignee = (assigneeId: string) => {
+    setSelectedAssignees(prev =>
+      prev.includes(assigneeId)
+        ? prev.filter(id => id !== assigneeId)
+        : [...prev, assigneeId]
+    );
+  };
+
+  const getAssigneeButtonText = () => {
+    if (selectedAssignees.length === 0) return 'All Members';
+    if (selectedAssignees.length === 1) {
+      if (selectedAssignees[0] === user?._id) return 'Only Me';
+      const assignee = availableAssignees.find(a => a._id === selectedAssignees[0]);
+      return assignee ? `${assignee.firstName} ${assignee.lastName}` : 'All Members';
+    }
+    return `${selectedAssignees.length} Members Selected`;
   };
 
   const getAssigneeName = (assignee: any) => {
@@ -100,6 +141,32 @@ export default function IssuesPage() {
     const project = projects.find(p => p._id === projectId);
     return project ? project.name : 'Unknown';
   };
+
+  // Get available assignees based on selected project
+  const getAvailableAssignees = () => {
+    if (!selectedProject) {
+      // No project selected: show all users from user's projects
+      const projectMemberIds = new Set<string>();
+      projects.forEach(project => {
+        project.members?.forEach(member => {
+          const memberId = typeof member.userId === 'object' ? member.userId._id : member.userId;
+          projectMemberIds.add(memberId);
+        });
+      });
+      return users.filter(u => projectMemberIds.has(u._id));
+    }
+
+    // Project selected: show only members of that project
+    const project = projects.find(p => p._id === selectedProject);
+    if (!project || !project.members) return [];
+
+    const memberIds = project.members.map(member =>
+      typeof member.userId === 'object' ? member.userId._id : member.userId
+    );
+    return users.filter(u => memberIds.includes(u._id));
+  };
+
+  const availableAssignees = getAvailableAssignees();
 
   return (
     <DashboardLayout>
@@ -142,9 +209,9 @@ export default function IssuesPage() {
 
         {/* Filters */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Search */}
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-3">
               <Input
                 placeholder="Search issues..."
                 value={searchQuery}
@@ -161,13 +228,143 @@ export default function IssuesPage() {
             {/* Project Filter */}
             <Select
               value={selectedProject}
-              onChange={(e) => setSelectedProject(e.target.value)}
+              onChange={(e) => {
+                setSelectedProject(e.target.value);
+                // Clear assignee filter when project changes
+                setSelectedAssignees([]);
+              }}
             >
               <option value="">All Projects</option>
               {projects.map(project => (
                 <option key={project._id} value={project._id}>{project.name}</option>
               ))}
             </Select>
+
+            {/* Assignee Filter - Multi-select with Checkboxes */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowAssigneeDropdown(!showAssigneeDropdown)}
+                className="w-full px-3 py-2 text-left bg-white dark:bg-dark-400 border border-gray-300 dark:border-dark-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors text-sm"
+              >
+                <div className="flex items-center justify-between">
+                  <span className={selectedAssignees.length === 0 ? 'text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-gray-100'}>
+                    {getAssigneeButtonText()}
+                  </span>
+                  <svg
+                    className={`w-5 h-5 text-gray-400 transition-transform ${showAssigneeDropdown ? 'transform rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </button>
+
+              {showAssigneeDropdown && (
+                <>
+                  {/* Backdrop */}
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setShowAssigneeDropdown(false)}
+                  />
+
+                  {/* Dropdown */}
+                  <div className="absolute z-20 mt-2 w-full bg-white dark:bg-dark-400 border border-gray-200 dark:border-dark-300 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-dark-300 bg-gray-50 dark:bg-dark-300">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedAssignees([])}
+                        className="flex-1 px-3 py-1.5 text-xs font-medium text-danger-600 dark:text-danger-400 hover:bg-white dark:hover:bg-dark-400 rounded transition-colors"
+                      >
+                        <svg className="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        Uncheck All
+                      </button>
+                      {availableAssignees.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const allIds = [user?._id, ...availableAssignees.map(a => a._id)].filter(Boolean) as string[];
+                            setSelectedAssignees(allIds);
+                          }}
+                          className="flex-1 px-3 py-1.5 text-xs font-medium text-primary-600 dark:text-primary-400 hover:bg-white dark:hover:bg-dark-400 rounded transition-colors"
+                        >
+                          <svg className="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          Select All
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Only Me Option */}
+                    {user && (
+                      <label className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-dark-300 cursor-pointer transition-colors border-b border-gray-100 dark:border-dark-300">
+                        <input
+                          type="checkbox"
+                          checked={selectedAssignees.includes(user._id)}
+                          onChange={() => toggleAssignee(user._id)}
+                          className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                        />
+                        <div className="flex items-center gap-2 flex-1">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 text-white flex items-center justify-center text-xs font-semibold">
+                            {user.firstName[0]}{user.lastName[0]}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              Only Me
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              {user.email}
+                            </p>
+                          </div>
+                        </div>
+                      </label>
+                    )}
+
+                    {/* Other Team Members */}
+                    {availableAssignees
+                      .filter(assignee => assignee._id !== user?._id)
+                      .map(assignee => (
+                        <label
+                          key={assignee._id}
+                          className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-dark-300 cursor-pointer transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedAssignees.includes(assignee._id)}
+                            onChange={() => toggleAssignee(assignee._id)}
+                            className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                          />
+                          <div className="flex items-center gap-2 flex-1">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-secondary-500 to-secondary-600 text-white flex items-center justify-center text-xs font-semibold">
+                              {assignee.firstName[0]}{assignee.lastName[0]}
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                {assignee.firstName} {assignee.lastName}
+                              </p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {assignee.email}
+                              </p>
+                            </div>
+                          </div>
+                        </label>
+                      ))}
+
+                    {availableAssignees.length === 0 && (
+                      <div className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                        No team members available
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
 
             {/* Type Filter */}
             <Select
@@ -233,10 +430,7 @@ export default function IssuesPage() {
         {/* Issues List */}
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Loading issues...</p>
-            </div>
+            <LogoLoader size="lg" text="Loading issues" />
           </div>
         ) : viewMode === 'list' ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">

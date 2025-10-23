@@ -15,6 +15,7 @@ import { IssueCard } from './IssueCard';
 import { KanbanColumn } from './KanbanColumn';
 import { issuesAPI } from '@/lib/api';
 import { IssueStatus } from '@/types/issue';
+import { LogoLoader } from '@/components/common';
 
 interface KanbanBoardProps {
   projectId: string;
@@ -96,10 +97,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId })
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading board...</p>
-        </div>
+        <LogoLoader size="md" text="Loading board" />
       </div>
     );
   }

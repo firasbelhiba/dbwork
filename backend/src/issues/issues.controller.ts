@@ -82,6 +82,13 @@ export class IssuesController {
     return this.issuesService.findByKey(key);
   }
 
+  @Get(':id/sub-issues')
+  @ApiOperation({ summary: 'Get sub-issues of a parent issue' })
+  @ApiResponse({ status: 200, description: 'List of sub-issues' })
+  getSubIssues(@Param('id') id: string) {
+    return this.issuesService.getSubIssues(id);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get issue by ID' })
   @ApiResponse({ status: 200, description: 'Issue information' })

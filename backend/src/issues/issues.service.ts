@@ -15,6 +15,11 @@ export class IssuesService {
   ) {}
 
   async create(createIssueDto: CreateIssueDto, reporterId: string): Promise<IssueDocument> {
+    // Validate parent issue if provided
+    if (createIssueDto.parentIssue) {
+      await this.validateParentIssue(createIssueDto.parentIssue, createIssueDto.projectId);
+    }
+
     // Generate issue key
     const projectIssuesCount = await this.issueModel
       .countDocuments({ projectId: createIssueDto.projectId })
@@ -100,7 +105,7 @@ export class IssuesService {
     };
   }
 
-  async findOne(id: string): Promise<IssueDocument> {
+  async findOne(id: string): Promise<any> {
     const issue = await this.issueModel
       .findById(id)
       .populate('assignee', 'firstName lastName email avatar role')
@@ -117,7 +122,13 @@ export class IssuesService {
       throw new NotFoundException('Issue not found');
     }
 
-    return issue;
+    // Count sub-issues
+    const subIssueCount = await this.issueModel.countDocuments({ parentIssue: id }).exec();
+
+    return {
+      ...issue.toObject(),
+      subIssueCount,
+    };
   }
 
   async findByKey(key: string): Promise<IssueDocument> {
@@ -279,5 +290,39 @@ export class IssuesService {
 
   async updateOrder(issueId: string, newOrder: number): Promise<IssueDocument> {
     return this.update(issueId, { order: newOrder });
+  }
+
+  async getSubIssues(parentIssueId: string): Promise<IssueDocument[]> {
+    // Verify parent issue exists
+    const parentIssue = await this.issueModel.findById(parentIssueId);
+    if (!parentIssue) {
+      throw new NotFoundException('Parent issue not found');
+    }
+
+    return this.issueModel
+      .find({ parentIssue: parentIssueId })
+      .populate('assignee', 'firstName lastName email avatar')
+      .populate('reporter', 'firstName lastName email avatar')
+      .populate('projectId', 'name key')
+      .sort({ createdAt: -1 })
+      .exec();
+  }
+
+  private async validateParentIssue(parentIssueId: string, projectId: string): Promise<void> {
+    const parentIssue = await this.issueModel.findById(parentIssueId);
+
+    if (!parentIssue) {
+      throw new NotFoundException('Parent issue not found');
+    }
+
+    // Ensure parent issue is in the same project
+    if (parentIssue.projectId.toString() !== projectId) {
+      throw new BadRequestException('Parent issue must be in the same project');
+    }
+
+    // Check for circular reference - parent cannot have a parent (max 2 levels)
+    if (parentIssue.parentIssue) {
+      throw new BadRequestException('Cannot create sub-issue of a sub-issue. Maximum nesting level is 2.');
+    }
   }
 }

@@ -33,7 +33,6 @@ export class ProjectsService {
       members: [
         {
           userId: createProjectDto.lead || userId,
-          role: 'project_manager',
           addedAt: new Date(),
         },
       ],
@@ -167,9 +166,8 @@ export class ProjectsService {
 
     project.members.push({
       userId: addMemberDto.userId as any,
-      role: addMemberDto.role,
       addedAt: new Date(),
-    });
+    } as any);
 
     return project.save();
   }
@@ -186,25 +184,6 @@ export class ProjectsService {
       (member) => member.userId.toString() !== userId,
     );
 
-    return project.save();
-  }
-
-  async updateMemberRole(
-    projectId: string,
-    userId: string,
-    role: string,
-  ): Promise<ProjectDocument> {
-    const project = await this.findOne(projectId);
-
-    const member = project.members.find(
-      (m) => m.userId.toString() === userId,
-    );
-
-    if (!member) {
-      throw new NotFoundException('Member not found in project');
-    }
-
-    member.role = role as any;
     return project.save();
   }
 

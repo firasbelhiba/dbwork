@@ -1,19 +1,24 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { projectsAPI, sprintsAPI, issuesAPI } from '@/lib/api';
 import { Project } from '@/types/project';
 import { Sprint } from '@/types/sprint';
 import { Issue } from '@/types/issue';
+import { UserRole } from '@/types/user';
 import { KanbanBoard } from '@/components/kanban';
-import { Button, Badge, Select, Breadcrumb } from '@/components/common';
+import { Button, Badge, Select, Breadcrumb, LogoLoader } from '@/components/common';
 import Link from 'next/link';
 import { getInitials } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import toast from 'react-hot-toast';
 
 export default function ProjectDetailPage() {
   const params = useParams();
+  const router = useRouter();
+  const { user } = useAuth();
   const projectId = params.id as string;
 
   const [project, setProject] = useState<Project | null>(null);
@@ -24,6 +29,7 @@ export default function ProjectDetailPage() {
   const [loading, setLoading] = useState(true);
   const [issues, setIssues] = useState<Issue[]>([]);
   const [loadingIssues, setLoadingIssues] = useState(false);
+  const [unauthorized, setUnauthorized] = useState(false);
 
   useEffect(() => {
     if (projectId) {
@@ -45,7 +51,24 @@ export default function ProjectDetailPage() {
         sprintsAPI.getActiveSprint(projectId).catch(() => ({ data: null })),
       ]);
 
-      setProject(projectRes.data);
+      const projectData = projectRes.data;
+
+      // Check authorization: Admin can see all projects, non-admin must be a member
+      if (user?.role !== UserRole.ADMIN) {
+        const isMember = projectData.members?.some((member: any) => {
+          const memberId = typeof member.userId === 'object' ? member.userId._id : member.userId;
+          return memberId === user?._id;
+        });
+
+        if (!isMember) {
+          setUnauthorized(true);
+          setLoading(false);
+          toast.error('You do not have access to this project');
+          return;
+        }
+      }
+
+      setProject(projectData);
       setSprints(sprintsRes.data);
       setActiveSprint(activeSprintRes.data);
 
@@ -81,9 +104,27 @@ export default function ProjectDetailPage() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-full">
+          <LogoLoader size="lg" text="Loading project" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (unauthorized) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading project...</p>
+            <div className="w-16 h-16 bg-danger-100 dark:bg-danger-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-danger-600 dark:text-danger-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Access Denied</h2>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">You don't have permission to view this project.</p>
+            <Button onClick={() => router.push('/projects')} className="mt-4">
+              Back to Projects
+            </Button>
           </div>
         </div>
       </DashboardLayout>
@@ -95,8 +136,8 @@ export default function ProjectDetailPage() {
       <DashboardLayout>
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900">Project not found</h2>
-            <p className="text-gray-600 mt-2">The project you're looking for doesn't exist.</p>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Project not found</h2>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">The project you're looking for doesn't exist.</p>
             <Link href="/projects">
               <Button className="mt-4">Back to Projects</Button>
             </Link>

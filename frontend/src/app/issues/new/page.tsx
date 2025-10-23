@@ -41,10 +41,28 @@ export default function NewIssuePage() {
 
     // Pre-select project from URL query parameter
     const projectIdFromUrl = searchParams.get('project');
+    const parentIssueIdFromUrl = searchParams.get('parent');
+
     if (projectIdFromUrl) {
       setFormData(prev => ({ ...prev, projectId: projectIdFromUrl }));
     }
+
+    // If parent issue is provided, fetch it to display info
+    if (parentIssueIdFromUrl) {
+      fetchParentIssue(parentIssueIdFromUrl);
+    }
   }, [searchParams]);
+
+  const [parentIssue, setParentIssue] = useState<any>(null);
+
+  const fetchParentIssue = async (parentId: string) => {
+    try {
+      const response = await issuesAPI.getById(parentId);
+      setParentIssue(response.data);
+    } catch (error) {
+      console.error('Error fetching parent issue:', error);
+    }
+  };
 
   useEffect(() => {
     if (formData.projectId) {
@@ -117,6 +135,12 @@ export default function NewIssuePage() {
         issueData.labels = formData.labels.split(',').map(l => l.trim()).filter(l => l);
       }
 
+      // Add parent issue if provided
+      const parentIssueIdFromUrl = searchParams.get('parent');
+      if (parentIssueIdFromUrl) {
+        issueData.parentIssue = parentIssueIdFromUrl;
+      }
+
       const response = await issuesAPI.create(issueData);
       const createdIssue = response.data;
 
@@ -165,9 +189,30 @@ export default function NewIssuePage() {
         />
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Create New Issue</h1>
-          <p className="text-gray-600 mt-1">Fill in the details to create a new issue</p>
+          <h1 className="text-3xl font-bold text-gray-900">
+            {parentIssue ? 'Create Sub-issue' : 'Create New Issue'}
+          </h1>
+          <p className="text-gray-600 mt-1">
+            {parentIssue
+              ? `Creating a sub-issue under ${parentIssue.key} - ${parentIssue.title}`
+              : 'Fill in the details to create a new issue'}
+          </p>
         </div>
+
+        {/* Parent Issue Info */}
+        {parentIssue && (
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6 flex items-start gap-3">
+            <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-1">Parent Issue</p>
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                <strong>{parentIssue.key}:</strong> {parentIssue.title}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">

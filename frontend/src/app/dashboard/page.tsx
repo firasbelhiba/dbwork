@@ -7,7 +7,7 @@ import { projectsAPI, issuesAPI, reportsAPI } from '@/lib/api';
 import { Project } from '@/types/project';
 import { Issue } from '@/types/issue';
 import { UserRole } from '@/types/user';
-import { Badge, Breadcrumb } from '@/components/common';
+import { Badge, Breadcrumb, LogoLoader } from '@/components/common';
 import Link from 'next/link';
 
 export default function DashboardPage() {
@@ -23,25 +23,61 @@ export default function DashboardPage() {
     }
   }, [user]);
 
+  const calculateStatsFromIssues = (issues: Issue[]) => {
+    return {
+      total: issues.length,
+      bugs: issues.filter(i => i.type === 'bug').length,
+      tasks: issues.filter(i => i.type === 'task').length,
+      stories: issues.filter(i => i.type === 'story').length,
+      epics: issues.filter(i => i.type === 'epic').length,
+      critical: issues.filter(i => i.priority === 'critical').length,
+      high: issues.filter(i => i.priority === 'high').length,
+      medium: issues.filter(i => i.priority === 'medium').length,
+      low: issues.filter(i => i.priority === 'low').length,
+    };
+  };
+
   const fetchDashboardData = async () => {
     try {
       const isAdmin = user?.role === UserRole.ADMIN;
 
-      const [projectsRes, issuesRes, statsRes] = await Promise.all([
-        // Admin sees all projects, regular users see only their projects
-        isAdmin ? projectsAPI.getAll() : projectsAPI.getMyProjects(),
-        // Admin sees all recent issues, regular users see only assigned issues
-        isAdmin
-          ? issuesAPI.getAll({ limit: 10 })
-          : issuesAPI.getAll({ assignee: user?._id, limit: 10 }),
-        reportsAPI.getIssueStatistics(),
-      ]);
+      if (isAdmin) {
+        // Admin: Get all projects, recent issues (limit 10), and global statistics
+        const [projectsRes, issuesRes, statsRes] = await Promise.all([
+          projectsAPI.getAll(),
+          issuesAPI.getAll({ limit: 10 }),
+          reportsAPI.getIssueStatistics(),
+        ]);
 
-      setProjects(projectsRes.data);
-      // Handle backend response format: {items: [...], total, page, limit, pages}
-      const issuesData = issuesRes.data.items || issuesRes.data.issues || issuesRes.data;
-      setAssignedIssues(Array.isArray(issuesData) ? issuesData : []);
-      setStats(statsRes.data);
+        setProjects(projectsRes.data);
+        const issuesData = issuesRes.data.items || issuesRes.data.issues || issuesRes.data;
+        setAssignedIssues(Array.isArray(issuesData) ? issuesData : []);
+        setStats(statsRes.data);
+      } else {
+        // Non-admin: Get user's projects and assigned issues (fetch more for accurate stats)
+        console.log('[Dashboard] Fetching issues for user:', user?._id, 'Role:', user?.role);
+        const [projectsRes, issuesRes] = await Promise.all([
+          projectsAPI.getMyProjects(),
+          issuesAPI.getAll({ assignee: user?._id, limit: 100 }),
+        ]);
+
+        console.log('[Dashboard] Issues response:', issuesRes.data);
+        setProjects(projectsRes.data);
+        const issuesData = issuesRes.data.items || issuesRes.data.issues || issuesRes.data;
+        const userIssues = Array.isArray(issuesData) ? issuesData : [];
+
+        console.log('[Dashboard] Filtered user issues:', userIssues.length, userIssues.map(i => ({
+          id: i._id,
+          title: i.title,
+          assignee: typeof i.assignee === 'object' ? i.assignee._id : i.assignee
+        })));
+
+        // Show only the 10 most recent issues in the list
+        setAssignedIssues(userIssues.slice(0, 10));
+
+        // Calculate statistics from all assigned issues
+        setStats(calculateStatsFromIssues(userIssues));
+      }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
@@ -53,10 +89,7 @@ export default function DashboardPage() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading dashboard...</p>
-          </div>
+          <LogoLoader size="lg" text="Loading dashboard" />
         </div>
       </DashboardLayout>
     );

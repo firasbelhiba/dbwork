@@ -4,9 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { projectsAPI } from '@/lib/api';
 import { Project } from '@/types/project';
-import { Button, Modal, Input, Textarea, Badge, Breadcrumb } from '@/components/common';
+import { Button, Modal, Input, Textarea, Badge, Breadcrumb, LogoLoader } from '@/components/common';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import { UserRole } from '@/types/user';
 import toast from 'react-hot-toast';
 
 export default function ProjectsPage() {
@@ -22,12 +23,17 @@ export default function ProjectsPage() {
   });
 
   useEffect(() => {
-    fetchProjects();
-  }, []);
+    if (user) {
+      fetchProjects();
+    }
+  }, [user]);
 
   const fetchProjects = async () => {
     try {
-      const response = await projectsAPI.getAll();
+      // Admin sees all projects, regular users see only their projects
+      const response = user?.role === UserRole.ADMIN
+        ? await projectsAPI.getAll()
+        : await projectsAPI.getMyProjects();
       setProjects(response.data);
     } catch (error) {
       console.error('Error fetching projects:', error);
@@ -62,10 +68,7 @@ export default function ProjectsPage() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading projects...</p>
-          </div>
+          <LogoLoader size="lg" text="Loading projects" />
         </div>
       </DashboardLayout>
     );

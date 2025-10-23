@@ -16,7 +16,6 @@ export interface Project {
 
 export interface ProjectMember {
   userId: string | User;
-  role: UserRole;
   addedAt: Date;
 }
 

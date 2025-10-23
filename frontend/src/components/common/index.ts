@@ -38,3 +38,5 @@ export { MentionAutocomplete } from './MentionAutocomplete';
 
 export { Breadcrumb } from './Breadcrumb';
 export type { BreadcrumbProps, BreadcrumbItem } from './Breadcrumb';
+
+export { LogoLoader } from './LogoLoader';

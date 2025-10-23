@@ -116,6 +116,7 @@ export const projectsAPI = {
 export const issuesAPI = {
   getAll: (params?: any) => api.get('/issues', { params }),
   getById: (id: string) => api.get(`/issues/${id}`),
+  getSubIssues: (parentIssueId: string) => api.get(`/issues/${parentIssueId}/sub-issues`),
   getByProject: (projectId: string, params?: any) => api.get(`/issues/project/${projectId}`, { params }),
   getBySprint: (sprintId: string) => api.get(`/issues/sprint/${sprintId}`),
   getBacklog: (projectId: string) => api.get(`/issues/project/${projectId}/backlog`),

@@ -6,7 +6,9 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { issuesAPI, commentsAPI } from '@/lib/api';
 import { Issue } from '@/types/issue';
 import { Comment } from '@/types/comment';
-import { Button, Badge, Select, Textarea, Breadcrumb } from '@/components/common';
+import { UserRole } from '@/types/user';
+import { Button, Badge, Select, Textarea, Breadcrumb, LogoLoader } from '@/components/common';
+import { SubIssues, SubIssueModal } from '@/components/issues';
 import { useAuth } from '@/contexts/AuthContext';
 import { getInitials, formatDateTime, getRelativeTime } from '@/lib/utils';
 import Link from 'next/link';
@@ -23,6 +25,8 @@ export default function IssueDetailPage() {
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [showSubIssueModal, setShowSubIssueModal] = useState(false);
+  const [unauthorized, setUnauthorized] = useState(false);
 
   useEffect(() => {
     if (issueId) {
@@ -37,7 +41,30 @@ export default function IssueDetailPage() {
         commentsAPI.getByIssue(issueId),
       ]);
 
-      setIssue(issueRes.data);
+      const issueData = issueRes.data;
+
+      // Check authorization: Admin can see all issues, non-admin must be assigned or be a project member
+      if (user?.role !== UserRole.ADMIN) {
+        // Check if user is assigned to this issue
+        const assigneeId = typeof issueData.assignee === 'object' ? issueData.assignee._id : issueData.assignee;
+        const isAssignee = assigneeId === user?._id;
+
+        // Check if user is a member of the project
+        const projectData = typeof issueData.projectId === 'object' ? issueData.projectId : null;
+        const isMember = projectData?.members?.some((member: any) => {
+          const memberId = typeof member.userId === 'object' ? member.userId._id : member.userId;
+          return memberId === user?._id;
+        });
+
+        if (!isAssignee && !isMember) {
+          setUnauthorized(true);
+          setLoading(false);
+          toast.error('You do not have access to this issue');
+          return;
+        }
+      }
+
+      setIssue(issueData);
       setComments(commentsRes.data);
     } catch (error) {
       console.error('Error fetching issue data:', error);
@@ -81,9 +108,27 @@ export default function IssueDetailPage() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-full">
+          <LogoLoader size="lg" text="Loading issue" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (unauthorized) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading issue...</p>
+            <div className="w-16 h-16 bg-danger-100 dark:bg-danger-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-danger-600 dark:text-danger-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Access Denied</h2>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">You don't have permission to view this issue.</p>
+            <Button onClick={() => router.push('/issues')} className="mt-4">
+              Back to Issues
+            </Button>
           </div>
         </div>
       </DashboardLayout>
@@ -95,8 +140,8 @@ export default function IssueDetailPage() {
       <DashboardLayout>
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900">Issue not found</h2>
-            <p className="text-gray-600 mt-2">The issue you're looking for doesn't exist.</p>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Issue not found</h2>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">The issue you're looking for doesn't exist.</p>
             <Button onClick={() => router.back()} className="mt-4">Go Back</Button>
           </div>
         </div>
@@ -148,6 +193,25 @@ export default function IssueDetailPage() {
               <Badge variant={issue.type as any}>{issue.type}</Badge>
               <h1 className="text-3xl font-bold text-gray-900 flex-1">{issue.title}</h1>
             </div>
+
+            {/* Parent Issue Link */}
+            {issue.parentIssue && (
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 flex items-center gap-2">
+                <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+                <span className="text-sm text-blue-800 dark:text-blue-300">
+                  Sub-issue of{' '}
+                  <Link
+                    href={`/issues/${typeof issue.parentIssue === 'object' ? issue.parentIssue._id : issue.parentIssue}`}
+                    className="font-semibold hover:underline"
+                  >
+                    {typeof issue.parentIssue === 'object' ? issue.parentIssue.key : 'Parent Issue'}
+                  </Link>
+                  {typeof issue.parentIssue === 'object' && ` - ${issue.parentIssue.title}`}
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-3 gap-8">
@@ -231,6 +295,15 @@ export default function IssueDetailPage() {
                   )}
                 </div>
               </div>
+
+              {/* Sub-issues Section - Only show if not a sub-issue itself */}
+              {!issue.parentIssue && (
+                <SubIssues
+                  parentIssueId={issue._id}
+                  parentIssueKey={issue.key}
+                  onCreateSubIssue={() => setShowSubIssueModal(true)}
+                />
+              )}
             </div>
 
             {/* Sidebar */}
@@ -354,6 +427,19 @@ export default function IssueDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Sub-issue Modal */}
+      <SubIssueModal
+        isOpen={showSubIssueModal}
+        onClose={() => setShowSubIssueModal(false)}
+        parentIssueId={issue._id}
+        parentIssueKey={issue.key}
+        projectId={typeof issue.projectId === 'object' ? issue.projectId._id : issue.projectId}
+        onSuccess={() => {
+          // Force re-render of SubIssues component by refreshing the page data
+          fetchIssueData();
+        }}
+      />
     </DashboardLayout>
   );
 }
