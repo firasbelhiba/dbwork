@@ -18,8 +18,10 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
+    if (user) {
+      fetchDashboardData();
+    }
+  }, [user]);
 
   const fetchDashboardData = async () => {
     try {
@@ -30,13 +32,15 @@ export default function DashboardPage() {
         isAdmin ? projectsAPI.getAll() : projectsAPI.getMyProjects(),
         // Admin sees all recent issues, regular users see only assigned issues
         isAdmin
-          ? issuesAPI.getAll({ status: 'todo,in_progress', limit: 10 })
-          : issuesAPI.getAll({ assignee: user?._id, status: 'todo,in_progress', limit: 10 }),
+          ? issuesAPI.getAll({ limit: 10 })
+          : issuesAPI.getAll({ assignee: user?._id, limit: 10 }),
         reportsAPI.getIssueStatistics(),
       ]);
 
       setProjects(projectsRes.data);
-      setAssignedIssues(issuesRes.data.issues || issuesRes.data);
+      // Handle backend response format: {items: [...], total, page, limit, pages}
+      const issuesData = issuesRes.data.items || issuesRes.data.issues || issuesRes.data;
+      setAssignedIssues(Array.isArray(issuesData) ? issuesData : []);
       setStats(statsRes.data);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);

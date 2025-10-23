@@ -7,6 +7,7 @@ import { issuesAPI, projectsAPI, usersAPI } from '@/lib/api';
 import { Issue, IssueType, IssuePriority, IssueStatus } from '@/types/issue';
 import { Project } from '@/types/project';
 import { User } from '@/types/user';
+import { KanbanBoard } from '@/components/kanban';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -280,9 +281,18 @@ export default function IssuesPage() {
               </div>
             )}
           </div>
+        ) : selectedProject ? (
+          <KanbanBoard
+            projectId={selectedProject}
+            sprintId={undefined}
+          />
         ) : (
-          <div className="text-center py-12 text-gray-500">
-            <p>Board view coming soon!</p>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+            <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+            </svg>
+            <p className="text-lg font-medium text-gray-900">Select a Project</p>
+            <p className="text-sm text-gray-500 mt-1">Choose a project from the filter above to view the board</p>
           </div>
         )}
       </div>
