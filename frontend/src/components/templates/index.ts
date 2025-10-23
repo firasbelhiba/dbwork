@@ -1,0 +1,1 @@
+export { IssueTemplates } from './IssueTemplates';

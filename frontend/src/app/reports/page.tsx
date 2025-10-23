@@ -1,0 +1,336 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { reportsAPI, projectsAPI, sprintsAPI } from '@/lib/api';
+import { Project } from '@/types/project';
+import { Sprint } from '@/types/sprint';
+import { Select, Breadcrumb } from '@/components/common';
+import { BurndownChart, VelocityChart, IssueStatsPieChart } from '@/components/charts';
+
+export default function ReportsPage() {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [sprints, setSprints] = useState<Sprint[]>([]);
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+  const [selectedSprintId, setSelectedSprintId] = useState<string>('');
+
+  const [projectProgress, setProjectProgress] = useState<any>(null);
+  const [issueStats, setIssueStats] = useState<any>(null);
+  const [teamPerformance, setTeamPerformance] = useState<any>(null);
+  const [velocityData, setVelocityData] = useState<any>(null);
+  const [burndownData, setBurndownData] = useState<any>(null);
+  const [timeTracking, setTimeTracking] = useState<any>(null);
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  useEffect(() => {
+    if (selectedProjectId) {
+      fetchProjectSprints();
+      fetchReports();
+    }
+  }, [selectedProjectId]);
+
+  useEffect(() => {
+    if (selectedSprintId) {
+      fetchSprintReports();
+    }
+  }, [selectedSprintId]);
+
+  const fetchProjects = async () => {
+    try {
+      const response = await projectsAPI.getAll();
+      setProjects(response.data);
+      if (response.data.length > 0) {
+        setSelectedProjectId(response.data[0]._id);
+      }
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchProjectSprints = async () => {
+    try {
+      const response = await sprintsAPI.getByProject(selectedProjectId);
+      setSprints(response.data);
+      const activeSprint = response.data.find((s: Sprint) => s.status === 'active');
+      if (activeSprint) {
+        setSelectedSprintId(activeSprint._id);
+      }
+    } catch (error) {
+      console.error('Error fetching sprints:', error);
+    }
+  };
+
+  const fetchReports = async () => {
+    try {
+      const [progressRes, statsRes, teamRes, velocityRes, timeRes] = await Promise.all([
+        reportsAPI.getProjectProgress(selectedProjectId),
+        reportsAPI.getIssueStatistics(selectedProjectId),
+        reportsAPI.getTeamPerformance(selectedProjectId),
+        reportsAPI.getVelocityTrend(selectedProjectId, 5),
+        reportsAPI.getTimeTracking(selectedProjectId),
+      ]);
+
+      setProjectProgress(progressRes.data);
+      setIssueStats(statsRes.data);
+      setTeamPerformance(teamRes.data);
+      setVelocityData(velocityRes.data);
+      setTimeTracking(timeRes.data);
+    } catch (error) {
+      console.error('Error fetching reports:', error);
+    }
+  };
+
+  const fetchSprintReports = async () => {
+    try {
+      const response = await reportsAPI.getSprintBurndown(selectedSprintId);
+      setBurndownData(response.data);
+    } catch (error) {
+      console.error('Error fetching sprint reports:', error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading reports...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  return (
+    <DashboardLayout>
+      <div className="p-8">
+        <Breadcrumb
+          items={[
+            {
+              label: 'Home',
+              href: '/dashboard',
+              icon: (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+              ),
+            },
+            {
+              label: 'Reports',
+              icon: (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              ),
+            },
+          ]}
+          className="mb-6"
+        />
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Reports & Analytics</h1>
+          <p className="text-gray-600 mt-1">Track progress, performance, and insights</p>
+        </div>
+
+        {/* Filters */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Select
+              label="Project"
+              value={selectedProjectId}
+              onChange={(e) => setSelectedProjectId(e.target.value)}
+              options={projects.map((p) => ({ value: p._id, label: p.name }))}
+            />
+            {sprints.length > 0 && (
+              <Select
+                label="Sprint (for Burndown)"
+                value={selectedSprintId}
+                onChange={(e) => setSelectedSprintId(e.target.value)}
+                options={sprints.map((s) => ({ value: s._id, label: s.name }))}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Project Progress */}
+        {projectProgress && (
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">Project Progress</h2>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Total Issues</p>
+                <p className="text-3xl font-bold text-gray-900">{projectProgress.total}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Completed</p>
+                <p className="text-3xl font-bold text-success">{projectProgress.completed}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 mb-1">In Progress</p>
+                <p className="text-3xl font-bold text-primary">{projectProgress.inProgress}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Completion Rate</p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {projectProgress.completionRate.toFixed(0)}%
+                </p>
+              </div>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-4">
+              <div
+                className="bg-success h-4 rounded-full transition-all"
+                style={{ width: `${projectProgress.completionRate}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Issue Statistics */}
+          {issueStats && (
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">Issues by Type</h2>
+              <IssueStatsPieChart
+                data={[
+                  { name: 'Bugs', value: issueStats.bugs },
+                  { name: 'Tasks', value: issueStats.tasks },
+                  { name: 'Stories', value: issueStats.stories },
+                  { name: 'Epics', value: issueStats.epics || 0 },
+                ]}
+                colors={['#DE350B', '#0052CC', '#00875A', '#6554C0']}
+              />
+            </div>
+          )}
+
+          {/* Priority Distribution */}
+          {issueStats?.byPriority && (
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">Issues by Priority</h2>
+              <IssueStatsPieChart
+                data={Object.entries(issueStats.byPriority).map(([key, value]) => ({
+                  name: key.charAt(0).toUpperCase() + key.slice(1),
+                  value: value as number,
+                }))}
+                colors={['#DE350B', '#FF991F', '#FF991F', '#6B7280']}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Velocity Trend */}
+        {velocityData && velocityData.sprints && velocityData.sprints.length > 0 && (
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              Velocity Trend (Last 5 Sprints)
+            </h2>
+            <VelocityChart
+              data={velocityData.sprints.map((s: any) => ({
+                sprintName: s.name,
+                velocity: s.completedPoints,
+                committed: s.totalPoints,
+              }))}
+              averageVelocity={velocityData.averageVelocity}
+            />
+            <div className="mt-4 text-center">
+              <span className="text-sm text-gray-600">
+                Average Velocity: <strong>{velocityData.averageVelocity.toFixed(1)}</strong> points/sprint
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Sprint Burndown */}
+        {burndownData && burndownData.data && burndownData.data.length > 0 && (
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">Sprint Burndown Chart</h2>
+            <BurndownChart data={burndownData.data} />
+          </div>
+        )}
+
+        {/* Team Performance */}
+        {teamPerformance && teamPerformance.length > 0 && (
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">Team Performance</h2>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Team Member
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Completed
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      In Progress
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Story Points
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {teamPerformance.map((member: any, index: number) => (
+                    <tr key={index}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {member.userName}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {member.completed}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {member.inProgress}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {member.totalStoryPoints}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Time Tracking */}
+        {timeTracking && (
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">Time Tracking Summary</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Estimated Hours</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {timeTracking.totalEstimatedHours.toFixed(1)}h
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Logged Hours</p>
+                <p className="text-2xl font-bold text-primary">
+                  {timeTracking.totalLoggedHours.toFixed(1)}h
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Variance</p>
+                <p
+                  className={`text-2xl font-bold ${
+                    timeTracking.variance >= 0 ? 'text-success' : 'text-danger'
+                  }`}
+                >
+                  {timeTracking.variance > 0 ? '+' : ''}
+                  {timeTracking.variance.toFixed(1)}h
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </DashboardLayout>
+  );
+}

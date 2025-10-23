@@ -1,0 +1,43 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2021",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": false,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "paths": {
+      "@/*": ["src/*"],
+      "@auth/*": ["src/auth/*"],
+      "@users/*": ["src/users/*"],
+      "@projects/*": ["src/projects/*"],
+      "@issues/*": ["src/issues/*"],
+      "@sprints/*": ["src/sprints/*"],
+      "@comments/*": ["src/comments/*"],
+      "@notifications/*": ["src/notifications/*"],
+      "@attachments/*": ["src/attachments/*"],
+      "@activity-logs/*": ["src/activity-logs/*"],
+      "@reports/*": ["src/reports/*"],
+      "@websocket/*": ["src/websocket/*"],
+      "@common/*": ["src/common/*"],
+      "@config/*": ["src/config/*"],
+      "@database/*": ["src/database/*"],
+      "@mail/*": ["src/mail/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "src/database/seeds/**/*"]
+}
