@@ -10,6 +10,7 @@ import { Issue } from '@/types/issue';
 import { UserRole } from '@/types/user';
 import { KanbanBoard } from '@/components/kanban';
 import { Button, Badge, Select, Breadcrumb, LogoLoader } from '@/components/common';
+import { CreateSprintModal, SprintList } from '@/components/sprints';
 import Link from 'next/link';
 import { getInitials } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,7 +19,7 @@ import toast from 'react-hot-toast';
 export default function ProjectDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const projectId = params.id as string;
 
   const [project, setProject] = useState<Project | null>(null);
@@ -30,12 +31,14 @@ export default function ProjectDetailPage() {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [loadingIssues, setLoadingIssues] = useState(false);
   const [unauthorized, setUnauthorized] = useState(false);
+  const [isSprintModalOpen, setIsSprintModalOpen] = useState(false);
+  const [showSprintsList, setShowSprintsList] = useState(false);
 
   useEffect(() => {
-    if (projectId) {
+    if (projectId && !authLoading) {
       fetchProjectData();
     }
-  }, [projectId]);
+  }, [projectId, authLoading, user]);
 
   useEffect(() => {
     if (projectId && view === 'list') {
@@ -43,7 +46,30 @@ export default function ProjectDetailPage() {
     }
   }, [projectId, selectedSprintId, view]);
 
+  const fetchSprints = async () => {
+    try {
+      const [sprintsRes, activeSprintRes] = await Promise.all([
+        sprintsAPI.getByProject(projectId),
+        sprintsAPI.getActiveSprint(projectId).catch(() => ({ data: null })),
+      ]);
+
+      setSprints(sprintsRes.data);
+      setActiveSprint(activeSprintRes.data);
+
+      if (activeSprintRes.data) {
+        setSelectedSprintId(activeSprintRes.data._id);
+      }
+    } catch (error) {
+      console.error('Error fetching sprints:', error);
+    }
+  };
+
   const fetchProjectData = async () => {
+    // Wait for auth to finish loading before checking authorization
+    if (authLoading) {
+      return;
+    }
+
     try {
       const [projectRes, sprintsRes, activeSprintRes] = await Promise.all([
         projectsAPI.getById(projectId),
@@ -203,22 +229,33 @@ export default function ProjectDetailPage() {
           {/* Team Members */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Team:</span>
-              <div className="flex -space-x-2">
+              <span className="text-sm text-gray-600 dark:text-gray-400">Team:</span>
+              <div className="flex gap-2">
                 {project.members?.slice(0, 5).map((member, index) => {
                   const user = typeof member.userId === 'object' ? member.userId : null;
                   return user ? (
-                    <div
-                      key={index}
-                      className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-xs font-medium border-2 border-white"
-                      title={`${user.firstName} ${user.lastName}`}
-                    >
-                      {getInitials(user.firstName, user.lastName)}
+                    <div key={index} className="relative group">
+                      <div
+                        className="w-9 h-9 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center text-xs font-medium shadow-sm border-2 border-white dark:border-gray-700 cursor-pointer transition-transform hover:scale-110"
+                      >
+                        {getInitials(user.firstName, user.lastName)}
+                      </div>
+                      {/* Tooltip */}
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50">
+                        <div className="bg-gray-900 dark:bg-gray-800 text-white px-3 py-2 rounded-lg shadow-lg whitespace-nowrap">
+                          <p className="text-sm font-medium">{user.firstName} {user.lastName}</p>
+                          <p className="text-xs text-gray-300 dark:text-gray-400 capitalize">{user.role}</p>
+                          {/* Arrow */}
+                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-px">
+                            <div className="border-4 border-transparent border-t-gray-900 dark:border-t-gray-800"></div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   ) : null;
                 })}
                 {project.members && project.members.length > 5 && (
-                  <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-xs font-medium border-2 border-white">
+                  <div className="w-9 h-9 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center justify-center text-xs font-medium shadow-sm border-2 border-white dark:border-gray-700">
                     +{project.members.length - 5}
                   </div>
                 )}
@@ -274,6 +311,21 @@ export default function ProjectDetailPage() {
             </div>
 
             <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowSprintsList(!showSprintsList)}
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                {showSprintsList ? 'Hide' : 'Manage'} Sprints ({sprints.length})
+              </Button>
+              <Button variant="outline" onClick={() => setIsSprintModalOpen(true)}>
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                New Sprint
+              </Button>
               <Link href={`/issues/new?project=${projectId}`}>
                 <Button>
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -286,8 +338,26 @@ export default function ProjectDetailPage() {
           </div>
         </div>
 
+        {/* Sprint Management Section */}
+        {showSprintsList && (
+          <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-8 py-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Sprint Management</h2>
+              <button
+                onClick={() => setShowSprintsList(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <SprintList sprints={sprints} onSprintUpdated={fetchSprints} />
+          </div>
+        )}
+
         {/* Content */}
-        <div className="flex-1 overflow-auto bg-gray-50 p-8">
+        <div className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900 p-8">
           {view === 'board' ? (
             <KanbanBoard
               projectId={projectId}
@@ -350,6 +420,14 @@ export default function ProjectDetailPage() {
             </div>
           )}
         </div>
+
+        {/* Create Sprint Modal */}
+        <CreateSprintModal
+          isOpen={isSprintModalOpen}
+          onClose={() => setIsSprintModalOpen(false)}
+          projectId={projectId}
+          onSprintCreated={fetchSprints}
+        />
       </div>
     </DashboardLayout>
   );

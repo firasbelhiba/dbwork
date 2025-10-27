@@ -19,7 +19,15 @@
       "Bash(cmd //c \"rmdir /s /q .next\")",
       "Bash(cmd //c \"taskkill /PID 24368 /F\")",
       "Bash(cmd //c \"taskkill /PID 24688 /F && taskkill /PID 28272 /F && taskkill /PID 23576 /F\")",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(cat:*)",
+      "Bash(cmd //c \"taskkill /PID 30072 /F && taskkill /PID 7624 /F && taskkill /PID 30672 /F && taskkill /PID 32640 /F\")",
+      "Bash(cmd //c \"taskkill /PID 7052 /F\")",
+      "Bash(cmd //c \"taskkill /PID 14572 /F\")",
+      "Bash(cmd //c \"taskkill /PID 34136 /F\")",
+      "Bash(cmd //c \"taskkill /PID 20064 /F && taskkill /PID 35612 /F\")",
+      "Bash(mongosh:*)",
+      "Bash(node delete-duplicate-issues.js:*)"
     ],
     "deny": [],
     "ask": []

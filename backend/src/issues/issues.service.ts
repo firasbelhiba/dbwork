@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Issue, IssueDocument } from './schemas/issue.schema';
 import { CreateIssueDto, UpdateIssueDto, FilterIssuesDto, AddTimeLogDto } from './dto';
 
@@ -20,13 +20,28 @@ export class IssuesService {
       await this.validateParentIssue(createIssueDto.parentIssue, createIssueDto.projectId);
     }
 
-    // Generate issue key
-    const projectIssuesCount = await this.issueModel
-      .countDocuments({ projectId: createIssueDto.projectId })
+    // Generate issue key - find the highest issue number globally across all issues
+    const allIssues = await this.issueModel
+      .find({})
+      .select('key')
+      .lean()
       .exec();
 
-    // Get project to generate key (would normally import ProjectsService)
-    const issueKey = `ISSUE-${projectIssuesCount + 1}`;
+    let maxIssueNumber = 0;
+    allIssues.forEach((issue) => {
+      if (issue.key) {
+        // Extract number from key like "ISSUE-5" or "PROJ-10"
+        const match = issue.key.match(/-(\d+)$/);
+        if (match) {
+          const number = parseInt(match[1], 10);
+          if (number > maxIssueNumber) {
+            maxIssueNumber = number;
+          }
+        }
+      }
+    });
+
+    const issueKey = `ISSUE-${maxIssueNumber + 1}`;
 
     const issue = new this.issueModel({
       ...createIssueDto,

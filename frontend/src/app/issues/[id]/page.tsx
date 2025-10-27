@@ -8,7 +8,7 @@ import { Issue } from '@/types/issue';
 import { Comment } from '@/types/comment';
 import { UserRole } from '@/types/user';
 import { Button, Badge, Select, Textarea, Breadcrumb, LogoLoader } from '@/components/common';
-import { SubIssues, SubIssueModal } from '@/components/issues';
+import { SubIssues, SubIssueModal, EditIssueModal } from '@/components/issues';
 import { useAuth } from '@/contexts/AuthContext';
 import { getInitials, formatDateTime, getRelativeTime } from '@/lib/utils';
 import Link from 'next/link';
@@ -17,7 +17,7 @@ import toast from 'react-hot-toast';
 export default function IssueDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const issueId = params.id as string;
 
   const [issue, setIssue] = useState<Issue | null>(null);
@@ -26,15 +26,21 @@ export default function IssueDetailPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [showSubIssueModal, setShowSubIssueModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [unauthorized, setUnauthorized] = useState(false);
 
   useEffect(() => {
-    if (issueId) {
+    if (issueId && !authLoading) {
       fetchIssueData();
     }
-  }, [issueId]);
+  }, [issueId, authLoading, user]);
 
   const fetchIssueData = async () => {
+    // Wait for auth to finish loading before checking authorization
+    if (authLoading) {
+      return;
+    }
+
     try {
       const [issueRes, commentsRes] = await Promise.all([
         issuesAPI.getById(issueId),
@@ -191,7 +197,17 @@ export default function IssueDetailPage() {
             />
             <div className="flex items-start gap-3 mb-4">
               <Badge variant={issue.type as any}>{issue.type}</Badge>
-              <h1 className="text-3xl font-bold text-gray-900 flex-1">{issue.title}</h1>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex-1">{issue.title}</h1>
+              <Button
+                variant="outline"
+                onClick={() => setShowEditModal(true)}
+                className="flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Edit
+              </Button>
             </div>
 
             {/* Parent Issue Link */}
@@ -362,10 +378,10 @@ export default function IssueDetailPage() {
                     <Badge variant={issue.priority as any}>{issue.priority}</Badge>
                   </div>
 
-                  {issue.storyPoints && (
+                  {issue.storyPoints && issue.storyPoints > 0 && (
                     <div>
                       <span className="text-xs text-gray-600 block mb-1">Story Points</span>
-                      <span className="text-sm text-gray-900">{issue.storyPoints}</span>
+                      <span className="text-sm text-gray-900 dark:text-gray-100">{issue.storyPoints}</span>
                     </div>
                   )}
 
@@ -381,13 +397,20 @@ export default function IssueDetailPage() {
                   )}
 
                   <div>
+                    <span className="text-xs text-gray-600 block mb-1">Due Date</span>
+                    <span className="text-sm text-gray-900 dark:text-gray-100">
+                      {issue.dueDate ? formatDateTime(issue.dueDate) : 'No due date set'}
+                    </span>
+                  </div>
+
+                  <div>
                     <span className="text-xs text-gray-600 block mb-1">Created</span>
-                    <span className="text-sm text-gray-900">{formatDateTime(issue.createdAt)}</span>
+                    <span className="text-sm text-gray-900 dark:text-gray-100">{formatDateTime(issue.createdAt)}</span>
                   </div>
 
                   <div>
                     <span className="text-xs text-gray-600 block mb-1">Updated</span>
-                    <span className="text-sm text-gray-900">{getRelativeTime(issue.updatedAt)}</span>
+                    <span className="text-sm text-gray-900 dark:text-gray-100">{getRelativeTime(issue.updatedAt)}</span>
                   </div>
                 </div>
               </div>
@@ -437,6 +460,17 @@ export default function IssueDetailPage() {
         projectId={typeof issue.projectId === 'object' ? issue.projectId._id : issue.projectId}
         onSuccess={() => {
           // Force re-render of SubIssues component by refreshing the page data
+          fetchIssueData();
+        }}
+      />
+
+      {/* Edit Issue Modal */}
+      <EditIssueModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        issue={issue}
+        onSuccess={() => {
+          // Refresh issue data after successful edit
           fetchIssueData();
         }}
       />
