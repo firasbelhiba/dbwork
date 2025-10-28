@@ -47,7 +47,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId })
       const response = await projectsAPI.getById(projectId);
       const project = response.data;
       if (project.customStatuses && project.customStatuses.length > 0) {
-        setColumns(project.customStatuses.sort((a, b) => a.order - b.order));
+        setColumns(project.customStatuses.sort((a: CustomStatus, b: CustomStatus) => a.order - b.order));
       }
     } catch (error) {
       console.error('Error fetching project:', error);

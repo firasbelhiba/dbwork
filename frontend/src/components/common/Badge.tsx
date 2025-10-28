@@ -13,6 +13,7 @@ const badgeVariants = cva(
         success: 'bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-400',
         warning: 'bg-warning-100 dark:bg-warning-900/30 text-warning-800 dark:text-warning-400',
         danger: 'bg-danger-100 dark:bg-danger-900/30 text-danger-700 dark:text-danger-400',
+        outline: 'border-2 border-gray-300 dark:border-gray-600 bg-transparent text-gray-700 dark:text-gray-300',
         // Issue type badges
         bug: 'bg-danger-100 dark:bg-danger-900/30 text-danger-700 dark:text-danger-400',
         task: 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400',

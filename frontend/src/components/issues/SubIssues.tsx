@@ -85,8 +85,8 @@ export const SubIssues: React.FC<SubIssuesProps> = ({
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <Badge variant={subIssue.type as any} size="sm">{subIssue.type}</Badge>
-                    <Badge variant={subIssue.priority as any} size="sm">{subIssue.priority}</Badge>
+                    <Badge variant={subIssue.type as any}>{subIssue.type}</Badge>
+                    <Badge variant={subIssue.priority as any}>{subIssue.priority}</Badge>
                     <span className="text-xs text-gray-500 dark:text-gray-400">{subIssue.key}</span>
                   </div>
                   <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
