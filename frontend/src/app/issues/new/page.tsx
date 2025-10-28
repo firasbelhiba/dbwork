@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button, Input, Select, Textarea, Breadcrumb } from '@/components/common';
 import { issuesAPI, projectsAPI, usersAPI, sprintsAPI } from '@/lib/api';
@@ -11,7 +11,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
 
-export default function NewIssuePage() {
+function NewIssueForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
@@ -402,5 +402,13 @@ export default function NewIssuePage() {
         </form>
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function NewIssuePage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <NewIssueForm />
+    </Suspense>
   );
 }
