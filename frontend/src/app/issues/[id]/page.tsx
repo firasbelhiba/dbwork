@@ -439,7 +439,9 @@ export default function IssueDetailPage() {
                         className="bg-primary h-2 rounded-full"
                         style={{
                           width: `${Math.min(
-                            (issue.timeTracking.loggedHours / issue.timeTracking.estimatedHours) * 100,
+                            issue.timeTracking.estimatedHours
+                              ? (issue.timeTracking.loggedHours / issue.timeTracking.estimatedHours) * 100
+                              : 0,
                             100
                           )}%`,
                         }}
