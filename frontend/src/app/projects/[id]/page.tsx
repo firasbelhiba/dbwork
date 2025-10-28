@@ -7,10 +7,13 @@ import { projectsAPI, sprintsAPI, issuesAPI } from '@/lib/api';
 import { Project } from '@/types/project';
 import { Sprint } from '@/types/sprint';
 import { Issue } from '@/types/issue';
-import { UserRole } from '@/types/user';
+import { User, UserRole } from '@/types/user';
 import { KanbanBoard } from '@/components/kanban';
 import { Button, Badge, Select, Breadcrumb, LogoLoader } from '@/components/common';
 import { CreateSprintModal, SprintList } from '@/components/sprints';
+import { UserProfileSidebar } from '@/components/users';
+import { CustomStatusModal } from '@/components/projects';
+import { ProjectCalendar, DemoEventModal } from '@/components/calendar';
 import Link from 'next/link';
 import { getInitials } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -26,13 +29,18 @@ export default function ProjectDetailPage() {
   const [sprints, setSprints] = useState<Sprint[]>([]);
   const [activeSprint, setActiveSprint] = useState<Sprint | null>(null);
   const [selectedSprintId, setSelectedSprintId] = useState<string>('all');
-  const [view, setView] = useState<'board' | 'list'>('board');
+  const [view, setView] = useState<'board' | 'list' | 'calendar'>('board');
   const [loading, setLoading] = useState(true);
   const [issues, setIssues] = useState<Issue[]>([]);
   const [loadingIssues, setLoadingIssues] = useState(false);
   const [unauthorized, setUnauthorized] = useState(false);
   const [isSprintModalOpen, setIsSprintModalOpen] = useState(false);
   const [showSprintsList, setShowSprintsList] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isProfileSidebarOpen, setIsProfileSidebarOpen] = useState(false);
+  const [isCustomStatusModalOpen, setIsCustomStatusModalOpen] = useState(false);
+  const [isDemoEventModalOpen, setIsDemoEventModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
 
   useEffect(() => {
     if (projectId && !authLoading) {
@@ -237,11 +245,15 @@ export default function ProjectDetailPage() {
                     <div key={index} className="relative group">
                       <div
                         className="w-9 h-9 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center text-xs font-medium shadow-sm border-2 border-white dark:border-gray-700 cursor-pointer transition-transform hover:scale-110"
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setIsProfileSidebarOpen(true);
+                        }}
                       >
                         {getInitials(user.firstName, user.lastName)}
                       </div>
                       {/* Tooltip */}
-                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50">
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50 pointer-events-none">
                         <div className="bg-gray-900 dark:bg-gray-800 text-white px-3 py-2 rounded-lg shadow-lg whitespace-nowrap">
                           <p className="text-sm font-medium">{user.firstName} {user.lastName}</p>
                           <p className="text-xs text-gray-300 dark:text-gray-400 capitalize">{user.role}</p>
@@ -307,10 +319,45 @@ export default function ProjectDetailPage() {
                 >
                   List
                 </button>
+                <button
+                  onClick={() => setView('calendar')}
+                  className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+                    view === 'calendar'
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Calendar
+                </button>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
+              {view === 'board' && (
+                <Button
+                  variant="outline"
+                  onClick={() => setIsCustomStatusModalOpen(true)}
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                  </svg>
+                  Manage Columns
+                </Button>
+              )}
+              {view === 'calendar' && (user?.role === UserRole.ADMIN || user?.role === UserRole.PROJECT_MANAGER) && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedEvent(null);
+                    setIsDemoEventModalOpen(true);
+                  }}
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  New Demo Event
+                </Button>
+              )}
               <Button
                 variant="outline"
                 onClick={() => setShowSprintsList(!showSprintsList)}
@@ -360,8 +407,17 @@ export default function ProjectDetailPage() {
         <div className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900 p-8">
           {view === 'board' ? (
             <KanbanBoard
+              key={project?.customStatuses?.length || 0}
               projectId={projectId}
               sprintId={selectedSprintId === 'all' ? undefined : selectedSprintId}
+            />
+          ) : view === 'calendar' ? (
+            <ProjectCalendar
+              events={project?.demoEvents || []}
+              onEventClick={(event) => {
+                setSelectedEvent(event);
+                setIsDemoEventModalOpen(true);
+              }}
             />
           ) : loadingIssues ? (
             <div className="flex items-center justify-center py-12">
@@ -427,6 +483,44 @@ export default function ProjectDetailPage() {
           onClose={() => setIsSprintModalOpen(false)}
           projectId={projectId}
           onSprintCreated={fetchSprints}
+        />
+
+        {/* User Profile Sidebar */}
+        <UserProfileSidebar
+          user={selectedUser}
+          isOpen={isProfileSidebarOpen}
+          onClose={() => {
+            setIsProfileSidebarOpen(false);
+            setSelectedUser(null);
+          }}
+        />
+
+        {/* Custom Status Modal */}
+        {project && (
+          <CustomStatusModal
+            projectId={projectId}
+            statuses={project.customStatuses || []}
+            isOpen={isCustomStatusModalOpen}
+            onClose={() => setIsCustomStatusModalOpen(false)}
+            onUpdate={() => {
+              fetchProjectData();
+            }}
+          />
+        )}
+
+        {/* Demo Event Modal */}
+        <DemoEventModal
+          projectId={projectId}
+          event={selectedEvent}
+          isOpen={isDemoEventModalOpen}
+          onClose={() => {
+            setIsDemoEventModalOpen(false);
+            setSelectedEvent(null);
+          }}
+          onSuccess={() => {
+            fetchProjectData();
+          }}
+          canEdit={user?.role === UserRole.ADMIN || user?.role === UserRole.PROJECT_MANAGER}
         />
       </div>
     </DashboardLayout>

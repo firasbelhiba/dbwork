@@ -27,7 +27,8 @@
       "Bash(cmd //c \"taskkill /PID 34136 /F\")",
       "Bash(cmd //c \"taskkill /PID 20064 /F && taskkill /PID 35612 /F\")",
       "Bash(mongosh:*)",
-      "Bash(node delete-duplicate-issues.js:*)"
+      "Bash(node delete-duplicate-issues.js:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

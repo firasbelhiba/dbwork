@@ -8,7 +8,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Project, ProjectDocument } from './schemas/project.schema';
-import { CreateProjectDto, UpdateProjectDto, AddMemberDto } from './dto';
+import { CreateProjectDto, UpdateProjectDto, AddMemberDto, CreateCustomStatusDto, UpdateCustomStatusDto, ReorderCustomStatusesDto, CreateDemoEventDto, UpdateDemoEventDto } from './dto';
 
 @Injectable()
 export class ProjectsService {
@@ -70,8 +70,8 @@ export class ProjectsService {
   async findOne(id: string): Promise<ProjectDocument> {
     const project = await this.projectModel
       .findById(id)
-      .populate('lead', 'firstName lastName email avatar role')
-      .populate('members.userId', 'firstName lastName email avatar role')
+      .populate('lead', 'firstName lastName email avatar role isActive createdAt lastLoginAt preferences')
+      .populate('members.userId', 'firstName lastName email avatar role isActive createdAt lastLoginAt preferences')
       .exec();
 
     if (!project) {
@@ -199,5 +199,203 @@ export class ProjectsService {
       isArchived: project.isArchived,
       createdAt: project.createdAt,
     };
+  }
+
+  async addCustomStatus(
+    projectId: string,
+    createCustomStatusDto: CreateCustomStatusDto,
+  ): Promise<ProjectDocument> {
+    const project = await this.findOne(projectId);
+
+    // Generate a unique ID for the custom status
+    const statusId = `custom_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    // Get the next order number
+    const maxOrder = Math.max(...project.customStatuses.map(s => s.order), -1);
+
+    const newStatus = {
+      id: statusId,
+      name: createCustomStatusDto.name,
+      color: createCustomStatusDto.color,
+      order: maxOrder + 1,
+      isDefault: false,
+    };
+
+    project.customStatuses.push(newStatus as any);
+
+    return project.save();
+  }
+
+  async updateCustomStatus(
+    projectId: string,
+    statusId: string,
+    updateCustomStatusDto: UpdateCustomStatusDto,
+  ): Promise<ProjectDocument> {
+    const project = await this.findOne(projectId);
+
+    const statusIndex = project.customStatuses.findIndex(s => s.id === statusId);
+
+    if (statusIndex === -1) {
+      throw new NotFoundException('Custom status not found');
+    }
+
+    // Prevent updating default statuses
+    if (project.customStatuses[statusIndex].isDefault && updateCustomStatusDto.name) {
+      throw new BadRequestException('Cannot rename default statuses');
+    }
+
+    if (updateCustomStatusDto.name) {
+      project.customStatuses[statusIndex].name = updateCustomStatusDto.name;
+    }
+
+    if (updateCustomStatusDto.color) {
+      project.customStatuses[statusIndex].color = updateCustomStatusDto.color;
+    }
+
+    if (updateCustomStatusDto.order !== undefined) {
+      project.customStatuses[statusIndex].order = updateCustomStatusDto.order;
+    }
+
+    return project.save();
+  }
+
+  async deleteCustomStatus(projectId: string, statusId: string): Promise<ProjectDocument> {
+    const project = await this.findOne(projectId);
+
+    const statusIndex = project.customStatuses.findIndex(s => s.id === statusId);
+
+    if (statusIndex === -1) {
+      throw new NotFoundException('Custom status not found');
+    }
+
+    // Prevent deleting default statuses
+    if (project.customStatuses[statusIndex].isDefault) {
+      throw new BadRequestException('Cannot delete default statuses');
+    }
+
+    // Ensure at least one status remains
+    if (project.customStatuses.length <= 1) {
+      throw new BadRequestException('Cannot delete the last status');
+    }
+
+    project.customStatuses.splice(statusIndex, 1);
+
+    return project.save();
+  }
+
+  async reorderCustomStatuses(
+    projectId: string,
+    reorderCustomStatusesDto: ReorderCustomStatusesDto,
+  ): Promise<ProjectDocument> {
+    const project = await this.findOne(projectId);
+
+    const { statusIds } = reorderCustomStatusesDto;
+
+    // Validate that all status IDs exist
+    const allStatusIds = project.customStatuses.map(s => s.id);
+    const invalidIds = statusIds.filter(id => !allStatusIds.includes(id));
+
+    if (invalidIds.length > 0) {
+      throw new BadRequestException(`Invalid status IDs: ${invalidIds.join(', ')}`);
+    }
+
+    // Reorder statuses
+    statusIds.forEach((id, index) => {
+      const statusIndex = project.customStatuses.findIndex(s => s.id === id);
+      if (statusIndex !== -1) {
+        project.customStatuses[statusIndex].order = index;
+      }
+    });
+
+    // Sort by order
+    project.customStatuses.sort((a, b) => a.order - b.order);
+
+    return project.save();
+  }
+
+  async createDemoEvent(
+    projectId: string,
+    createDemoEventDto: CreateDemoEventDto,
+    userId: string,
+  ): Promise<ProjectDocument> {
+    const project = await this.findOne(projectId);
+
+    const eventId = `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    const newEvent = {
+      id: eventId,
+      title: createDemoEventDto.title,
+      description: createDemoEventDto.description || '',
+      date: new Date(createDemoEventDto.date),
+      location: createDemoEventDto.location || '',
+      createdBy: userId as any,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    project.demoEvents.push(newEvent as any);
+
+    return project.save();
+  }
+
+  async getDemoEvents(projectId: string): Promise<any[]> {
+    const project = await this.projectModel
+      .findById(projectId)
+      .populate('demoEvents.createdBy', 'firstName lastName email avatar')
+      .exec();
+
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+
+    return project.demoEvents.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }
+
+  async updateDemoEvent(
+    projectId: string,
+    eventId: string,
+    updateDemoEventDto: UpdateDemoEventDto,
+  ): Promise<ProjectDocument> {
+    const project = await this.findOne(projectId);
+
+    const eventIndex = project.demoEvents.findIndex(e => e.id === eventId);
+
+    if (eventIndex === -1) {
+      throw new NotFoundException('Demo event not found');
+    }
+
+    if (updateDemoEventDto.title) {
+      project.demoEvents[eventIndex].title = updateDemoEventDto.title;
+    }
+
+    if (updateDemoEventDto.description !== undefined) {
+      project.demoEvents[eventIndex].description = updateDemoEventDto.description;
+    }
+
+    if (updateDemoEventDto.date) {
+      project.demoEvents[eventIndex].date = new Date(updateDemoEventDto.date);
+    }
+
+    if (updateDemoEventDto.location !== undefined) {
+      project.demoEvents[eventIndex].location = updateDemoEventDto.location;
+    }
+
+    project.demoEvents[eventIndex].updatedAt = new Date();
+
+    return project.save();
+  }
+
+  async deleteDemoEvent(projectId: string, eventId: string): Promise<ProjectDocument> {
+    const project = await this.findOne(projectId);
+
+    const eventIndex = project.demoEvents.findIndex(e => e.id === eventId);
+
+    if (eventIndex === -1) {
+      throw new NotFoundException('Demo event not found');
+    }
+
+    project.demoEvents.splice(eventIndex, 1);
+
+    return project.save();
   }
 }

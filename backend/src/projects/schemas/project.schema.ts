@@ -40,6 +40,47 @@ export class Project {
     maxAttachmentSize: number;
   };
 
+  @Prop({ type: [{
+    id: { type: String, required: true },
+    name: { type: String, required: true },
+    color: { type: String, required: true },
+    order: { type: Number, required: true },
+    isDefault: { type: Boolean, default: false }
+  }], default: [
+    { id: 'todo', name: 'To Do', color: 'bg-gray-100', order: 0, isDefault: true },
+    { id: 'in_progress', name: 'In Progress', color: 'bg-blue-100', order: 1, isDefault: true },
+    { id: 'in_review', name: 'In Review', color: 'bg-purple-100', order: 2, isDefault: true },
+    { id: 'done', name: 'Done', color: 'bg-green-100', order: 3, isDefault: true },
+  ]})
+  customStatuses: {
+    id: string;
+    name: string;
+    color: string;
+    order: number;
+    isDefault: boolean;
+  }[];
+
+  @Prop({ type: [{
+    id: { type: String, required: true },
+    title: { type: String, required: true },
+    description: { type: String, default: '' },
+    date: { type: Date, required: true },
+    location: { type: String, default: '' },
+    createdBy: { type: Types.ObjectId, ref: 'User', required: true },
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now }
+  }], default: [] })
+  demoEvents: {
+    id: string;
+    title: string;
+    description: string;
+    date: Date;
+    location: string;
+    createdBy: Types.ObjectId;
+    createdAt: Date;
+    updatedAt: Date;
+  }[];
+
   @Prop({ default: false })
   isArchived: boolean;
 

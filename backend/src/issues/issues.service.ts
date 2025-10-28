@@ -80,13 +80,13 @@ export class IssuesService {
 
     const query: any = {};
 
-    if (projectId) query.projectId = projectId;
-    if (sprintId) query.sprintId = sprintId;
+    if (projectId) query.projectId = new Types.ObjectId(projectId);
+    if (sprintId) query.sprintId = new Types.ObjectId(sprintId);
     if (status) query.status = status;
     if (type) query.type = type;
     if (priority) query.priority = priority;
-    if (assignee) query.assignee = assignee;
-    if (reporter) query.reporter = reporter;
+    if (assignee) query.assignee = new Types.ObjectId(assignee);
+    if (reporter) query.reporter = new Types.ObjectId(reporter);
     if (labels && labels.length > 0) query.labels = { $in: labels };
 
     if (search) {

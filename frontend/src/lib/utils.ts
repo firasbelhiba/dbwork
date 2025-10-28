@@ -5,13 +5,17 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatDate(date: Date | string): string {
+export function formatDate(date: Date | string | null | undefined): string {
+  if (!date) return 'N/A';
   const d = typeof date === 'string' ? new Date(date) : date;
+  if (isNaN(d.getTime())) return 'Invalid date';
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export function formatDateTime(date: Date | string): string {
+export function formatDateTime(date: Date | string | null | undefined): string {
+  if (!date) return 'N/A';
   const d = typeof date === 'string' ? new Date(date) : date;
+  if (isNaN(d.getTime())) return 'Invalid date';
   return d.toLocaleString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -21,8 +25,10 @@ export function formatDateTime(date: Date | string): string {
   });
 }
 
-export function getRelativeTime(date: Date | string): string {
+export function getRelativeTime(date: Date | string | null | undefined): string {
+  if (!date) return 'N/A';
   const d = typeof date === 'string' ? new Date(date) : date;
+  if (isNaN(d.getTime())) return 'Invalid date';
   const now = new Date();
   const diffInMs = now.getTime() - d.getTime();
   const diffInSeconds = Math.floor(diffInMs / 1000);

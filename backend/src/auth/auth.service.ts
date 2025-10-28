@@ -51,7 +51,7 @@ export class AuthService {
 
     return {
       user: {
-        id: user._id,
+        _id: user._id,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
@@ -94,7 +94,7 @@ export class AuthService {
 
     return {
       user: {
-        id: user._id,
+        _id: user._id,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,

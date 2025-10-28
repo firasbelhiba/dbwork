@@ -16,7 +16,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
-import { CreateProjectDto, UpdateProjectDto, AddMemberDto } from './dto';
+import { CreateProjectDto, UpdateProjectDto, AddMemberDto, CreateCustomStatusDto, UpdateCustomStatusDto, ReorderCustomStatusesDto, CreateDemoEventDto, UpdateDemoEventDto } from './dto';
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@auth/guards/roles.guard';
 import { Roles, CurrentUser } from '@common/decorators';
@@ -124,5 +124,83 @@ export class ProjectsController {
   @ApiResponse({ status: 200, description: 'Member successfully removed' })
   removeMember(@Param('id') id: string, @Param('userId') userId: string) {
     return this.projectsService.removeMember(id, userId);
+  }
+
+  @Post(':id/statuses')
+  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
+  @ApiOperation({ summary: 'Add custom status to project' })
+  @ApiResponse({ status: 201, description: 'Custom status successfully added' })
+  addCustomStatus(@Param('id') id: string, @Body() createCustomStatusDto: CreateCustomStatusDto) {
+    return this.projectsService.addCustomStatus(id, createCustomStatusDto);
+  }
+
+  @Patch(':id/statuses/:statusId')
+  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
+  @ApiOperation({ summary: 'Update custom status' })
+  @ApiResponse({ status: 200, description: 'Custom status successfully updated' })
+  updateCustomStatus(
+    @Param('id') id: string,
+    @Param('statusId') statusId: string,
+    @Body() updateCustomStatusDto: UpdateCustomStatusDto
+  ) {
+    return this.projectsService.updateCustomStatus(id, statusId, updateCustomStatusDto);
+  }
+
+  @Delete(':id/statuses/:statusId')
+  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
+  @ApiOperation({ summary: 'Delete custom status' })
+  @ApiResponse({ status: 200, description: 'Custom status successfully deleted' })
+  deleteCustomStatus(@Param('id') id: string, @Param('statusId') statusId: string) {
+    return this.projectsService.deleteCustomStatus(id, statusId);
+  }
+
+  @Post(':id/statuses/reorder')
+  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
+  @ApiOperation({ summary: 'Reorder custom statuses' })
+  @ApiResponse({ status: 200, description: 'Custom statuses successfully reordered' })
+  reorderCustomStatuses(
+    @Param('id') id: string,
+    @Body() reorderCustomStatusesDto: ReorderCustomStatusesDto
+  ) {
+    return this.projectsService.reorderCustomStatuses(id, reorderCustomStatusesDto);
+  }
+
+  @Post(':id/demo-events')
+  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
+  @ApiOperation({ summary: 'Create demo event' })
+  @ApiResponse({ status: 201, description: 'Demo event successfully created' })
+  createDemoEvent(
+    @Param('id') id: string,
+    @Body() createDemoEventDto: CreateDemoEventDto,
+    @CurrentUser() user
+  ) {
+    return this.projectsService.createDemoEvent(id, createDemoEventDto, user._id);
+  }
+
+  @Get(':id/demo-events')
+  @ApiOperation({ summary: 'Get all demo events for project' })
+  @ApiResponse({ status: 200, description: 'List of demo events' })
+  getDemoEvents(@Param('id') id: string) {
+    return this.projectsService.getDemoEvents(id);
+  }
+
+  @Patch(':id/demo-events/:eventId')
+  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
+  @ApiOperation({ summary: 'Update demo event' })
+  @ApiResponse({ status: 200, description: 'Demo event successfully updated' })
+  updateDemoEvent(
+    @Param('id') id: string,
+    @Param('eventId') eventId: string,
+    @Body() updateDemoEventDto: UpdateDemoEventDto
+  ) {
+    return this.projectsService.updateDemoEvent(id, eventId, updateDemoEventDto);
+  }
+
+  @Delete(':id/demo-events/:eventId')
+  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
+  @ApiOperation({ summary: 'Delete demo event' })
+  @ApiResponse({ status: 200, description: 'Demo event successfully deleted' })
+  deleteDemoEvent(@Param('id') id: string, @Param('eventId') eventId: string) {
+    return this.projectsService.deleteDemoEvent(id, eventId);
   }
 }

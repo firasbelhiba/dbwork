@@ -18,7 +18,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
+    if (user?._id) {
       fetchDashboardData();
     }
   }, [user]);
@@ -38,6 +38,8 @@ export default function DashboardPage() {
   };
 
   const fetchDashboardData = async () => {
+    setLoading(true);
+
     try {
       const isAdmin = user?.role === UserRole.ADMIN;
 
@@ -55,22 +57,14 @@ export default function DashboardPage() {
         setStats(statsRes.data);
       } else {
         // Non-admin: Get user's projects and assigned issues (fetch more for accurate stats)
-        console.log('[Dashboard] Fetching issues for user:', user?._id, 'Role:', user?.role);
         const [projectsRes, issuesRes] = await Promise.all([
           projectsAPI.getMyProjects(),
           issuesAPI.getAll({ assignee: user?._id, limit: 100 }),
         ]);
 
-        console.log('[Dashboard] Issues response:', issuesRes.data);
         setProjects(projectsRes.data);
         const issuesData = issuesRes.data.items || issuesRes.data.issues || issuesRes.data;
         const userIssues = Array.isArray(issuesData) ? issuesData : [];
-
-        console.log('[Dashboard] Filtered user issues:', userIssues.length, userIssues.map(i => ({
-          id: i._id,
-          title: i.title,
-          assignee: typeof i.assignee === 'object' ? i.assignee._id : i.assignee
-        })));
 
         // Show only the 10 most recent issues in the list
         setAssignedIssues(userIssues.slice(0, 10));

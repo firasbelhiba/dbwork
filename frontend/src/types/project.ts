@@ -8,6 +8,8 @@ export interface Project {
   lead: User | string;
   members: ProjectMember[];
   settings: ProjectSettings;
+  customStatuses: CustomStatus[];
+  demoEvents: DemoEvent[];
   isArchived: boolean;
   archivedAt?: Date;
   createdAt: Date;
@@ -24,4 +26,23 @@ export interface ProjectSettings {
   enableTimeTracking: boolean;
   allowAttachments: boolean;
   maxAttachmentSize: number;
+}
+
+export interface CustomStatus {
+  id: string;
+  name: string;
+  color: string;
+  order: number;
+  isDefault: boolean;
+}
+
+export interface DemoEvent {
+  id: string;
+  title: string;
+  description: string;
+  date: Date | string;
+  location: string;
+  createdBy: User | string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }
