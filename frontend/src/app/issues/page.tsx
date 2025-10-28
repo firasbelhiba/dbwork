@@ -121,7 +121,7 @@ export default function IssuesPage() {
     if (selectedAssignees.length === 0) return 'All Members';
     if (selectedAssignees.length === 1) {
       if (selectedAssignees[0] === user?._id) return 'Only Me';
-      const assignee = availableAssignees.find(a => a._id === selectedAssignees[0]);
+      const assignee = availableAssignees.find((a: User) => a._id === selectedAssignees[0]);
       return assignee ? `${assignee.firstName} ${assignee.lastName}` : 'All Members';
     }
     return `${selectedAssignees.length} Members Selected`;
@@ -130,7 +130,7 @@ export default function IssuesPage() {
   const getAssigneeName = (assignee: any) => {
     if (!assignee) return 'Unassigned';
     if (typeof assignee === 'string') {
-      const user = users.find(u => u._id === assignee);
+      const user = users.find((u: User) => u._id === assignee);
       return user ? `${user.firstName} ${user.lastName}` : 'Unknown';
     }
     return `${assignee.firstName} ${assignee.lastName}`;
@@ -138,7 +138,7 @@ export default function IssuesPage() {
 
   const getProjectName = (projectId: any) => {
     if (typeof projectId === 'object') return projectId.name;
-    const project = projects.find(p => p._id === projectId);
+    const project = projects.find((p: Project) => p._id === projectId);
     return project ? project.name : 'Unknown';
   };
 
@@ -157,7 +157,7 @@ export default function IssuesPage() {
     }
 
     // Project selected: show only members of that project
-    const project = projects.find(p => p._id === selectedProject);
+    const project = projects.find((p: Project) => p._id === selectedProject);
     if (!project || !project.members) return [];
 
     const memberIds = project.members.map(member =>

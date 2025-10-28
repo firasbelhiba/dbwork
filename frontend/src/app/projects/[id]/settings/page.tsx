@@ -605,7 +605,7 @@ function AddMemberModal({ isOpen, onClose, projectId, allUsers, currentMembers, 
     return !isMember && matchesSearch;
   });
 
-  const selectedUser = availableUsers.find(u => u._id === selectedUserId);
+  const selectedUser = availableUsers.find((u: User) => u._id === selectedUserId);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

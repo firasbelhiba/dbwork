@@ -84,7 +84,7 @@ export default function NewIssuePage() {
   };
 
   // Get the selected project details
-  const selectedProject = projects.find(p => p._id === formData.projectId);
+  const selectedProject = projects.find((p: Project) => p._id === formData.projectId);
   const isProjectPreselected = !!searchParams.get('project');
 
   const fetchSprints = async (projectId: string) => {

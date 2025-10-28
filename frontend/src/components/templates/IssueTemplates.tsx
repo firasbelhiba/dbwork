@@ -241,7 +241,7 @@ export const IssueTemplates: React.FC<IssueTemplatesProps> = ({
 
   // Delete template
   const deleteTemplate = useCallback((templateId: string) => {
-    const template = templates.find(t => t.id === templateId);
+    const template = templates.find((t: IssueTemplate) => t.id === templateId);
     if (template?.isDefault) {
       alert('Cannot delete default templates');
       return;

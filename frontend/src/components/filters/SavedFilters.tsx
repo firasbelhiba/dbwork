@@ -193,7 +193,7 @@ export const SavedFilters: React.FC<SavedFiltersProps> = ({
 
       {activeFilterId && (
         <div className="mt-2 text-sm text-gray-600">
-          Active filter: <strong>{savedFilters.find(f => f.id === activeFilterId)?.name}</strong>
+          Active filter: <strong>{savedFilters.find((f: SavedFilter) => f.id === activeFilterId)?.name}</strong>
         </div>
       )}
 
