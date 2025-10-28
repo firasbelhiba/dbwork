@@ -8,7 +8,7 @@ import { usersAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
 
 export default function ProfilePage() {
-  const { user, setUser } = useAuth();
+  const { user, updateUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
@@ -60,7 +60,7 @@ export default function ProfilePage() {
       };
 
       const response = await usersAPI.update(user!._id, updateData);
-      setUser(response.data);
+      updateUser(response.data);
       toast.success('Profile updated successfully!');
     } catch (err: any) {
       console.error('Error updating profile:', err);
