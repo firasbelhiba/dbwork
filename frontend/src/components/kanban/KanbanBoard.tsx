@@ -9,14 +9,22 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  closestCorners,
 } from '@dnd-kit/core';
+import {
+  SortableContext,
+  horizontalListSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable';
 import { Issue } from '@/types/issue';
 import { IssueCard } from './IssueCard';
 import { KanbanColumn } from './KanbanColumn';
+import { SortableColumn } from './SortableColumn';
 import { issuesAPI, projectsAPI } from '@/lib/api';
 import { IssueStatus } from '@/types/issue';
 import { LogoLoader } from '@/components/common';
 import { Project, CustomStatus } from '@/types/project';
+import toast from 'react-hot-toast';
 
 interface KanbanBoardProps {
   projectId: string;
@@ -78,23 +86,56 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId })
 
     if (!over || active.id === over.id) return;
 
-    const issueId = active.id as string;
-    const newStatus = over.id as string;
+    // Check if dragging a column
+    const isColumn = columns.some((col) => col.id === active.id);
 
-    // Optimistic update
-    setIssues((prevIssues) =>
-      prevIssues.map((issue) =>
-        issue._id === issueId ? { ...issue, status: newStatus as any } : issue
-      )
-    );
+    if (isColumn) {
+      // Handle column reordering
+      const oldIndex = columns.findIndex((col) => col.id === active.id);
+      const newIndex = columns.findIndex((col) => col.id === over.id);
 
-    // Update on backend
-    try {
-      await issuesAPI.update(issueId, { status: newStatus as any });
-    } catch (error) {
-      console.error('Error updating issue:', error);
-      // Revert on error
-      fetchIssues();
+      if (oldIndex !== newIndex) {
+        const reorderedColumns = arrayMove(columns, oldIndex, newIndex).map((col, index) => ({
+          ...col,
+          order: index,
+        }));
+
+        // Optimistic update
+        setColumns(reorderedColumns);
+
+        // Update on backend
+        try {
+          await projectsAPI.reorderColumns(projectId, {
+            statusIds: reorderedColumns.map((col) => col.id),
+          });
+          toast.success('Column order updated');
+        } catch (error) {
+          console.error('Error reordering columns:', error);
+          toast.error('Failed to update column order');
+          // Revert on error
+          fetchProject();
+        }
+      }
+    } else {
+      // Handle issue dragging (existing logic)
+      const issueId = active.id as string;
+      const newStatus = over.id as string;
+
+      // Optimistic update
+      setIssues((prevIssues) =>
+        prevIssues.map((issue) =>
+          issue._id === issueId ? { ...issue, status: newStatus as any } : issue
+        )
+      );
+
+      // Update on backend
+      try {
+        await issuesAPI.update(issueId, { status: newStatus as any });
+      } catch (error) {
+        console.error('Error updating issue:', error);
+        // Revert on error
+        fetchIssues();
+      }
     }
   };
 
@@ -123,18 +164,21 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId })
       sensors={sensors}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
+      collisionDetection={closestCorners}
     >
-      <div className="flex gap-4 overflow-x-auto pb-4">
-        {columns.map((column) => (
-          <KanbanColumn
-            key={column.id}
-            id={column.id}
-            title={column.name}
-            color={column.color}
-            issues={getIssuesByStatus(column.id)}
-          />
-        ))}
-      </div>
+      <SortableContext items={columns.map((col) => col.id)} strategy={horizontalListSortingStrategy}>
+        <div className="flex gap-4 overflow-x-auto pb-4">
+          {columns.map((column) => (
+            <SortableColumn
+              key={column.id}
+              id={column.id}
+              title={column.name}
+              color={column.color}
+              issues={getIssuesByStatus(column.id)}
+            />
+          ))}
+        </div>
+      </SortableContext>
 
       <DragOverlay>
         {activeIssue ? (

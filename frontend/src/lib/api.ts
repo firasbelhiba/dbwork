@@ -110,6 +110,7 @@ export const projectsAPI = {
   restore: (id: string) => api.post(`/projects/${id}/restore`),
   addMember: (id: string, data: any) => api.post(`/projects/${id}/members`, data),
   removeMember: (id: string, userId: string) => api.delete(`/projects/${id}/members/${userId}`),
+  reorderColumns: (id: string, data: any) => api.post(`/projects/${id}/statuses/reorder`, data),
 };
 
 // Issues API
