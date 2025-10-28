@@ -136,18 +136,6 @@ export default function LoginPage() {
                 Sign In
               </Button>
             </form>
-
-            <div className="mt-8 pt-6 border-t border-gray-200">
-              <div className="bg-blue-50 rounded-md p-4">
-                <p className="text-sm font-medium text-gray-900 mb-2">Demo Accounts:</p>
-                <ul className="text-xs text-gray-600 space-y-1">
-                  <li>Admin: admin@darblockchain.com</li>
-                  <li>PM: pm@darblockchain.com</li>
-                  <li>Developer: john.dev@darblockchain.com</li>
-                  <li className="mt-2">Password: password123</li>
-                </ul>
-              </div>
-            </div>
           </div>
         </div>
       </div>
