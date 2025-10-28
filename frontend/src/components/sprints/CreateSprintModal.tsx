@@ -197,7 +197,7 @@ export const CreateSprintModal: React.FC<CreateSprintModalProps> = ({
         </div>
 
         <div className="text-sm text-gray-500 dark:text-gray-400">
-          <p>The sprint will be created with status "Planned". You can start it later from the sprint list.</p>
+          <p>The sprint will be created with status &ldquo;Planned&rdquo;. You can start it later from the sprint list.</p>
         </div>
       </form>
     </Modal>
