@@ -430,7 +430,9 @@ export default function IssueDetailPage() {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Remaining:</span>
-                      <span className="text-gray-900">{issue.timeTracking.remainingHours}h</span>
+                      <span className="text-gray-900">
+                        {Math.max((issue.timeTracking.estimatedHours || 0) - issue.timeTracking.loggedHours, 0)}h
+                      </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                       <div
