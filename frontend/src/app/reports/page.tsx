@@ -7,7 +7,14 @@ import { reportsAPI, projectsAPI, sprintsAPI } from '@/lib/api';
 import { Project } from '@/types/project';
 import { Sprint } from '@/types/sprint';
 import { Select, Breadcrumb, LogoLoader, Button } from '@/components/common';
-import { BurndownChart, VelocityChart, IssueStatsPieChart } from '@/components/charts';
+import {
+  BurndownChart,
+  VelocityChart,
+  IssueStatsPieChart,
+  StatusDistributionChart,
+  TeamWorkloadChart,
+  IssueCreationTrendChart
+} from '@/components/charts';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserRole } from '@/types/user';
 import toast from 'react-hot-toast';
@@ -26,13 +33,15 @@ export default function ReportsPage() {
   const [velocityData, setVelocityData] = useState<any>(null);
   const [burndownData, setBurndownData] = useState<any>(null);
   const [timeTracking, setTimeTracking] = useState<any>(null);
+  const [statusDistribution, setStatusDistribution] = useState<any>(null);
+  const [teamWorkload, setTeamWorkload] = useState<any>(null);
+  const [issueCreationTrend, setIssueCreationTrend] = useState<any>(null);
 
   const [loading, setLoading] = useState(true);
   const [unauthorized, setUnauthorized] = useState(false);
 
   useEffect(() => {
     if (user) {
-      // Check if user is admin
       if (user.role !== UserRole.ADMIN) {
         setUnauthorized(true);
         setLoading(false);
@@ -85,12 +94,15 @@ export default function ReportsPage() {
 
   const fetchReports = async () => {
     try {
-      const [progressRes, statsRes, teamRes, velocityRes, timeRes] = await Promise.all([
+      const [progressRes, statsRes, teamRes, velocityRes, timeRes, statusDistRes, workloadRes, trendRes] = await Promise.all([
         reportsAPI.getProjectProgress(selectedProjectId),
         reportsAPI.getIssueStatistics(selectedProjectId),
         reportsAPI.getTeamPerformance(selectedProjectId),
         reportsAPI.getVelocityTrend(selectedProjectId, 5),
         reportsAPI.getTimeTracking(selectedProjectId),
+        reportsAPI.getStatusDistribution(selectedProjectId),
+        reportsAPI.getTeamWorkloadBreakdown(selectedProjectId),
+        reportsAPI.getIssueCreationTrend(selectedProjectId, 30),
       ]);
 
       setProjectProgress(progressRes.data);
@@ -98,6 +110,9 @@ export default function ReportsPage() {
       setTeamPerformance(teamRes.data);
       setVelocityData(velocityRes.data);
       setTimeTracking(timeRes.data);
+      setStatusDistribution(statusDistRes.data);
+      setTeamWorkload(workloadRes.data);
+      setIssueCreationTrend(trendRes.data);
     } catch (error) {
       console.error('Error fetching reports:', error);
     }
@@ -226,6 +241,22 @@ export default function ReportsPage() {
           </div>
         )}
 
+        {/* Status Distribution */}
+        {statusDistribution && statusDistribution.distribution && statusDistribution.distribution.length > 0 && (
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Issues by Status</h2>
+            <StatusDistributionChart data={statusDistribution.distribution} />
+          </div>
+        )}
+
+        {/* Issue Creation Trend */}
+        {issueCreationTrend && issueCreationTrend.trend && issueCreationTrend.trend.length > 0 && (
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Issue Creation Trend (Last 30 Days)</h2>
+            <IssueCreationTrendChart data={issueCreationTrend.trend} />
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Issue Statistics */}
           {issueStats && (
@@ -233,11 +264,11 @@ export default function ReportsPage() {
               <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Issues by Type</h2>
               <IssueStatsPieChart
                 data={[
-                  { name: 'Bugs', value: issueStats.bugs },
-                  { name: 'Tasks', value: issueStats.tasks },
-                  { name: 'Stories', value: issueStats.stories },
+                  { name: 'Bugs', value: issueStats.bugs || 0 },
+                  { name: 'Tasks', value: issueStats.tasks || 0 },
+                  { name: 'Stories', value: issueStats.stories || 0 },
                   { name: 'Epics', value: issueStats.epics || 0 },
-                ]}
+                ].filter(item => item.value > 0)}
                 colors={['#DE350B', '#0052CC', '#00875A', '#6554C0']}
               />
             </div>
@@ -260,15 +291,23 @@ export default function ReportsPage() {
           )}
         </div>
 
+        {/* Team Workload */}
+        {teamWorkload && teamWorkload.workload && teamWorkload.workload.length > 0 && (
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Team Workload Distribution</h2>
+            <TeamWorkloadChart data={teamWorkload.workload} />
+          </div>
+        )}
+
         {/* Velocity Trend */}
-        {velocityData && velocityData.sprints && velocityData.sprints.length > 0 && (
+        {velocityData && velocityData.velocityData && velocityData.velocityData.length > 0 && (
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-8">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">
               Velocity Trend (Last 5 Sprints)
             </h2>
             <VelocityChart
-              data={velocityData.sprints.map((s: any) => ({
-                sprintName: s.name,
+              data={velocityData.velocityData.map((s: any) => ({
+                sprintName: s.sprintName,
                 velocity: s.completedPoints,
                 committed: s.totalPoints,
               }))}
@@ -283,10 +322,16 @@ export default function ReportsPage() {
         )}
 
         {/* Sprint Burndown */}
-        {burndownData && burndownData.data && burndownData.data.length > 0 && (
+        {burndownData && burndownData.burndownData && burndownData.burndownData.length > 0 && (
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-8">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Sprint Burndown Chart</h2>
-            <BurndownChart data={burndownData.data} />
+            <BurndownChart
+              data={burndownData.burndownData.map((d: any) => ({
+                date: d.date,
+                ideal: d.idealRemaining,
+                actual: d.actualRemaining,
+              }))}
+            />
           </div>
         )}
 
@@ -316,7 +361,7 @@ export default function ReportsPage() {
                   {teamPerformance.map((member: any, index: number) => (
                     <tr key={index}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {member.userName}
+                        {member.user?.firstName} {member.user?.lastName}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
                         {member.completed}
@@ -325,7 +370,7 @@ export default function ReportsPage() {
                         {member.inProgress}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
-                        {member.totalStoryPoints}
+                        {member.storyPoints}
                       </td>
                     </tr>
                   ))}
