@@ -57,8 +57,13 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       const isDirectTicketSearch = debouncedSearch.startsWith('/');
       const ticketKey = isDirectTicketSearch ? debouncedSearch.substring(1).trim().toUpperCase() : '';
 
+      // Check if search looks like a ticket key pattern (e.g., "TA", "TAI", "TAI-", "TAI-1")
+      // Pattern: 2+ uppercase letters, optionally followed by dash and numbers
+      const ticketKeyPattern = /^[A-Z]{2,}(-\d*)?$/i;
+      const isTicketKeyPattern = ticketKeyPattern.test(debouncedSearch.trim());
+
       if (isDirectTicketSearch && ticketKey) {
-        // Direct ticket search mode - search by key
+        // Direct ticket search mode - search by key with "/" prefix
         const issuesRes = await issuesAPI.search(ticketKey);
         const items: any[] = [];
 
@@ -77,8 +82,29 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
         });
 
         setRecentItems(items);
+      } else if (isTicketKeyPattern) {
+        // Smart ticket key detection mode - prioritize issue search
+        const searchQuery = debouncedSearch.trim().toUpperCase();
+        const issuesRes = await issuesAPI.search(searchQuery);
+        const items: any[] = [];
+
+        // Add matching issues prominently
+        issuesRes.data.slice(0, 15).forEach((issue: any) => {
+          const projectKey = typeof issue.projectId === 'object' ? issue.projectId.key : '';
+          const issueKey = issue.key || `${projectKey}-${issue._id.slice(-4)}`;
+
+          items.push({
+            id: `issue-${issue._id}`,
+            title: issue.title,
+            subtitle: issueKey,
+            category: 'Tickets',
+            data: issue,
+          });
+        });
+
+        setRecentItems(items);
       } else {
-        // Normal search mode
+        // Normal search mode - search both projects and issues
         const [projectsRes, issuesRes] = await Promise.all([
           projectsAPI.getAll(),
           issuesAPI.search(debouncedSearch),
@@ -298,7 +324,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
               setSelectedIndex(0);
             }}
             onKeyDown={handleKeyDown}
-            placeholder="Search for projects, issues... or type / for ticket lookup"
+            placeholder="Search projects, issues, or type ticket key (e.g., TAI-1)"
             className="flex-1 bg-transparent outline-none text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
             autoFocus
           />
