@@ -244,15 +244,17 @@ export default function ReportsPage() {
           )}
 
           {/* Priority Distribution */}
-          {issueStats?.byPriority && (
+          {issueStats && (
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Issues by Priority</h2>
               <IssueStatsPieChart
-                data={Object.entries(issueStats.byPriority).map(([key, value]) => ({
-                  name: key.charAt(0).toUpperCase() + key.slice(1),
-                  value: value as number,
-                }))}
-                colors={['#DE350B', '#FF991F', '#FF991F', '#6B7280']}
+                data={[
+                  { name: 'Critical', value: issueStats.critical || 0 },
+                  { name: 'High', value: issueStats.high || 0 },
+                  { name: 'Medium', value: issueStats.medium || 0 },
+                  { name: 'Low', value: issueStats.low || 0 },
+                ].filter(item => item.value > 0)}
+                colors={['#DE350B', '#FF5630', '#FF991F', '#6B7280']}
               />
             </div>
           )}
