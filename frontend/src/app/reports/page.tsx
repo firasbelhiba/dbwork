@@ -234,7 +234,7 @@ export default function ReportsPage() {
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
               <div
-                className="bg-success dark:bg-success-500 h-4 rounded-full transition-all"
+                className="bg-green-600 dark:bg-green-500 h-4 rounded-full transition-all"
                 style={{ width: `${projectProgress.completionRate}%` }}
               ></div>
             </div>
