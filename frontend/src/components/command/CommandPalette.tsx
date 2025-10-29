@@ -244,12 +244,12 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
         onClose();
             },
           });
-        } else if (item.category === 'Issues') {
+        } else if (item.category === 'Issues' || item.category === 'Tickets') {
           items.push({
             id: item.id,
             title: item.title,
             subtitle: item.subtitle,
-            category: 'Issues',
+            category: item.category === 'Tickets' ? 'Tickets' : 'Issues',
             icon: (
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -270,6 +270,18 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
 
   const filteredItems = useMemo(() => {
     if (!search) return allItems;
+
+    // Check if we're in ticket search mode
+    const isDirectTicketSearch = search.startsWith('/');
+    const ticketKeyPattern = /^[A-Z]{2,}(-\d*)?$/i;
+    const isTicketKeyPattern = ticketKeyPattern.test(search.trim());
+
+    // Skip title filtering for ticket search modes
+    if (isDirectTicketSearch || isTicketKeyPattern) {
+      return allItems;
+    }
+
+    // Apply title filtering for normal search mode
     return allItems.filter((item) =>
       item.title.toLowerCase().includes(search.toLowerCase())
     );
