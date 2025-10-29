@@ -16,19 +16,20 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, color, is
 
   return (
     <div className="flex-shrink-0 w-80">
-      <div className="bg-gray-50 rounded-lg p-4">
-        {/* Column Header */}
-        <div className="flex items-center gap-2 mb-4">
-          <div className={`w-3 h-3 rounded-full ${color}`}></div>
-          <h3 className="font-semibold text-gray-900">{title}</h3>
-          <span className="text-sm text-gray-500">{issues.length}</span>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        {/* Column Header with Color */}
+        <div className={`${color} px-4 py-3 border-b border-gray-200 dark:border-gray-700`}>
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-white">{title}</h3>
+            <span className="text-xs text-white bg-white/20 px-2 py-1 rounded-full">{issues.length}</span>
+          </div>
         </div>
 
         {/* Issues List */}
         <SortableContext items={issues.map((i) => i._id)} strategy={verticalListSortingStrategy}>
-          <div ref={setNodeRef} className="space-y-3 min-h-[200px]">
+          <div ref={setNodeRef} className="space-y-3 min-h-[200px] p-4">
             {issues.length === 0 ? (
-              <div className="text-center py-8 text-gray-400 text-sm">
+              <div className="text-center py-8 text-gray-400 dark:text-gray-500 text-sm">
                 Drop issues here
               </div>
             ) : (
