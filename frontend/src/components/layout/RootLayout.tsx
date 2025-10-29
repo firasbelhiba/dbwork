@@ -1,14 +1,12 @@
 'use client';
 
 import React from 'react';
-import { CommandPalette } from '@/components/command/CommandPalette';
 import { Toaster } from 'react-hot-toast';
 
 export const RootLayoutClient: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <>
       {children}
-      <CommandPalette />
       <Toaster
         position="top-right"
         toastOptions={{
