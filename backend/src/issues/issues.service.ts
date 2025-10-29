@@ -335,15 +335,26 @@ export class IssuesService {
   }
 
   async getIssuesByProject(projectId: string, status?: string): Promise<IssueDocument[]> {
-    const query: any = { projectId };
+    console.log('[getIssuesByProject] Called with projectId:', projectId);
+    const query: any = { projectId: new Types.ObjectId(projectId) };
     if (status) query.status = status;
+    console.log('[getIssuesByProject] Query:', JSON.stringify(query));
 
-    return this.issueModel
+    // Count before query
+    const count = await this.issueModel.countDocuments(query);
+    console.log('[getIssuesByProject] Count in DB:', count);
+
+    const results = await this.issueModel
       .find(query)
       .populate('assignee', 'firstName lastName email avatar')
       .populate('reporter', 'firstName lastName email avatar')
       .sort({ order: 1, createdAt: -1 })
       .exec();
+
+    console.log('[getIssuesByProject] Results returned:', results.length);
+    console.log('[getIssuesByProject] First 3 keys:', results.slice(0, 3).map(i => i.key));
+
+    return results;
   }
 
   async getIssuesBySprint(sprintId: string): Promise<IssueDocument[]> {

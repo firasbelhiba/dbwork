@@ -28,7 +28,17 @@
       "Bash(cmd //c \"taskkill /PID 20064 /F && taskkill /PID 35612 /F\")",
       "Bash(mongosh:*)",
       "Bash(node delete-duplicate-issues.js:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx:*)",
+      "Bash(node_modules/.bin/tsc:*)",
+      "Bash(node transform-jira-import.js:*)",
+      "Bash(node:*)",
+      "Bash(curl:*)",
+      "Bash(cmd //c \"taskkill /PID 10736 /F\")",
+      "Bash(cmd //c \"rmdir /s /q \"\"c:\\Users\\firas\\OneDrive\\Documents\\workhole 2\\dbwork\\backend\\dist\"\"\")"
     ],
     "deny": [],
     "ask": []

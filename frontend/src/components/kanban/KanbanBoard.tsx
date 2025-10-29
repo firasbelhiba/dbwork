@@ -55,7 +55,9 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId })
       const response = await projectsAPI.getById(projectId);
       const project = response.data;
       if (project.customStatuses && project.customStatuses.length > 0) {
-        setColumns(project.customStatuses.sort((a: CustomStatus, b: CustomStatus) => a.order - b.order));
+        const sortedColumns = project.customStatuses.sort((a: CustomStatus, b: CustomStatus) => a.order - b.order);
+        console.log('[KanbanBoard] Custom statuses:', sortedColumns.map((c: CustomStatus) => ({ id: c.id, name: c.name })));
+        setColumns(sortedColumns);
       }
     } catch (error) {
       console.error('Error fetching project:', error);
@@ -67,6 +69,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId })
       const response = sprintId
         ? await issuesAPI.getBySprint(sprintId)
         : await issuesAPI.getByProject(projectId);
+      console.log('[KanbanBoard] Fetched issues:', response.data.length, 'issues');
+      console.log('[KanbanBoard] Sample issue statuses:', response.data.slice(0, 5).map((i: any) => ({ key: i.key, status: i.status })));
       setIssues(response.data);
     } catch (error) {
       console.error('Error fetching issues:', error);
