@@ -16,10 +16,12 @@ interface CommandItem {
 }
 
 interface CommandPaletteProps {
-  onClose?: () => void;
+  onClose: () => void;  // Required - parent MUST provide this callback
 }
 
 export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
+  // Debug logging
+  console.log('[CommandPalette] Component mounted, onClose:', typeof onClose);
   const [search, setSearch] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [recentItems, setRecentItems] = useState<any[]>([]);
@@ -31,15 +33,20 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        onClose?.();
+        console.log('[CommandPalette] Cmd+K pressed, calling onClose()');
+        onClose();
       }
       if (e.key === 'Escape') {
-        onClose?.();
+        console.log('[CommandPalette] ESC pressed, calling onClose()');
+        onClose();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      console.log('[CommandPalette] Component unmounting, removing keyboard listener');
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [onClose]);
 
   // Fetch search results
@@ -100,7 +107,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       ),
       onSelect: () => {
         router.push('/projects?create=true');
-        onClose?.();
+        console.log('[CommandPalette] Item selected, calling onClose()');
+        onClose();
       },
     },
     {
@@ -115,7 +123,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       ),
       onSelect: () => {
         router.push('/issues/new');
-        onClose?.();
+        console.log('[CommandPalette] Item selected, calling onClose()');
+        onClose();
       },
     },
     {
@@ -129,7 +138,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       ),
       onSelect: () => {
         router.push('/dashboard');
-        onClose?.();
+        console.log('[CommandPalette] Item selected, calling onClose()');
+        onClose();
       },
     },
     {
@@ -143,7 +153,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       ),
       onSelect: () => {
         router.push('/projects');
-        onClose?.();
+        console.log('[CommandPalette] Item selected, calling onClose()');
+        onClose();
       },
     },
     {
@@ -157,7 +168,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       ),
       onSelect: () => {
         router.push('/reports');
-        onClose?.();
+        console.log('[CommandPalette] Item selected, calling onClose()');
+        onClose();
       },
     },
   ], [router, onClose]);
@@ -180,7 +192,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
             ),
             onSelect: () => {
               router.push(`/projects/${item.data._id}`);
-              onClose?.();
+              console.log('[CommandPalette] Item selected, calling onClose()');
+        onClose();
             },
           });
         } else if (item.category === 'Issues') {
@@ -196,7 +209,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
             ),
             onSelect: () => {
               router.push(`/issues/${item.data._id}`);
-              onClose?.();
+              console.log('[CommandPalette] Item selected, calling onClose()');
+        onClose();
             },
           });
         }
@@ -240,7 +254,10 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
   return (
     <div
       className="fixed inset-0 z-50 flex items-start justify-center pt-20 bg-black/50"
-      onClick={onClose}
+      onClick={() => {
+        console.log('[CommandPalette] Backdrop clicked, calling onClose()');
+        onClose();
+      }}
     >
       <div
         className="w-full max-w-2xl bg-white dark:bg-gray-800 rounded-lg shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700"

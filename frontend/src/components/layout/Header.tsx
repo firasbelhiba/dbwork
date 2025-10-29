@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
@@ -31,6 +31,11 @@ export const Header: React.FC = () => {
       console.error('Error fetching unread count:', error);
     }
   };
+
+  const handleCloseCommandPalette = useCallback(() => {
+    console.log('[Header] Closing CommandPalette, setting showCommandPalette to false');
+    setShowCommandPalette(false);
+  }, []);
 
   if (!user) return null;
 
@@ -177,7 +182,7 @@ export const Header: React.FC = () => {
 
       {/* Command Palette */}
       {showCommandPalette && (
-        <CommandPalette onClose={() => setShowCommandPalette(false)} />
+        <CommandPalette onClose={handleCloseCommandPalette} />
       )}
     </header>
   );
