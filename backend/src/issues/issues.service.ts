@@ -312,7 +312,14 @@ export class IssuesService {
 
   async search(query: string, projectId?: string): Promise<IssueDocument[]> {
     const searchQuery: any = {
-      $text: { $search: query },
+      $or: [
+        // Search by ticket key (case-insensitive, partial match)
+        { key: { $regex: query, $options: 'i' } },
+        // Search by title (case-insensitive, partial match)
+        { title: { $regex: query, $options: 'i' } },
+        // Search by description (case-insensitive, partial match)
+        { description: { $regex: query, $options: 'i' } },
+      ],
     };
 
     if (projectId) {
