@@ -20,7 +20,6 @@ interface CommandPaletteProps {
 }
 
 export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
-  const [isOpen, setIsOpen] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [recentItems, setRecentItems] = useState<any[]>([]);
@@ -32,28 +31,23 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        // Only close if currently open
-        if (isOpen) {
-          setIsOpen(false);
-          onClose?.();
-        }
+        onClose?.();
       }
       if (e.key === 'Escape') {
-        setIsOpen(false);
         onClose?.();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [onClose]);
 
   // Fetch search results
   useEffect(() => {
-    if (debouncedSearch && isOpen) {
+    if (debouncedSearch) {
       fetchSearchResults();
     }
-  }, [debouncedSearch, isOpen]);
+  }, [debouncedSearch]);
 
   const fetchSearchResults = async () => {
     try {
@@ -106,7 +100,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       ),
       onSelect: () => {
         router.push('/projects?create=true');
-        setIsOpen(false);
         onClose?.();
       },
     },
@@ -122,7 +115,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       ),
       onSelect: () => {
         router.push('/issues/new');
-        setIsOpen(false);
         onClose?.();
       },
     },
@@ -137,7 +129,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       ),
       onSelect: () => {
         router.push('/dashboard');
-        setIsOpen(false);
         onClose?.();
       },
     },
@@ -152,7 +143,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       ),
       onSelect: () => {
         router.push('/projects');
-        setIsOpen(false);
         onClose?.();
       },
     },
@@ -167,7 +157,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       ),
       onSelect: () => {
         router.push('/reports');
-        setIsOpen(false);
         onClose?.();
       },
     },
@@ -249,8 +238,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
     });
     return groups;
   }, [filteredItems]);
-
-  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 bg-black/50">
