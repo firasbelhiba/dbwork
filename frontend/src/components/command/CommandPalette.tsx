@@ -20,8 +20,6 @@ interface CommandPaletteProps {
 }
 
 export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
-  // Debug logging
-  console.log('[CommandPalette] Component mounted, onClose:', typeof onClose);
   const [search, setSearch] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [recentItems, setRecentItems] = useState<any[]>([]);
@@ -33,18 +31,15 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        console.log('[CommandPalette] Cmd+K pressed, calling onClose()');
         onClose?.();
       }
       if (e.key === 'Escape') {
-        console.log('[CommandPalette] ESC pressed, calling onClose()');
         onClose?.();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => {
-      console.log('[CommandPalette] Component unmounting, removing keyboard listener');
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [onClose]);
@@ -58,37 +53,64 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
 
   const fetchSearchResults = async () => {
     try {
-      const [projectsRes, issuesRes] = await Promise.all([
-        projectsAPI.getAll(),
-        issuesAPI.search(debouncedSearch),
-      ]);
+      // Check if search starts with "/" for direct ticket lookup
+      const isDirectTicketSearch = debouncedSearch.startsWith('/');
+      const ticketKey = isDirectTicketSearch ? debouncedSearch.substring(1).trim().toUpperCase() : '';
 
-      const items: any[] = [];
+      if (isDirectTicketSearch && ticketKey) {
+        // Direct ticket search mode - search by key
+        const issuesRes = await issuesAPI.search(ticketKey);
+        const items: any[] = [];
 
-      // Add projects
-      projectsRes.data.slice(0, 3).forEach((project: any) => {
-        items.push({
-          id: `project-${project._id}`,
-          title: project.name,
-          subtitle: project.key,
-          category: 'Projects',
-          data: project,
+        // Add matching issues
+        issuesRes.data.slice(0, 10).forEach((issue: any) => {
+          const projectKey = typeof issue.projectId === 'object' ? issue.projectId.key : '';
+          const issueKey = issue.key || `${projectKey}-${issue._id.slice(-4)}`;
+
+          items.push({
+            id: `issue-${issue._id}`,
+            title: issue.title,
+            subtitle: issueKey,
+            category: 'Tickets',
+            data: issue,
+          });
         });
-      });
 
-      // Add issues
-      issuesRes.data.slice(0, 5).forEach((issue: any) => {
-        const projectKey = typeof issue.projectId === 'object' ? issue.projectId.key : '';
-        items.push({
-          id: `issue-${issue._id}`,
-          title: issue.title,
-          subtitle: `${projectKey}-${issue._id.slice(-4)}`,
-          category: 'Issues',
-          data: issue,
+        setRecentItems(items);
+      } else {
+        // Normal search mode
+        const [projectsRes, issuesRes] = await Promise.all([
+          projectsAPI.getAll(),
+          issuesAPI.search(debouncedSearch),
+        ]);
+
+        const items: any[] = [];
+
+        // Add projects
+        projectsRes.data.slice(0, 3).forEach((project: any) => {
+          items.push({
+            id: `project-${project._id}`,
+            title: project.name,
+            subtitle: project.key,
+            category: 'Projects',
+            data: project,
+          });
         });
-      });
 
-      setRecentItems(items);
+        // Add issues
+        issuesRes.data.slice(0, 5).forEach((issue: any) => {
+          const projectKey = typeof issue.projectId === 'object' ? issue.projectId.key : '';
+          items.push({
+            id: `issue-${issue._id}`,
+            title: issue.title,
+            subtitle: `${projectKey}-${issue._id.slice(-4)}`,
+            category: 'Issues',
+            data: issue,
+          });
+        });
+
+        setRecentItems(items);
+      }
     } catch (error) {
       console.error('Error searching:', error);
     }
@@ -276,7 +298,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
               setSelectedIndex(0);
             }}
             onKeyDown={handleKeyDown}
-            placeholder="Search for projects, issues, or commands..."
+            placeholder="Search for projects, issues... or type / for ticket lookup"
             className="flex-1 bg-transparent outline-none text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
             autoFocus
           />
