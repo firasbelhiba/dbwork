@@ -16,7 +16,7 @@ interface CommandItem {
 }
 
 interface CommandPaletteProps {
-  onClose: () => void;
+  onClose?: () => void;
 }
 
 export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
@@ -35,12 +35,12 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
         // Only close if currently open
         if (isOpen) {
           setIsOpen(false);
-          onClose();
+          onClose?.();
         }
       }
       if (e.key === 'Escape') {
         setIsOpen(false);
-        onClose();
+        onClose?.();
       }
     };
 
@@ -107,7 +107,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       onSelect: () => {
         router.push('/projects?create=true');
         setIsOpen(false);
-        onClose();
+        onClose?.();
       },
     },
     {
@@ -123,7 +123,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       onSelect: () => {
         router.push('/issues/new');
         setIsOpen(false);
-        onClose();
+        onClose?.();
       },
     },
     {
@@ -138,7 +138,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       onSelect: () => {
         router.push('/dashboard');
         setIsOpen(false);
-        onClose();
+        onClose?.();
       },
     },
     {
@@ -153,7 +153,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       onSelect: () => {
         router.push('/projects');
         setIsOpen(false);
-        onClose();
+        onClose?.();
       },
     },
     {
@@ -168,7 +168,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       onSelect: () => {
         router.push('/reports');
         setIsOpen(false);
-        onClose();
+        onClose?.();
       },
     },
   ], [router, onClose]);
@@ -192,7 +192,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
             onSelect: () => {
               router.push(`/projects/${item.data._id}`);
               setIsOpen(false);
-              onClose();
+              onClose?.();
             },
           });
         } else if (item.category === 'Issues') {
@@ -209,7 +209,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
             onSelect: () => {
               router.push(`/issues/${item.data._id}`);
               setIsOpen(false);
-              onClose();
+              onClose?.();
             },
           });
         }
