@@ -180,7 +180,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
             ),
             onSelect: () => {
               router.push(`/projects/${item.data._id}`);
-              setIsOpen(false);
               onClose?.();
             },
           });
@@ -197,7 +196,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
             ),
             onSelect: () => {
               router.push(`/issues/${item.data._id}`);
-              setIsOpen(false);
               onClose?.();
             },
           });
