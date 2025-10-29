@@ -218,6 +218,12 @@ export const reportsAPI = {
     const params = projectId ? { projectId } : {};
     return api.get('/reports/time-tracking', { params });
   },
+  getStatusDistribution: (projectId: string) => api.get(`/reports/project/${projectId}/status-distribution`),
+  getTeamWorkloadBreakdown: (projectId: string) => api.get(`/reports/project/${projectId}/team-workload`),
+  getIssueCreationTrend: (projectId: string, days?: number) => {
+    const params = days ? { days } : {};
+    return api.get(`/reports/project/${projectId}/issue-creation-trend`, { params });
+  },
 };
 
 // Activities API

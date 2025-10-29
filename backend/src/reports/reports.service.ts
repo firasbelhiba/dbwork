@@ -214,4 +214,121 @@ export class ReportsService {
       issuesWithTracking: issues.filter((i) => i.timeTracking.loggedHours > 0).length,
     };
   }
+
+  async getStatusDistribution(projectId: string): Promise<any> {
+    const mongoose = require('mongoose');
+
+    // Get project with custom statuses
+    const project = await this.projectModel.findById(new mongoose.Types.ObjectId(projectId)).exec();
+    if (!project) {
+      throw new Error('Project not found');
+    }
+
+    // Get all issues for the project
+    const issues = await this.issueModel.find({ projectId: new mongoose.Types.ObjectId(projectId) }).exec();
+
+    // Count issues per status
+    const statusCounts = issues.reduce((acc, issue) => {
+      acc[issue.status] = (acc[issue.status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Map status IDs to status names and colors
+    const distribution = project.customStatuses.map((status: any) => ({
+      name: status.name,
+      count: statusCounts[status.id] || 0,
+      color: status.color || '#6B7280',
+    }));
+
+    return { projectId, distribution };
+  }
+
+  async getTeamWorkloadBreakdown(projectId: string): Promise<any> {
+    const mongoose = require('mongoose');
+
+    // Get project with custom statuses
+    const project = await this.projectModel.findById(new mongoose.Types.ObjectId(projectId)).exec();
+    if (!project) {
+      throw new Error('Project not found');
+    }
+
+    // Find status IDs for todo, in progress, and done
+    const todoStatus = project.customStatuses.find((s: any) => s.name.toLowerCase().includes('todo') || s.name.toLowerCase().includes('to do'));
+    const inProgressStatus = project.customStatuses.find((s: any) => s.name.toLowerCase().includes('progress'));
+    const doneStatus = project.customStatuses.find((s: any) => s.name.toLowerCase() === 'done');
+
+    const issues = await this.issueModel
+      .find({ projectId: new mongoose.Types.ObjectId(projectId) })
+      .populate('assignee', 'firstName lastName')
+      .exec();
+
+    const workloadByUser: Record<string, any> = {};
+
+    issues.forEach((issue) => {
+      if (!issue.assignee) return;
+
+      const userId = (issue.assignee as any)._id.toString();
+      const userName = `${(issue.assignee as any).firstName} ${(issue.assignee as any).lastName}`;
+
+      if (!workloadByUser[userId]) {
+        workloadByUser[userId] = {
+          name: userName,
+          todo: 0,
+          inProgress: 0,
+          done: 0,
+        };
+      }
+
+      if (todoStatus && issue.status === todoStatus.id) {
+        workloadByUser[userId].todo++;
+      } else if (inProgressStatus && issue.status === inProgressStatus.id) {
+        workloadByUser[userId].inProgress++;
+      } else if (doneStatus && issue.status === doneStatus.id) {
+        workloadByUser[userId].done++;
+      }
+    });
+
+    return { projectId, workload: Object.values(workloadByUser) };
+  }
+
+  async getIssueCreationTrend(projectId: string, days: number = 30): Promise<any> {
+    const mongoose = require('mongoose');
+    const issues = await this.issueModel
+      .find({ projectId: new mongoose.Types.ObjectId(projectId) })
+      .sort({ createdAt: 1 })
+      .exec();
+
+    if (issues.length === 0) {
+      return { projectId, trend: [] };
+    }
+
+    // Group issues by date
+    const issuesByDate: Record<string, number> = {};
+    issues.forEach((issue) => {
+      const date = new Date(issue.createdAt).toISOString().split('T')[0];
+      issuesByDate[date] = (issuesByDate[date] || 0) + 1;
+    });
+
+    // Generate date range
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const trend: any[] = [];
+    let cumulative = 0;
+
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+      const dateStr = d.toISOString().split('T')[0];
+      const count = issuesByDate[dateStr] || 0;
+      cumulative += count;
+
+      trend.push({
+        date: dateStr,
+        count,
+        cumulative,
+      });
+    }
+
+    return { projectId, trend };
+  }
 }

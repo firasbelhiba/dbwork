@@ -59,4 +59,28 @@ export class ReportsController {
   getTimeTracking(@Query('projectId') projectId?: string) {
     return this.reportsService.getTimeTracking(projectId);
   }
+
+  @Get('project/:projectId/status-distribution')
+  @ApiOperation({ summary: 'Get status distribution for project' })
+  @ApiResponse({ status: 200, description: 'Status distribution data' })
+  getStatusDistribution(@Param('projectId') projectId: string) {
+    return this.reportsService.getStatusDistribution(projectId);
+  }
+
+  @Get('project/:projectId/team-workload')
+  @ApiOperation({ summary: 'Get team workload breakdown' })
+  @ApiResponse({ status: 200, description: 'Team workload data' })
+  getTeamWorkloadBreakdown(@Param('projectId') projectId: string) {
+    return this.reportsService.getTeamWorkloadBreakdown(projectId);
+  }
+
+  @Get('project/:projectId/issue-creation-trend')
+  @ApiOperation({ summary: 'Get issue creation trend' })
+  @ApiResponse({ status: 200, description: 'Issue creation trend data' })
+  getIssueCreationTrend(
+    @Param('projectId') projectId: string,
+    @Query('days') days?: number,
+  ) {
+    return this.reportsService.getIssueCreationTrend(projectId, days);
+  }
 }

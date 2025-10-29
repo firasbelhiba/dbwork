@@ -200,7 +200,6 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
             ) : null}
           </DragOverlay>
         </DndContext>
-      </div>
     </div>
   );
 };
