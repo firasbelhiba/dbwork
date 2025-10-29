@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button, Input, Breadcrumb } from '@/components/common';
 import { useAuth } from '@/contexts/AuthContext';
-import { usersAPI } from '@/lib/api';
+import { usersAPI, authAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
 
 export default function ProfilePage() {
@@ -95,9 +95,9 @@ export default function ProfilePage() {
     setLoading(true);
 
     try {
-      await usersAPI.update(user!._id, {
+      await authAPI.changePassword({
         currentPassword: passwordData.currentPassword,
-        password: passwordData.newPassword,
+        newPassword: passwordData.newPassword,
       });
       toast.success('Password changed successfully!');
       setPasswordData({
