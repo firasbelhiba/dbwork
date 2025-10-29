@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { notificationsAPI } from '@/lib/api';
 import { getInitials } from '@/lib/utils';
+import { CommandPalette } from '@/components/command/CommandPalette';
 
 export const Header: React.FC = () => {
   const { user, logout } = useAuth();
@@ -14,6 +15,7 @@ export const Header: React.FC = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -61,12 +63,14 @@ export const Header: React.FC = () => {
 
         {/* Search */}
         <div className="flex-1 max-w-2xl mx-8">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search issues, projects..."
-              className="w-full h-10 pl-10 pr-4 rounded-md border-2 border-gray-300 dark:border-dark-300 bg-white dark:bg-dark-400 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-            />
+          <button
+            onClick={() => setShowCommandPalette(true)}
+            className="w-full relative h-10 pl-10 pr-20 rounded-md border-2 border-gray-300 dark:border-dark-300 bg-white dark:bg-dark-400 text-left text-gray-400 dark:text-gray-500 hover:border-primary-500 dark:hover:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
+          >
+            Search issues, projects...
+            <kbd className="absolute right-3 top-1/2 -translate-y-1/2 px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded border border-gray-300 dark:border-gray-600 font-mono">
+              {typeof navigator !== 'undefined' && navigator.platform.includes('Mac') ? '⌘K' : 'Ctrl+K'}
+            </kbd>
             <svg
               className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500"
               fill="none"
@@ -80,7 +84,7 @@ export const Header: React.FC = () => {
                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
               />
             </svg>
-          </div>
+          </button>
         </div>
 
         {/* Right side */}
@@ -170,6 +174,11 @@ export const Header: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Command Palette */}
+      {showCommandPalette && (
+        <CommandPalette onClose={() => setShowCommandPalette(false)} />
+      )}
     </header>
   );
 };
