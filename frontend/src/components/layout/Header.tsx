@@ -38,9 +38,9 @@ export const Header: React.FC = () => {
         {/* Logo */}
         <div className="flex items-center gap-4">
           <Link href="/dashboard" className="flex items-center hover:opacity-90 transition-opacity">
-            {/* Light mode logo (black) */}
+            {/* Light mode logo (original) */}
             <Image
-              src="/logo-horizontal-black.png"
+              src="/logo-horizontal.png"
               alt="Dar Blockchain"
               width={160}
               height={40}
