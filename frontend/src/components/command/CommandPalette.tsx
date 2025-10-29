@@ -32,12 +32,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        setIsOpen((prev) => !prev);
-        if (!isOpen) {
-          // If currently closed, don't call onClose when opening
-          return;
+        // Only close if currently open
+        if (isOpen) {
+          setIsOpen(false);
+          onClose();
         }
-        onClose();
       }
       if (e.key === 'Escape') {
         setIsOpen(false);
