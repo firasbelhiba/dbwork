@@ -13,6 +13,7 @@ import { CommentsModule } from './comments/comments.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AttachmentsModule } from './attachments/attachments.module';
 import { ActivityLogsModule } from './activity-logs/activity-logs.module';
+import { ActivitiesModule } from './activities/activities.module';
 import { ReportsModule } from './reports/reports.module';
 import { MailModule } from './mail/mail.module';
 import { WebSocketModule } from './websocket/websocket.module';
@@ -40,6 +41,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     NotificationsModule,
     AttachmentsModule,
     ActivityLogsModule,
+    ActivitiesModule,
     ReportsModule,
     MailModule,
     WebSocketModule

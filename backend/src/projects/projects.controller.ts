@@ -80,24 +80,24 @@ export class ProjectsController {
   @ApiOperation({ summary: 'Update project' })
   @ApiResponse({ status: 200, description: 'Project successfully updated' })
   @ApiResponse({ status: 404, description: 'Project not found' })
-  update(@Param('id') id: string, @Body() updateProjectDto: UpdateProjectDto) {
-    return this.projectsService.update(id, updateProjectDto);
+  update(@Param('id') id: string, @Body() updateProjectDto: UpdateProjectDto, @CurrentUser() user) {
+    return this.projectsService.update(id, updateProjectDto, user._id);
   }
 
   @Post(':id/archive')
   @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
   @ApiOperation({ summary: 'Archive project' })
   @ApiResponse({ status: 200, description: 'Project successfully archived' })
-  archive(@Param('id') id: string) {
-    return this.projectsService.archive(id);
+  archive(@Param('id') id: string, @CurrentUser() user) {
+    return this.projectsService.archive(id, user._id);
   }
 
   @Post(':id/restore')
   @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
   @ApiOperation({ summary: 'Restore archived project' })
   @ApiResponse({ status: 200, description: 'Project successfully restored' })
-  restore(@Param('id') id: string) {
-    return this.projectsService.restore(id);
+  restore(@Param('id') id: string, @CurrentUser() user) {
+    return this.projectsService.restore(id, user._id);
   }
 
   @Delete(':id')
@@ -105,8 +105,8 @@ export class ProjectsController {
   @ApiOperation({ summary: 'Delete project (Admin only)' })
   @ApiResponse({ status: 200, description: 'Project successfully deleted' })
   @ApiResponse({ status: 404, description: 'Project not found' })
-  remove(@Param('id') id: string) {
-    return this.projectsService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser() user) {
+    return this.projectsService.remove(id, user._id);
   }
 
   @Post(':id/members')
@@ -114,16 +114,16 @@ export class ProjectsController {
   @ApiOperation({ summary: 'Add member to project' })
   @ApiResponse({ status: 200, description: 'Member successfully added' })
   @ApiResponse({ status: 409, description: 'User is already a member' })
-  addMember(@Param('id') id: string, @Body() addMemberDto: AddMemberDto) {
-    return this.projectsService.addMember(id, addMemberDto);
+  addMember(@Param('id') id: string, @Body() addMemberDto: AddMemberDto, @CurrentUser() user) {
+    return this.projectsService.addMember(id, addMemberDto, user._id);
   }
 
   @Delete(':id/members/:userId')
   @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
   @ApiOperation({ summary: 'Remove member from project' })
   @ApiResponse({ status: 200, description: 'Member successfully removed' })
-  removeMember(@Param('id') id: string, @Param('userId') userId: string) {
-    return this.projectsService.removeMember(id, userId);
+  removeMember(@Param('id') id: string, @Param('userId') userId: string, @CurrentUser() user) {
+    return this.projectsService.removeMember(id, userId, user._id);
   }
 
   @Post(':id/statuses')

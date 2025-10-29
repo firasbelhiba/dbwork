@@ -3,11 +3,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Comment, CommentDocument } from './schemas/comment.schema';
 import { CreateCommentDto, UpdateCommentDto } from './dto';
+import { ActivitiesService } from '../activities/activities.service';
+import { ActionType, EntityType } from '../activities/schemas/activity.schema';
 
 @Injectable()
 export class CommentsService {
   constructor(
     @InjectModel(Comment.name) private commentModel: Model<CommentDocument>,
+    private activitiesService: ActivitiesService,
   ) {}
 
   async create(
@@ -21,7 +24,20 @@ export class CommentsService {
       userId,
     });
 
-    return (await comment.save()).populate('userId', 'firstName lastName email avatar');
+    const savedComment = await (await comment.save()).populate('userId', 'firstName lastName email avatar');
+
+    // Log activity
+    await this.activitiesService.logActivity(
+      userId,
+      ActionType.COMMENTED,
+      EntityType.COMMENT,
+      savedComment._id.toString(),
+      `Comment on issue`,
+      undefined,
+      { issueId },
+    );
+
+    return savedComment;
   }
 
   async findByIssue(issueId: string): Promise<CommentDocument[]> {
@@ -64,7 +80,20 @@ export class CommentsService {
     comment.isEdited = true;
     comment.editedAt = new Date();
 
-    return comment.save();
+    const updatedComment = await comment.save();
+
+    // Log activity
+    await this.activitiesService.logActivity(
+      userId,
+      ActionType.UPDATED,
+      EntityType.COMMENT,
+      updatedComment._id.toString(),
+      `Updated comment`,
+      undefined,
+      { issueId: comment.issueId },
+    );
+
+    return updatedComment;
   }
 
   async remove(id: string, userId: string, isAdmin: boolean = false): Promise<void> {
@@ -76,6 +105,17 @@ export class CommentsService {
     }
 
     await this.commentModel.findByIdAndDelete(id).exec();
+
+    // Log activity
+    await this.activitiesService.logActivity(
+      userId,
+      ActionType.DELETED,
+      EntityType.COMMENT,
+      comment._id.toString(),
+      `Deleted comment`,
+      undefined,
+      { issueId: comment.issueId },
+    );
   }
 
   async addReaction(

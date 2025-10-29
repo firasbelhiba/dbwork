@@ -19,7 +19,7 @@ import { SprintsService } from './sprints.service';
 import { CreateSprintDto, UpdateSprintDto } from './dto';
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@auth/guards/roles.guard';
-import { Roles } from '@common/decorators';
+import { Roles, CurrentUser } from '@common/decorators';
 import { UserRole } from '@common/enums';
 
 @ApiTags('Sprints')
@@ -33,8 +33,8 @@ export class SprintsController {
   @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
   @ApiOperation({ summary: 'Create a new sprint' })
   @ApiResponse({ status: 201, description: 'Sprint successfully created' })
-  create(@Body() createSprintDto: CreateSprintDto) {
-    return this.sprintsService.create(createSprintDto);
+  create(@Body() createSprintDto: CreateSprintDto, @CurrentUser() user) {
+    return this.sprintsService.create(createSprintDto, user._id);
   }
 
   @Get()
@@ -95,16 +95,16 @@ export class SprintsController {
   @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
   @ApiOperation({ summary: 'Start a sprint' })
   @ApiResponse({ status: 200, description: 'Sprint successfully started' })
-  start(@Param('id') id: string) {
-    return this.sprintsService.start(id);
+  start(@Param('id') id: string, @CurrentUser() user) {
+    return this.sprintsService.start(id, user._id);
   }
 
   @Post(':id/complete')
   @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
   @ApiOperation({ summary: 'Complete a sprint' })
   @ApiResponse({ status: 200, description: 'Sprint successfully completed' })
-  complete(@Param('id') id: string) {
-    return this.sprintsService.complete(id);
+  complete(@Param('id') id: string, @CurrentUser() user) {
+    return this.sprintsService.complete(id, user._id);
   }
 
   @Delete(':id')

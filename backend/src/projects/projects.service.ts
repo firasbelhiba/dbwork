@@ -9,11 +9,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Project, ProjectDocument } from './schemas/project.schema';
 import { CreateProjectDto, UpdateProjectDto, AddMemberDto, CreateCustomStatusDto, UpdateCustomStatusDto, ReorderCustomStatusesDto, CreateDemoEventDto, UpdateDemoEventDto } from './dto';
+import { ActivitiesService } from '../activities/activities.service';
+import { ActionType, EntityType } from '../activities/schemas/activity.schema';
 
 @Injectable()
 export class ProjectsService {
   constructor(
     @InjectModel(Project.name) private projectModel: Model<ProjectDocument>,
+    private activitiesService: ActivitiesService,
   ) {}
 
   async create(createProjectDto: CreateProjectDto, userId: string): Promise<ProjectDocument> {
@@ -38,7 +41,19 @@ export class ProjectsService {
       ],
     });
 
-    return project.save();
+    const savedProject = await project.save();
+
+    // Log activity
+    await this.activitiesService.logActivity(
+      userId,
+      ActionType.CREATED,
+      EntityType.PROJECT,
+      savedProject._id.toString(),
+      savedProject.name,
+      savedProject._id.toString(),
+    );
+
+    return savedProject;
   }
 
   async findAll(filters: any = {}): Promise<ProjectDocument[]> {
@@ -95,7 +110,7 @@ export class ProjectsService {
     return project;
   }
 
-  async update(id: string, updateProjectDto: UpdateProjectDto): Promise<ProjectDocument> {
+  async update(id: string, updateProjectDto: UpdateProjectDto, userId?: string): Promise<ProjectDocument> {
     const project = await this.projectModel
       .findByIdAndUpdate(id, updateProjectDto, { new: true })
       .populate('lead', 'firstName lastName email avatar')
@@ -106,18 +121,44 @@ export class ProjectsService {
       throw new NotFoundException('Project not found');
     }
 
+    // Log activity
+    if (userId) {
+      await this.activitiesService.logActivity(
+        userId,
+        ActionType.UPDATED,
+        EntityType.PROJECT,
+        project._id.toString(),
+        project.name,
+        project._id.toString(),
+      );
+    }
+
     return project;
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string, userId?: string): Promise<void> {
+    const project = await this.projectModel.findById(id);
+
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+
     const result = await this.projectModel.findByIdAndDelete(id).exec();
 
-    if (!result) {
-      throw new NotFoundException('Project not found');
+    // Log activity
+    if (userId && result) {
+      await this.activitiesService.logActivity(
+        userId,
+        ActionType.DELETED,
+        EntityType.PROJECT,
+        result._id.toString(),
+        result.name,
+        result._id.toString(),
+      );
     }
   }
 
-  async archive(id: string): Promise<ProjectDocument> {
+  async archive(id: string, userId?: string): Promise<ProjectDocument> {
     const project = await this.projectModel
       .findByIdAndUpdate(
         id,
@@ -130,10 +171,22 @@ export class ProjectsService {
       throw new NotFoundException('Project not found');
     }
 
+    // Log activity
+    if (userId) {
+      await this.activitiesService.logActivity(
+        userId,
+        ActionType.ARCHIVED,
+        EntityType.PROJECT,
+        project._id.toString(),
+        project.name,
+        project._id.toString(),
+      );
+    }
+
     return project;
   }
 
-  async restore(id: string): Promise<ProjectDocument> {
+  async restore(id: string, userId?: string): Promise<ProjectDocument> {
     const project = await this.projectModel
       .findByIdAndUpdate(
         id,
@@ -146,12 +199,25 @@ export class ProjectsService {
       throw new NotFoundException('Project not found');
     }
 
+    // Log activity
+    if (userId) {
+      await this.activitiesService.logActivity(
+        userId,
+        ActionType.RESTORED,
+        EntityType.PROJECT,
+        project._id.toString(),
+        project.name,
+        project._id.toString(),
+      );
+    }
+
     return project;
   }
 
   async addMember(
     projectId: string,
     addMemberDto: AddMemberDto,
+    actionUserId?: string,
   ): Promise<ProjectDocument> {
     const project = await this.findOne(projectId);
 
@@ -169,10 +235,25 @@ export class ProjectsService {
       addedAt: new Date(),
     } as any);
 
-    return project.save();
+    const savedProject = await project.save();
+
+    // Log activity
+    if (actionUserId) {
+      await this.activitiesService.logActivity(
+        actionUserId,
+        ActionType.ADDED_MEMBER,
+        EntityType.PROJECT,
+        savedProject._id.toString(),
+        savedProject.name,
+        savedProject._id.toString(),
+        { addedUserId: addMemberDto.userId },
+      );
+    }
+
+    return savedProject;
   }
 
-  async removeMember(projectId: string, userId: string): Promise<ProjectDocument> {
+  async removeMember(projectId: string, userId: string, actionUserId?: string): Promise<ProjectDocument> {
     const project = await this.findOne(projectId);
 
     // Prevent removing the project lead
@@ -184,7 +265,22 @@ export class ProjectsService {
       (member) => member.userId.toString() !== userId,
     );
 
-    return project.save();
+    const savedProject = await project.save();
+
+    // Log activity
+    if (actionUserId) {
+      await this.activitiesService.logActivity(
+        actionUserId,
+        ActionType.REMOVED_MEMBER,
+        EntityType.PROJECT,
+        savedProject._id.toString(),
+        savedProject.name,
+        savedProject._id.toString(),
+        { removedUserId: userId },
+      );
+    }
+
+    return savedProject;
   }
 
   async getProjectStats(projectId: string): Promise<any> {

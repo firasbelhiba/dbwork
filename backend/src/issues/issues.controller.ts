@@ -101,8 +101,8 @@ export class IssuesController {
   @ApiOperation({ summary: 'Update issue' })
   @ApiResponse({ status: 200, description: 'Issue successfully updated' })
   @ApiResponse({ status: 404, description: 'Issue not found' })
-  update(@Param('id') id: string, @Body() updateIssueDto: UpdateIssueDto) {
-    return this.issuesService.update(id, updateIssueDto);
+  update(@Param('id') id: string, @Body() updateIssueDto: UpdateIssueDto, @CurrentUser() user) {
+    return this.issuesService.update(id, updateIssueDto, user._id);
   }
 
   @Patch('bulk-update')
@@ -121,8 +121,8 @@ export class IssuesController {
   @ApiOperation({ summary: 'Delete issue' })
   @ApiResponse({ status: 200, description: 'Issue successfully deleted' })
   @ApiResponse({ status: 404, description: 'Issue not found' })
-  remove(@Param('id') id: string) {
-    return this.issuesService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser() user) {
+    return this.issuesService.remove(id, user._id);
   }
 
   @Post(':id/time-logs')

@@ -7,11 +7,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Issue, IssueDocument } from './schemas/issue.schema';
 import { CreateIssueDto, UpdateIssueDto, FilterIssuesDto, AddTimeLogDto } from './dto';
+import { ActivitiesService } from '../activities/activities.service';
+import { ActionType, EntityType } from '../activities/schemas/activity.schema';
 
 @Injectable()
 export class IssuesService {
   constructor(
     @InjectModel(Issue.name) private issueModel: Model<IssueDocument>,
+    private activitiesService: ActivitiesService,
   ) {}
 
   async create(createIssueDto: CreateIssueDto, reporterId: string): Promise<IssueDocument> {
@@ -54,11 +57,23 @@ export class IssuesService {
       },
     });
 
-    return (await issue.save()).populate([
+    const savedIssue = await (await issue.save()).populate([
       { path: 'assignee', select: 'firstName lastName email avatar' },
       { path: 'reporter', select: 'firstName lastName email avatar' },
       { path: 'projectId', select: 'name key' },
     ]);
+
+    // Log activity
+    await this.activitiesService.logActivity(
+      reporterId,
+      ActionType.CREATED,
+      EntityType.ISSUE,
+      savedIssue._id.toString(),
+      savedIssue.title,
+      createIssueDto.projectId,
+    );
+
+    return savedIssue;
   }
 
   async findAll(filterDto: FilterIssuesDto): Promise<any> {
@@ -161,7 +176,10 @@ export class IssuesService {
     return issue;
   }
 
-  async update(id: string, updateIssueDto: UpdateIssueDto): Promise<IssueDocument> {
+  async update(id: string, updateIssueDto: UpdateIssueDto, userId?: string): Promise<IssueDocument> {
+    // Get original issue for comparison
+    const originalIssue = await this.issueModel.findById(id);
+
     const issue = await this.issueModel
       .findByIdAndUpdate(id, updateIssueDto, { new: true })
       .populate('assignee', 'firstName lastName email avatar')
@@ -174,14 +192,57 @@ export class IssuesService {
       throw new NotFoundException('Issue not found');
     }
 
+    // Log activity with metadata about what changed
+    if (userId) {
+      const changes: Record<string, any> = {};
+      if (updateIssueDto.status && originalIssue?.status !== updateIssueDto.status) {
+        changes.status = { from: originalIssue.status, to: updateIssueDto.status };
+      }
+      if (updateIssueDto.assignee && originalIssue?.assignee?.toString() !== updateIssueDto.assignee) {
+        changes.assignee = true;
+      }
+      if (updateIssueDto.priority && originalIssue?.priority !== updateIssueDto.priority) {
+        changes.priority = { from: originalIssue.priority, to: updateIssueDto.priority };
+      }
+
+      const actionType = changes.status ? ActionType.STATUS_CHANGED
+        : changes.priority ? ActionType.PRIORITY_CHANGED
+        : changes.assignee ? ActionType.ASSIGNED
+        : ActionType.UPDATED;
+
+      await this.activitiesService.logActivity(
+        userId,
+        actionType,
+        EntityType.ISSUE,
+        issue._id.toString(),
+        issue.title,
+        issue.projectId?.toString(),
+        changes,
+      );
+    }
+
     return issue;
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string, userId?: string): Promise<void> {
+    const issue = await this.issueModel.findById(id);
+
+    if (!issue) {
+      throw new NotFoundException('Issue not found');
+    }
+
     const result = await this.issueModel.findByIdAndDelete(id).exec();
 
-    if (!result) {
-      throw new NotFoundException('Issue not found');
+    // Log activity
+    if (userId && result) {
+      await this.activitiesService.logActivity(
+        userId,
+        ActionType.DELETED,
+        EntityType.ISSUE,
+        result._id.toString(),
+        result.title,
+        result.projectId?.toString(),
+      );
     }
   }
 

@@ -9,14 +9,17 @@ import { Model } from 'mongoose';
 import { Sprint, SprintDocument } from './schemas/sprint.schema';
 import { CreateSprintDto, UpdateSprintDto } from './dto';
 import { SprintStatus } from '@common/enums';
+import { ActivitiesService } from '../activities/activities.service';
+import { ActionType, EntityType } from '../activities/schemas/activity.schema';
 
 @Injectable()
 export class SprintsService {
   constructor(
     @InjectModel(Sprint.name) private sprintModel: Model<SprintDocument>,
+    private activitiesService: ActivitiesService,
   ) {}
 
-  async create(createSprintDto: CreateSprintDto): Promise<SprintDocument> {
+  async create(createSprintDto: CreateSprintDto, userId?: string): Promise<SprintDocument> {
     // Check for date validation
     if (new Date(createSprintDto.endDate) <= new Date(createSprintDto.startDate)) {
       throw new BadRequestException('End date must be after start date');
@@ -48,7 +51,21 @@ export class SprintsService {
       totalPoints: 0,
     });
 
-    return sprint.save();
+    const savedSprint = await sprint.save();
+
+    // Log activity
+    if (userId) {
+      await this.activitiesService.logActivity(
+        userId,
+        ActionType.CREATED,
+        EntityType.SPRINT,
+        savedSprint._id.toString(),
+        savedSprint.name,
+        savedSprint.projectId.toString(),
+      );
+    }
+
+    return savedSprint;
   }
 
   async findAll(projectId?: string, status?: string): Promise<SprintDocument[]> {
@@ -118,7 +135,7 @@ export class SprintsService {
     await this.sprintModel.findByIdAndDelete(id).exec();
   }
 
-  async start(id: string): Promise<SprintDocument> {
+  async start(id: string, userId?: string): Promise<SprintDocument> {
     const sprint = await this.findOne(id);
 
     if (sprint.status !== SprintStatus.PLANNED) {
@@ -140,10 +157,24 @@ export class SprintsService {
     sprint.status = SprintStatus.ACTIVE;
     sprint.startDate = new Date();
 
-    return sprint.save();
+    const savedSprint = await sprint.save();
+
+    // Log activity
+    if (userId) {
+      await this.activitiesService.logActivity(
+        userId,
+        ActionType.STARTED,
+        EntityType.SPRINT,
+        savedSprint._id.toString(),
+        savedSprint.name,
+        savedSprint.projectId.toString(),
+      );
+    }
+
+    return savedSprint;
   }
 
-  async complete(id: string): Promise<SprintDocument> {
+  async complete(id: string, userId?: string): Promise<SprintDocument> {
     const sprint = await this.findOne(id);
 
     if (sprint.status !== SprintStatus.ACTIVE) {
@@ -164,7 +195,21 @@ export class SprintsService {
     sprint.status = SprintStatus.COMPLETED;
     sprint.completedAt = new Date();
 
-    return sprint.save();
+    const savedSprint = await sprint.save();
+
+    // Log activity
+    if (userId) {
+      await this.activitiesService.logActivity(
+        userId,
+        ActionType.COMPLETED,
+        EntityType.SPRINT,
+        savedSprint._id.toString(),
+        savedSprint.name,
+        savedSprint.projectId.toString(),
+      );
+    }
+
+    return savedSprint;
   }
 
   async addIssue(sprintId: string, issueId: string): Promise<SprintDocument> {
