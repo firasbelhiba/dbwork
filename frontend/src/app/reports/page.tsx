@@ -169,12 +169,12 @@ export default function ReportsPage() {
           className="mb-6"
         />
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Reports & Analytics</h1>
-          <p className="text-gray-600 mt-1">Track progress, performance, and insights</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Reports & Analytics</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">Track progress, performance, and insights</p>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4 mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Select
               label="Project"
@@ -195,31 +195,31 @@ export default function ReportsPage() {
 
         {/* Project Progress */}
         {projectProgress && (
-          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Project Progress</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Project Progress</h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Total Issues</p>
-                <p className="text-3xl font-bold text-gray-900">{projectProgress.total}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Issues</p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{projectProgress.total}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600 mb-1">Completed</p>
-                <p className="text-3xl font-bold text-success">{projectProgress.completed}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Completed</p>
+                <p className="text-3xl font-bold text-success dark:text-success-400">{projectProgress.completed}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600 mb-1">In Progress</p>
-                <p className="text-3xl font-bold text-primary">{projectProgress.inProgress}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">In Progress</p>
+                <p className="text-3xl font-bold text-primary dark:text-primary-400">{projectProgress.inProgress}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600 mb-1">Completion Rate</p>
-                <p className="text-3xl font-bold text-gray-900">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Completion Rate</p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
                   {projectProgress.completionRate.toFixed(0)}%
                 </p>
               </div>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-4">
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
               <div
-                className="bg-success h-4 rounded-full transition-all"
+                className="bg-success dark:bg-success-500 h-4 rounded-full transition-all"
                 style={{ width: `${projectProgress.completionRate}%` }}
               ></div>
             </div>
@@ -229,8 +229,8 @@ export default function ReportsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Issue Statistics */}
           {issueStats && (
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Issues by Type</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Issues by Type</h2>
               <IssueStatsPieChart
                 data={[
                   { name: 'Bugs', value: issueStats.bugs },
@@ -245,8 +245,8 @@ export default function ReportsPage() {
 
           {/* Priority Distribution */}
           {issueStats?.byPriority && (
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Issues by Priority</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Issues by Priority</h2>
               <IssueStatsPieChart
                 data={Object.entries(issueStats.byPriority).map(([key, value]) => ({
                   name: key.charAt(0).toUpperCase() + key.slice(1),
@@ -260,8 +260,8 @@ export default function ReportsPage() {
 
         {/* Velocity Trend */}
         {velocityData && velocityData.sprints && velocityData.sprints.length > 0 && (
-          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">
               Velocity Trend (Last 5 Sprints)
             </h2>
             <VelocityChart
@@ -273,8 +273,8 @@ export default function ReportsPage() {
               averageVelocity={velocityData.averageVelocity}
             />
             <div className="mt-4 text-center">
-              <span className="text-sm text-gray-600">
-                Average Velocity: <strong>{velocityData.averageVelocity.toFixed(1)}</strong> points/sprint
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                Average Velocity: <strong className="dark:text-gray-200">{velocityData.averageVelocity.toFixed(1)}</strong> points/sprint
               </span>
             </div>
           </div>
@@ -282,47 +282,47 @@ export default function ReportsPage() {
 
         {/* Sprint Burndown */}
         {burndownData && burndownData.data && burndownData.data.length > 0 && (
-          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Sprint Burndown Chart</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Sprint Burndown Chart</h2>
             <BurndownChart data={burndownData.data} />
           </div>
         )}
 
         {/* Team Performance */}
         {teamPerformance && teamPerformance.length > 0 && (
-          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Team Performance</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Team Performance</h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-700/50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Team Member
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Completed
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       In Progress
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Story Points
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {teamPerformance.map((member: any, index: number) => (
                     <tr key={index}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                         {member.userName}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
                         {member.completed}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
                         {member.inProgress}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
                         {member.totalStoryPoints}
                       </td>
                     </tr>
@@ -335,26 +335,26 @@ export default function ReportsPage() {
 
         {/* Time Tracking */}
         {timeTracking && (
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Time Tracking Summary</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Time Tracking Summary</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Estimated Hours</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Estimated Hours</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {timeTracking.totalEstimatedHours.toFixed(1)}h
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-600 mb-1">Logged Hours</p>
-                <p className="text-2xl font-bold text-primary">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Logged Hours</p>
+                <p className="text-2xl font-bold text-primary dark:text-primary-400">
                   {timeTracking.totalLoggedHours.toFixed(1)}h
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-600 mb-1">Variance</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Variance</p>
                 <p
                   className={`text-2xl font-bold ${
-                    timeTracking.variance >= 0 ? 'text-success' : 'text-danger'
+                    timeTracking.variance >= 0 ? 'text-success dark:text-success-400' : 'text-danger dark:text-danger-400'
                   }`}
                 >
                   {timeTracking.variance > 0 ? '+' : ''}
