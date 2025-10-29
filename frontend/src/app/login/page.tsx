@@ -75,15 +75,15 @@ export default function LoginPage() {
       </div>
 
       {/* Right side - Login form */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-gray-50">
+      <div className="flex-1 flex items-center justify-center p-8 bg-gray-50 dark:bg-gray-900">
         <div className="w-full max-w-md">
-          <div className="bg-white rounded-lg shadow-md p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome back</h2>
-            <p className="text-gray-600 mb-8">Sign in to your account to continue</p>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Welcome back</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-8">Sign in to your account to continue</p>
 
             {error && (
-              <div className="mb-6 p-4 bg-danger-50 border-2 border-danger-200 rounded-md">
-                <p className="text-sm text-danger-700 font-medium">{error}</p>
+              <div className="mb-6 p-4 bg-danger-50 dark:bg-danger-900/20 border-2 border-danger-200 dark:border-danger-800 rounded-md">
+                <p className="text-sm text-danger-700 dark:text-danger-300 font-medium">{error}</p>
               </div>
             )}
 
@@ -110,7 +110,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"
                     tabIndex={-1}
                   >
                     {showPassword ? (
