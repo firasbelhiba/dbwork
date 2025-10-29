@@ -165,6 +165,25 @@ export const Sidebar: React.FC = () => {
               {!collapsed && <span>Users</span>}
             </Link>
           )}
+
+          {/* Activities link - Admin only */}
+          {user?.role === UserRole.ADMIN && (
+            <Link
+              href="/admin/activity"
+              className={cn(
+                'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                pathname === '/admin/activity' || pathname.startsWith('/admin/activity/')
+                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-400 hover:text-gray-900 dark:hover:text-gray-100'
+              )}
+              title={collapsed ? 'Activities' : undefined}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {!collapsed && <span>Activities</span>}
+            </Link>
+          )}
         </div>
 
         {/* Projects section */}
