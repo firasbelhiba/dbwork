@@ -14,7 +14,8 @@ export class ReportsService {
   ) {}
 
   async getProjectProgress(projectId: string): Promise<any> {
-    const issues = await this.issueModel.find({ projectId }).exec();
+    const mongoose = require('mongoose');
+    const issues = await this.issueModel.find({ projectId: new mongoose.Types.ObjectId(projectId) }).exec();
 
     const total = issues.length;
     const byStatus = issues.reduce((acc, issue) => {
@@ -49,8 +50,9 @@ export class ReportsService {
   }
 
   async getTeamPerformance(projectId?: string): Promise<any> {
+    const mongoose = require('mongoose');
     const query: any = {};
-    if (projectId) query.projectId = projectId;
+    if (projectId) query.projectId = new mongoose.Types.ObjectId(projectId);
 
     const issues = await this.issueModel
       .find(query)
@@ -85,8 +87,9 @@ export class ReportsService {
   }
 
   async getIssueStatistics(projectId?: string): Promise<any> {
+    const mongoose = require('mongoose');
     const query: any = {};
-    if (projectId) query.projectId = projectId;
+    if (projectId) query.projectId = new mongoose.Types.ObjectId(projectId);
 
     const issues = await this.issueModel.find(query).exec();
 
@@ -189,8 +192,9 @@ export class ReportsService {
   }
 
   async getTimeTracking(projectId?: string): Promise<any> {
+    const mongoose = require('mongoose');
     const query: any = {};
-    if (projectId) query.projectId = projectId;
+    if (projectId) query.projectId = new mongoose.Types.ObjectId(projectId);
 
     const issues = await this.issueModel.find(query).exec();
 
