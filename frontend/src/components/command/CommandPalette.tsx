@@ -16,7 +16,7 @@ interface CommandItem {
 }
 
 interface CommandPaletteProps {
-  onClose: () => void;  // Required - parent MUST provide this callback
+  onClose?: () => void;
 }
 
 export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
@@ -34,11 +34,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         console.log('[CommandPalette] Cmd+K pressed, calling onClose()');
-        onClose();
+        onClose?.();
       }
       if (e.key === 'Escape') {
         console.log('[CommandPalette] ESC pressed, calling onClose()');
-        onClose();
+        onClose?.();
       }
     };
 
@@ -256,7 +256,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       className="fixed inset-0 z-50 flex items-start justify-center pt-20 bg-black/50"
       onClick={() => {
         console.log('[CommandPalette] Backdrop clicked, calling onClose()');
-        onClose();
+        onClose?.();
       }}
     >
       <div
