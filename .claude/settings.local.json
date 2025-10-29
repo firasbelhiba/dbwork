@@ -38,7 +38,10 @@
       "Bash(node:*)",
       "Bash(curl:*)",
       "Bash(cmd //c \"taskkill /PID 10736 /F\")",
-      "Bash(cmd //c \"rmdir /s /q \"\"c:\\Users\\firas\\OneDrive\\Documents\\workhole 2\\dbwork\\backend\\dist\"\"\")"
+      "Bash(cmd //c \"rmdir /s /q \"\"c:\\Users\\firas\\OneDrive\\Documents\\workhole 2\\dbwork\\backend\\dist\"\"\")",
+      "Bash(cmd //c \"dir /b \"\"c:\\Users\\firas\\OneDrive\\Documents\\workhole 2\\dbwork\\public\\Logos\\Darblockchain Logos\\Logo Mark\\Horizontal logo\\BW\"\"\")",
+      "Bash(cmd //c \"dir /b /s \"\"c:\\Users\\firas\\OneDrive\\Documents\\workhole 2\\dbwork\\public\\Logos\"\" | findstr /i \"\"horizontal\"\"\")",
+      "Bash(cmd //c \"dir /b /ad public\\Logos 2>nul\")"
     ],
     "deny": [],
     "ask": []

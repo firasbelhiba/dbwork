@@ -41,6 +41,7 @@ export default function ProjectDetailPage() {
   const [isCustomStatusModalOpen, setIsCustomStatusModalOpen] = useState(false);
   const [isDemoEventModalOpen, setIsDemoEventModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [zoomLevel, setZoomLevel] = useState(100);
 
   useEffect(() => {
     if (projectId && !authLoading) {
@@ -132,6 +133,18 @@ export default function ProjectDetailPage() {
     } finally {
       setLoadingIssues(false);
     }
+  };
+
+  const handleZoomIn = () => {
+    setZoomLevel((prev) => Math.min(prev + 10, 150)); // Max 150%
+  };
+
+  const handleZoomOut = () => {
+    setZoomLevel((prev) => Math.max(prev - 10, 50)); // Min 50%
+  };
+
+  const handleResetZoom = () => {
+    setZoomLevel(100);
   };
 
   if (loading) {
@@ -334,15 +347,50 @@ export default function ProjectDetailPage() {
 
             <div className="flex items-center gap-3">
               {view === 'board' && (
-                <Button
-                  variant="outline"
-                  onClick={() => setIsCustomStatusModalOpen(true)}
-                >
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
-                  </svg>
-                  Manage Columns
-                </Button>
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsCustomStatusModalOpen(true)}
+                  >
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                    </svg>
+                    Manage Columns
+                  </Button>
+
+                  {/* Zoom Controls */}
+                  <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-1">
+                    <button
+                      onClick={handleZoomOut}
+                      disabled={zoomLevel <= 50}
+                      className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      title="Zoom Out"
+                    >
+                      <svg className="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                      </svg>
+                    </button>
+
+                    <button
+                      onClick={handleResetZoom}
+                      className="px-3 py-1 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+                      title="Reset Zoom"
+                    >
+                      {zoomLevel}%
+                    </button>
+
+                    <button
+                      onClick={handleZoomIn}
+                      disabled={zoomLevel >= 150}
+                      className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      title="Zoom In"
+                    >
+                      <svg className="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                    </button>
+                  </div>
+                </>
               )}
               {view === 'calendar' && (user?.role === UserRole.ADMIN || user?.role === UserRole.PROJECT_MANAGER) && (
                 <Button
@@ -410,6 +458,7 @@ export default function ProjectDetailPage() {
               key={project?.customStatuses?.length || 0}
               projectId={projectId}
               sprintId={selectedSprintId === 'all' ? undefined : selectedSprintId}
+              zoomLevel={zoomLevel}
             />
           ) : view === 'calendar' ? (
             <ProjectCalendar
