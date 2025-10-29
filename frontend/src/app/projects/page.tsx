@@ -101,8 +101,8 @@ export default function ProjectsPage() {
         />
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Projects</h1>
-            <p className="text-gray-600 mt-1">Manage and track all your projects</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Projects</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Manage and track all your projects</p>
           </div>
           <Button onClick={() => setShowCreateModal(true)}>
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,13 +114,13 @@ export default function ProjectsPage() {
 
         {projects.length === 0 ? (
           <div className="text-center py-16">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
-              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full mb-4">
+              <svg className="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No projects yet</h3>
-            <p className="text-gray-600 mb-6">Get started by creating your first project</p>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No projects yet</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">Get started by creating your first project</p>
             <Button onClick={() => setShowCreateModal(true)}>Create Project</Button>
           </div>
         ) : (
@@ -129,27 +129,27 @@ export default function ProjectsPage() {
               <Link
                 key={project._id}
                 href={`/projects/${project._id}`}
-                className="block bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+                className="block bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md dark:hover:shadow-lg dark:hover:shadow-gray-900/20 transition-shadow"
               >
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-4">
-                    <div className="w-12 h-12 rounded bg-primary/20 flex items-center justify-center">
-                      <span className="text-lg font-bold text-primary">{project.key}</span>
+                    <div className="w-12 h-12 rounded bg-primary/20 dark:bg-primary/30 flex items-center justify-center">
+                      <span className="text-lg font-bold text-primary dark:text-primary-400">{project.key}</span>
                     </div>
                     {project.isArchived && (
                       <Badge variant="default">Archived</Badge>
                     )}
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{project.name}</h3>
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">{project.description}</p>
-                  <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">{project.name}</h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">{project.description}</p>
+                  <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
                     <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                       </svg>
-                      <span className="text-sm text-gray-600">{project.members?.length || 0} members</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">{project.members?.length || 0} members</span>
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
                       {typeof project.lead === 'object'
                         ? `${project.lead.firstName} ${project.lead.lastName}`
                         : 'Lead'}
