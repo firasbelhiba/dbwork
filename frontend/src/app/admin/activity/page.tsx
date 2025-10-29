@@ -111,20 +111,20 @@ export default function ActivityMonitorPage() {
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Activity Monitor</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Activity Monitor</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
             Track all user actions across projects
           </p>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Filters</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Filters</h2>
           <form onSubmit={handleSearch}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Search */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Search
                 </label>
                 <Input
@@ -137,7 +137,7 @@ export default function ActivityMonitorPage() {
 
               {/* Action Type */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Action Type
                 </label>
                 <Select
@@ -156,7 +156,7 @@ export default function ActivityMonitorPage() {
 
               {/* Entity Type */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Entity Type
                 </label>
                 <Select
@@ -192,13 +192,13 @@ export default function ActivityMonitorPage() {
         </div>
 
         {/* Results */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
           {/* Header */}
-          <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               All Activities
               {total > 0 && (
-                <span className="ml-2 text-sm font-normal text-gray-500">
+                <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
                   ({total} total)
                 </span>
               )}
@@ -214,8 +214,8 @@ export default function ActivityMonitorPage() {
             )}
 
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-                <p className="text-sm text-red-800">{error}</p>
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-center">
+                <p className="text-sm text-red-800 dark:text-red-300">{error}</p>
                 <Button
                   variant="outline"
                   size="sm"
@@ -230,7 +230,7 @@ export default function ActivityMonitorPage() {
             {!loading && !error && activities.length === 0 && (
               <div className="text-center py-12">
                 <div className="text-4xl mb-2">📭</div>
-                <p className="text-gray-500">No activities found</p>
+                <p className="text-gray-500 dark:text-gray-400">No activities found</p>
                 {(actionFilter || entityTypeFilter || projectFilter || searchQuery) && (
                   <Button
                     variant="outline"
@@ -255,8 +255,8 @@ export default function ActivityMonitorPage() {
 
           {/* Pagination */}
           {!loading && !error && activities.length > 0 && totalPages > 1 && (
-            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
-              <div className="text-sm text-gray-700">
+            <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <div className="text-sm text-gray-700 dark:text-gray-300">
                 Page {currentPage} of {totalPages}
               </div>
               <div className="flex gap-2">
