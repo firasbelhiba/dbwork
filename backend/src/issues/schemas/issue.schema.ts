@@ -85,6 +85,10 @@ export class Issue {
 
   @Prop({ type: Number, default: 0 })
   order: number;
+
+  // Timestamps (automatically added by MongoDB with { timestamps: true })
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export const IssueSchema = SchemaFactory.createForClass(Issue);
