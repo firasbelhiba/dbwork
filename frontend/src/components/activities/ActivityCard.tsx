@@ -72,7 +72,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({ activity, showProjec
 
     if (activity.action === ActionType.STATUS_CHANGED && activity.metadata.status) {
       return (
-        <div className="mt-1 text-xs text-gray-600">
+        <div className="mt-1 text-xs text-gray-600 dark:text-gray-400">
           <span className="font-medium">{activity.metadata.status.from}</span>
           {' → '}
           <span className="font-medium">{activity.metadata.status.to}</span>
@@ -82,7 +82,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({ activity, showProjec
 
     if (activity.action === ActionType.PRIORITY_CHANGED && activity.metadata.priority) {
       return (
-        <div className="mt-1 text-xs text-gray-600">
+        <div className="mt-1 text-xs text-gray-600 dark:text-gray-400">
           <span className="font-medium">{activity.metadata.priority.from}</span>
           {' → '}
           <span className="font-medium">{activity.metadata.priority.to}</span>
@@ -94,7 +94,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({ activity, showProjec
   };
 
   return (
-    <div className="flex items-start gap-3 p-4 bg-white border border-gray-200 rounded-lg hover:shadow-sm transition-shadow">
+    <div className="flex items-start gap-3 p-4 bg-white dark:bg-gray-700/30 border border-gray-200 dark:border-gray-600 rounded-lg hover:shadow-sm transition-shadow">
       {/* User Avatar */}
       <div className="flex-shrink-0">
         {activity.userId.avatar ? (
@@ -117,7 +117,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({ activity, showProjec
           <div className="flex-1 min-w-0">
             {/* User Name and Action */}
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-semibold text-gray-900">
+              <span className="font-semibold text-gray-900 dark:text-gray-100">
                 {activity.userId.firstName} {activity.userId.lastName}
               </span>
               <span
@@ -135,12 +135,12 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({ activity, showProjec
               {entityLink ? (
                 <Link
                   href={entityLink}
-                  className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline truncate"
+                  className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline truncate"
                 >
                   {activity.entityName}
                 </Link>
               ) : (
-                <span className="text-sm font-medium text-gray-700 truncate">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
                   {activity.entityName}
                 </span>
               )}
@@ -154,7 +154,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({ activity, showProjec
               <div className="mt-1">
                 <Link
                   href={`/projects/${activity.projectId._id}`}
-                  className="inline-flex items-center text-xs text-gray-500 hover:text-gray-700"
+                  className="inline-flex items-center text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 >
                   <span className="mr-1">📁</span>
                   {activity.projectId.name}
@@ -165,7 +165,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({ activity, showProjec
 
           {/* Timestamp */}
           <div className="flex-shrink-0">
-            <span className="text-xs text-gray-500" title={new Date(activity.createdAt).toLocaleString()}>
+            <span className="text-xs text-gray-500 dark:text-gray-400" title={new Date(activity.createdAt).toLocaleString()}>
               {timeAgo}
             </span>
           </div>
