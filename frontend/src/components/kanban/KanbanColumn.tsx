@@ -16,6 +16,26 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, color, is
 
   // Map Tailwind color classes to actual vibrant colors
   const colorMap: Record<string, string> = {
+    // 100 shades (light) - map to vibrant 600 shades for better visibility
+    'bg-gray-100': '#4B5563',
+    'bg-red-100': '#DC2626',
+    'bg-orange-100': '#EA580C',
+    'bg-amber-100': '#D97706',
+    'bg-yellow-100': '#CA8A04',
+    'bg-lime-100': '#65A30D',
+    'bg-green-100': '#16A34A',
+    'bg-emerald-100': '#059669',
+    'bg-teal-100': '#0D9488',
+    'bg-cyan-100': '#0891B2',
+    'bg-sky-100': '#0284C7',
+    'bg-blue-100': '#2563EB',
+    'bg-indigo-100': '#4F46E5',
+    'bg-violet-100': '#7C3AED',
+    'bg-purple-100': '#9333EA',
+    'bg-fuchsia-100': '#C026D3',
+    'bg-pink-100': '#DB2777',
+    'bg-rose-100': '#E11D48',
+    // 500 shades
     'bg-gray-500': '#6B7280',
     'bg-red-500': '#EF4444',
     'bg-orange-500': '#F97316',
