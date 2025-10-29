@@ -8,6 +8,7 @@ import { Project } from '@/types/project';
 import { Issue } from '@/types/issue';
 import { UserRole } from '@/types/user';
 import { Badge, Breadcrumb, LogoLoader } from '@/components/common';
+import { RecentActivityWidget } from '@/components/activities/RecentActivityWidget';
 import Link from 'next/link';
 
 export default function DashboardPage() {
@@ -264,6 +265,13 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* Admin Activity Monitor Widget */}
+        {user?.role === UserRole.ADMIN && (
+          <div className="mt-8">
+            <RecentActivityWidget />
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );

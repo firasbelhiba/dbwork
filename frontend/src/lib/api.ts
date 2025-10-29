@@ -218,4 +218,11 @@ export const reportsAPI = {
   },
 };
 
+// Activities API
+export const activitiesAPI = {
+  getAll: (params?: any) => api.get('/activities', { params }),
+  getRecent: () => api.get('/activities/recent'),
+  getStats: () => api.get('/activities/stats'),
+};
+
 export default api;
