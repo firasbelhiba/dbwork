@@ -53,16 +53,17 @@ export default function LoginPage() {
         <div className="max-w-md text-white relative z-10">
           {/* Logo outside the box */}
           <div className="mb-8 flex justify-center">
-            {/* Light mode logo (black) */}
+            {/* Light mode logo (black horizontal) */}
             <Image
-              src="/logo-vertical-black.png"
+              src="/logo-horizontal-black.png"
               alt="Dar Blockchain"
-              width={200}
-              height={200}
+              width={300}
+              height={100}
               priority
-              className="w-48 h-auto dark:hidden"
+              className="h-auto dark:hidden"
+              style={{ width: 'auto', maxWidth: '300px' }}
             />
-            {/* Dark mode logo (white) */}
+            {/* Dark mode logo (white vertical) */}
             <Image
               src="/logo-vertical-white.png"
               alt="Dar Blockchain"
