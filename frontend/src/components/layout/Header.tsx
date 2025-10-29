@@ -33,7 +33,6 @@ export const Header: React.FC = () => {
   };
 
   const handleCloseCommandPalette = useCallback(() => {
-    console.log('[Header] Closing CommandPalette, setting showCommandPalette to false');
     setShowCommandPalette(false);
   }, [setShowCommandPalette]);
 
