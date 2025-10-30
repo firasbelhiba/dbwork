@@ -156,7 +156,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       onSelect: () => {
         router.push('/projects?create=true');
         console.log('[CommandPalette] Item selected, calling onClose()');
-        onClose();
+        onClose?.();
       },
     },
     {
@@ -172,7 +172,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       onSelect: () => {
         router.push('/issues/new');
         console.log('[CommandPalette] Item selected, calling onClose()');
-        onClose();
+        onClose?.();
       },
     },
     {
@@ -187,7 +187,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       onSelect: () => {
         router.push('/dashboard');
         console.log('[CommandPalette] Item selected, calling onClose()');
-        onClose();
+        onClose?.();
       },
     },
     {
@@ -202,7 +202,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       onSelect: () => {
         router.push('/projects');
         console.log('[CommandPalette] Item selected, calling onClose()');
-        onClose();
+        onClose?.();
       },
     },
     {
@@ -217,7 +217,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       onSelect: () => {
         router.push('/reports');
         console.log('[CommandPalette] Item selected, calling onClose()');
-        onClose();
+        onClose?.();
       },
     },
   ], [router, onClose]);
@@ -241,7 +241,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
             onSelect: () => {
               router.push(`/projects/${item.data._id}`);
               console.log('[CommandPalette] Item selected, calling onClose()');
-        onClose();
+              onClose?.();
             },
           });
         } else if (item.category === 'Issues' || item.category === 'Tickets') {
@@ -258,7 +258,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
             onSelect: () => {
               router.push(`/issues/${item.data._id}`);
               console.log('[CommandPalette] Item selected, calling onClose()');
-        onClose();
+              onClose?.();
             },
           });
         }
