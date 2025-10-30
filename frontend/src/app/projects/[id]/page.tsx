@@ -231,8 +231,8 @@ export default function ProjectDetailPage() {
                 <span className="text-lg font-bold text-primary">{project.key}</span>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">{project.name}</h1>
-                <p className="text-gray-600 text-sm">{project.description}</p>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{project.name}</h1>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">{project.description}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
