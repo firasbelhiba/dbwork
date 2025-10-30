@@ -198,7 +198,7 @@ export default function ProjectDetailPage() {
     <DashboardLayout>
       <div className="h-full flex flex-col">
         {/* Project Header */}
-        <div className="bg-white border-b border-gray-200 px-8 py-6">
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-8 py-6">
           <Breadcrumb
             items={[
               {
@@ -290,16 +290,16 @@ export default function ProjectDetailPage() {
         </div>
 
         {/* Toolbar */}
-        <div className="bg-white border-b border-gray-200 px-8 py-4">
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               {/* Sprint Selector */}
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700">Sprint:</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Sprint:</span>
                 <select
                   value={selectedSprintId}
                   onChange={(e) => setSelectedSprintId(e.target.value)}
-                  className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value="all">All Issues</option>
                   {sprints.map((sprint) => (
@@ -311,13 +311,13 @@ export default function ProjectDetailPage() {
               </div>
 
               {/* View Toggle */}
-              <div className="flex items-center gap-1 bg-gray-100 rounded-md p-1">
+              <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 rounded-md p-1">
                 <button
                   onClick={() => setView('board')}
                   className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
                     view === 'board'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                   }`}
                 >
                   Board
@@ -326,8 +326,8 @@ export default function ProjectDetailPage() {
                   onClick={() => setView('list')}
                   className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
                     view === 'list'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                   }`}
                 >
                   List
@@ -336,8 +336,8 @@ export default function ProjectDetailPage() {
                   onClick={() => setView('calendar')}
                   className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
                     view === 'calendar'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                   }`}
                 >
                   Calendar
