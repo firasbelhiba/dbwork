@@ -29,6 +29,7 @@ export default function IssuesPage() {
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'list' | 'board'>('list');
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(100);
 
   useEffect(() => {
     if (user) {
@@ -479,6 +480,7 @@ export default function IssuesPage() {
           <KanbanBoard
             projectId={selectedProject}
             sprintId={undefined}
+            zoomLevel={zoomLevel}
           />
         ) : (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 text-center">
