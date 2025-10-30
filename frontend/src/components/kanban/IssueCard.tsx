@@ -53,7 +53,7 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue }) => {
         {/* Assignee Avatar */}
         {assignee && (
           <div
-            className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-medium"
+            className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-medium border-2 border-white dark:border-gray-700 shadow-sm"
             title={`${assignee.firstName} ${assignee.lastName}`}
           >
             {getInitials(assignee.firstName, assignee.lastName)}
