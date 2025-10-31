@@ -12,7 +12,20 @@ export class ActivitiesService {
   ) {}
 
   async create(createActivityDto: CreateActivityDto): Promise<ActivityDocument> {
-    const activity = new this.activityModel(createActivityDto);
+    // Convert string IDs to ObjectIds for proper MongoDB storage
+    const activityData: any = {
+      ...createActivityDto,
+      userId: createActivityDto.userId ? new Types.ObjectId(createActivityDto.userId as any) : undefined,
+    };
+
+    // Only convert projectId if it exists and is a string
+    if (createActivityDto.projectId && typeof createActivityDto.projectId === 'string') {
+      activityData.projectId = new Types.ObjectId(createActivityDto.projectId);
+    } else if (createActivityDto.projectId) {
+      activityData.projectId = createActivityDto.projectId;
+    }
+
+    const activity = new this.activityModel(activityData);
     return activity.save();
   }
 
