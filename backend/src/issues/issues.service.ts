@@ -210,13 +210,20 @@ export class IssuesService {
         : changes.assignee ? ActionType.ASSIGNED
         : ActionType.UPDATED;
 
+      // Extract projectId properly (handle both ObjectId and populated object)
+      const projectId = issue.projectId
+        ? (typeof issue.projectId === 'object' && '_id' in issue.projectId
+            ? (issue.projectId as any)._id.toString()
+            : (issue.projectId as any).toString())
+        : undefined;
+
       await this.activitiesService.logActivity(
         userId,
         actionType,
         EntityType.ISSUE,
         issue._id.toString(),
         issue.title,
-        typeof issue.projectId === 'object' ? issue.projectId._id.toString() : issue.projectId?.toString(),
+        projectId,
         changes,
       );
     }
