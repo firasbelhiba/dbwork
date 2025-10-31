@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Activity, ActivityDocument } from './schemas/activity.schema';
 import { CreateActivityDto, QueryActivitiesDto } from './dto';
 
@@ -39,7 +39,8 @@ export class ActivitiesService {
     const filter: any = {};
 
     if (userId) {
-      filter.userId = userId;
+      // Convert string to ObjectId for proper MongoDB comparison
+      filter.userId = new Types.ObjectId(userId);
     }
 
     if (action) {
@@ -93,13 +94,26 @@ export class ActivitiesService {
   }
 
   async findRecent(limit: number = 10): Promise<ActivityDocument[]> {
-    return this.activityModel
+    console.log('[ActivitiesService] Finding recent activities, limit:', limit);
+    const activities = await this.activityModel
       .find()
       .populate('userId', 'firstName lastName email avatar')
       .populate('projectId', 'name key')
       .sort({ createdAt: -1 })
       .limit(limit)
       .exec();
+
+    console.log('[ActivitiesService] Found', activities.length, 'activities');
+    console.log('[ActivitiesService] User IDs in activities:',
+      activities.map(a => ({
+        userId: a.userId?._id || a.userId,
+        userName: a.userId?.firstName ? `${a.userId.firstName} ${a.userId.lastName}` : 'Unknown',
+        action: a.action,
+        entityType: a.entityType
+      }))
+    );
+
+    return activities;
   }
 
   async getStats(): Promise<{
@@ -172,6 +186,15 @@ export class ActivitiesService {
     metadata?: Record<string, any>,
   ): Promise<void> {
     try {
+      console.log('[ActivitiesService] Logging activity:', {
+        userId,
+        action,
+        entityType,
+        entityId,
+        entityName,
+        projectId,
+      });
+
       await this.create({
         userId,
         action: action as any,
@@ -181,9 +204,11 @@ export class ActivitiesService {
         projectId,
         metadata,
       });
+
+      console.log('[ActivitiesService] Activity logged successfully');
     } catch (error) {
       // Log error but don't fail the main operation
-      console.error('Failed to log activity:', error);
+      console.error('[ActivitiesService] Failed to log activity:', error);
     }
   }
 }
