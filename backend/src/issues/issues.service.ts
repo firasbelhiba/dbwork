@@ -216,7 +216,7 @@ export class IssuesService {
         EntityType.ISSUE,
         issue._id.toString(),
         issue.title,
-        issue.projectId?.toString(),
+        typeof issue.projectId === 'object' ? issue.projectId._id.toString() : issue.projectId?.toString(),
         changes,
       );
     }
