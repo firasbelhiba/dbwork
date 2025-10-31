@@ -105,12 +105,15 @@ export class ActivitiesService {
 
     console.log('[ActivitiesService] Found', activities.length, 'activities');
     console.log('[ActivitiesService] User IDs in activities:',
-      activities.map(a => ({
-        userId: a.userId?._id || a.userId,
-        userName: a.userId?.firstName ? `${a.userId.firstName} ${a.userId.lastName}` : 'Unknown',
-        action: a.action,
-        entityType: a.entityType
-      }))
+      activities.map(a => {
+        const user = a.userId as any; // Type assertion for populated user
+        return {
+          userId: user?._id || a.userId,
+          userName: user?.firstName ? `${user.firstName} ${user.lastName}` : 'Unknown',
+          action: a.action,
+          entityType: a.entityType
+        };
+      })
     );
 
     return activities;
