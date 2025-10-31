@@ -233,4 +233,17 @@ export const activitiesAPI = {
   getStats: () => api.get('/activities/stats'),
 };
 
+// Feedback API
+export const feedbackAPI = {
+  getAll: (params?: any) => api.get('/feedback', { params }),
+  getById: (id: string) => api.get(`/feedback/${id}`),
+  create: (data: any) => api.post('/feedback', data),
+  update: (id: string, data: any) => api.patch(`/feedback/${id}`, data),
+  delete: (id: string) => api.delete(`/feedback/${id}`),
+  upvote: (id: string) => api.post(`/feedback/${id}/upvote`),
+  resolve: (id: string) => api.patch(`/feedback/${id}/resolve`),
+  reopen: (id: string) => api.patch(`/feedback/${id}/reopen`),
+  getStats: () => api.get('/feedback/stats'),
+};
+
 export default api;

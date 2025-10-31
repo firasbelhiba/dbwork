@@ -25,6 +25,7 @@ export enum EntityType {
   SPRINT = 'sprint',
   COMMENT = 'comment',
   USER = 'user',
+  FEEDBACK = 'feedback',
 }
 
 @Schema({ timestamps: true })
