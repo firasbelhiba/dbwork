@@ -330,7 +330,7 @@ export class IssuesService {
     };
 
     if (projectId) {
-      searchQuery.projectId = projectId;
+      searchQuery.projectId = new Types.ObjectId(projectId);
     }
 
     return this.issueModel
@@ -375,7 +375,7 @@ export class IssuesService {
 
   async getIssuesBySprint(sprintId: string): Promise<IssueDocument[]> {
     return this.issueModel
-      .find({ sprintId })
+      .find({ sprintId: new Types.ObjectId(sprintId) })
       .populate('assignee', 'firstName lastName email avatar')
       .populate('reporter', 'firstName lastName email avatar')
       .populate('sprintId', 'name status')
@@ -385,7 +385,7 @@ export class IssuesService {
 
   async getBacklog(projectId: string): Promise<IssueDocument[]> {
     return this.issueModel
-      .find({ projectId, sprintId: null })
+      .find({ projectId: new Types.ObjectId(projectId), sprintId: null })
       .populate('assignee', 'firstName lastName email avatar')
       .populate('reporter', 'firstName lastName email avatar')
       .populate('sprintId', 'name status')
