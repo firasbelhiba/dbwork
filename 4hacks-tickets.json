@@ -1,0 +1,1452 @@
+{
+  "projectName": "4Hacks (Hackathon)",
+  "projectKey": "4HKX",
+  "projectDescription": "Comprehensive hackathon management platform with user management, hackathon creation, team formation, project submission, judging system, and community features.",
+  "sprints": [
+    {
+      "name": "Sprint 1: User Management & Authentication",
+      "id": "6908a34f4e02fa9ee678bde9",
+      "goal": "Complete user management system including authentication, authorization, role management, and user profiles.",
+      "startDate": "2025-11-03",
+      "endDate": "2025-11-24",
+      "status": "planned"
+    },
+    {
+      "name": "Sprint 2: Hackathon Creation & Management",
+      "id": "6908a34f4e02fa9ee678bdec",
+      "goal": "Implement hackathon builder and visual customization tools for organizers.",
+      "startDate": "2025-11-25",
+      "endDate": "2025-12-15",
+      "status": "planned"
+    },
+    {
+      "name": "Sprint 3: Registration & Team Management",
+      "id": "6908a34f4e02fa9ee678bdef",
+      "goal": "Build registration system and team formation features.",
+      "startDate": "2025-12-16",
+      "endDate": "2026-01-05",
+      "status": "planned"
+    },
+    {
+      "name": "Sprint 4: Project Submission & Showcase",
+      "id": "6908a34f4e02fa9ee678bdf2",
+      "goal": "Create project submission portal and gallery system.",
+      "startDate": "2026-01-06",
+      "endDate": "2026-01-26",
+      "status": "planned"
+    },
+    {
+      "name": "Sprint 5: Judging System",
+      "id": "6908a34f4e02fa9ee678bdf5",
+      "goal": "Implement judge management, scoring, and results system.",
+      "startDate": "2026-01-27",
+      "endDate": "2026-02-16",
+      "status": "planned"
+    },
+    {
+      "name": "Sprint 6: Communication & Community",
+      "id": "6908a34f4e02fa9ee678bdf8",
+      "goal": "Build discussion forums, networking features, and communication tools.",
+      "startDate": "2026-02-17",
+      "endDate": "2026-03-09",
+      "status": "planned"
+    }
+  ],
+  "tickets": [
+    {
+      "title": "Create Authentication Pages Layout",
+      "description": "Set up login, register, forgot-password, reset-password, and verify-email page components with responsive design and routing in Next.js.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "frontend",
+        "authentication",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Build Registration Form Component",
+      "description": "Implement registration form with email, username, password fields, real-time validation using React Hook Form + Zod, and password strength indicator.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "frontend",
+        "authentication",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Build Login Form Component",
+      "description": "Create login form with email/password fields, remember me checkbox, forgot password link, and error handling for invalid credentials.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "frontend",
+        "authentication",
+        "sprint-1"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Implement Social OAuth Login UI",
+      "description": "Add OAuth login buttons for GitHub, Google, LinkedIn with popup/redirect flow handling and loading states.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "frontend",
+        "authentication",
+        "oauth",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Create Password Reset Flow UI",
+      "description": "Build forgot password form, email confirmation screen, reset password form with token validation, and success/error handling.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "frontend",
+        "authentication",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Build Email Verification Flow",
+      "description": "Create email verification pending page, success/failure pages, resend functionality with countdown timer, and expired link handling.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "frontend",
+        "authentication",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Implement Wallet Connection UI",
+      "description": "Add Connect Wallet button, wallet selection modal (MetaMask, WalletConnect), connection status indicator, and signature request handling.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "frontend",
+        "web3",
+        "wallet",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Create Authentication State Management",
+      "description": "Set up global auth context/store with useAuth hook, token storage, automatic refresh, auth guards for protected routes, and role-based rendering.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "frontend",
+        "authentication",
+        "state-management",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Build User Profile Creation Flow",
+      "description": "Create multi-step profile wizard with avatar upload, skills selector, bio editor, social links, and profile completion progress indicator.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "frontend",
+        "profile",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Implement Session Management UI",
+      "description": "Build active sessions display, device/location info, session termination controls, and suspicious activity alerts.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "frontend",
+        "session",
+        "security",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Create Account Settings Page",
+      "description": "Design account settings with email change, password update, 2FA setup (prep), connected accounts management, and account deletion option.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "frontend",
+        "settings",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Build Role Switching Interface",
+      "description": "Implement role selector for multi-role users, role-specific dashboard switching, and permission-based UI element visibility.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "frontend",
+        "roles",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Create Role Selection Component",
+      "description": "Build role selection interface for registration with options for Participant, Organizer, Judge, Sponsor, and ability to request multiple roles.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "frontend",
+        "roles",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Build Role-Based Dashboard Router",
+      "description": "Implement dynamic dashboard routing that displays different dashboard layouts based on user's active role (participant/organizer/judge/sponsor/admin).",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "frontend",
+        "roles",
+        "dashboard",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Create Role Switching UI",
+      "description": "Design role switcher dropdown in navbar for users with multiple roles, showing current active role and available roles to switch.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "frontend",
+        "roles",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Implement Role Request Modal",
+      "description": "Build modal for requesting additional roles with reason field, supporting documents upload, and submission confirmation.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "frontend",
+        "roles",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Create Role-Based Navigation Menu",
+      "description": "Implement dynamic navigation menu that shows/hides menu items based on user's current active role and permissions.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "frontend",
+        "roles",
+        "navigation",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Build Permission-Based Component Wrapper",
+      "description": "Create HOC/component wrapper that conditionally renders UI elements based on user permissions (e.g., <RequireRole role=\"organizer\">).",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "frontend",
+        "roles",
+        "permissions",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Design Role Management Admin Panel",
+      "description": "Build admin interface to view all users, their roles, pending role requests, with approve/reject actions and bulk operations.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "frontend",
+        "roles",
+        "admin",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Create Role Request Status Page",
+      "description": "Implement page showing user's role request history, current status (pending/approved/rejected), and admin feedback.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "frontend",
+        "roles",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Build Role Badge Components",
+      "description": "Design visual role badges/indicators to display on user profiles, comments, and team member lists with role-specific colors/icons.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "frontend",
+        "roles",
+        "ui",
+        "sprint-1"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Implement Organizer Dashboard",
+      "description": "Create organizer-specific dashboard with hackathon creation button, managed hackathons list, and quick stats overview.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "frontend",
+        "roles",
+        "dashboard",
+        "organizer",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Build Judge Dashboard",
+      "description": "Design judge-specific dashboard showing assigned hackathons, pending reviews count, and scoring deadlines.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "frontend",
+        "roles",
+        "dashboard",
+        "judge",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Create Sponsor Dashboard",
+      "description": "Implement sponsor dashboard with sponsored hackathons, prize management, and participant engagement metrics.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "frontend",
+        "roles",
+        "dashboard",
+        "sponsor",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Build Admin Dashboard",
+      "description": "Create admin dashboard with platform statistics, user management shortcuts, content moderation queue, and system health indicators.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "frontend",
+        "roles",
+        "dashboard",
+        "admin",
+        "sprint-1"
+      ],
+      "storyPoints": 13,
+      "estimatedHours": 26,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Implement Role-Based Feature Gates",
+      "description": "Add UI gates that disable/enable features based on role (e.g., \"Create Hackathon\" button only for organizers).",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "frontend",
+        "roles",
+        "permissions",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Set Up Authentication Database Schema",
+      "description": "Create users, user_profiles, sessions, oauth_accounts, password_resets, email_verifications, and wallet_addresses tables with proper indexes and constraints.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "database",
+        "authentication",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Implement User Registration Endpoint",
+      "description": "Build POST /api/auth/register with email/username validation, password hashing with bcrypt, duplicate checking, and email verification token generation.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "authentication",
+        "api",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Create Login Endpoint with JWT",
+      "description": "Implement POST /api/auth/login with credential validation, JWT access token (15min) and refresh token (7days) generation, and failed attempt tracking.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "authentication",
+        "jwt",
+        "api",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Implement OAuth Provider Integration",
+      "description": "Set up OAuth flow for GitHub, Google, LinkedIn with provider configuration, callback handling, account creation/linking, and token storage.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "oauth",
+        "api",
+        "sprint-1"
+      ],
+      "storyPoints": 13,
+      "estimatedHours": 26,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Build Password Reset Endpoints",
+      "description": "Create POST /api/auth/forgot-password and /api/auth/reset-password with secure token generation, expiry validation, and email notifications.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "authentication",
+        "api",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Create Email Verification System",
+      "description": "Implement POST /api/auth/verify-email and /api/auth/resend-verification with token management, rate limiting, and status updates.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "authentication",
+        "api",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Implement Wallet Authentication",
+      "description": "Build POST /api/auth/wallet/nonce and /api/auth/wallet/verify for Web3 signature validation, account linking, and multi-chain support.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "web3",
+        "wallet",
+        "api",
+        "sprint-1"
+      ],
+      "storyPoints": 13,
+      "estimatedHours": 26,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Build Token Management System",
+      "description": "Create POST /api/auth/refresh for token refresh, blacklisting for logout, validation middleware, and token versioning for forced logout.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "jwt",
+        "api",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Create Session Management API",
+      "description": "Implement GET /api/auth/sessions and DELETE /api/auth/sessions/:id with metadata tracking, concurrent limits, and timeout handling.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "session",
+        "api",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Implement Rate Limiting & Security",
+      "description": "Add rate limiting per endpoint/IP, CAPTCHA integration, request validation, CORS configuration, helmet.js headers, and brute force protection.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "security",
+        "rate-limiting",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Build Email Service Integration",
+      "description": "Configure SendGrid/AWS SES with email templates (verification, reset, welcome), queue with retry logic, and delivery tracking.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "email",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Create User Profile Endpoints",
+      "description": "Build GET/PUT /api/users/profile with avatar upload to S3, skills management, social links validation, and profile completion tracking.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "profile",
+        "api",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Implement Role Management System",
+      "description": "Create role assignment endpoints, permission checking middleware, role-based access control (RBAC), and role switching functionality.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "roles",
+        "rbac",
+        "api",
+        "sprint-1"
+      ],
+      "storyPoints": 13,
+      "estimatedHours": 26,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Build Audit Logging System",
+      "description": "Implement authentication event logging (login, logout, password changes), security event tracking, and suspicious activity detection.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "audit",
+        "security",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Create Role Database Schema",
+      "description": "Design roles, user_roles, permissions, role_permissions tables with many-to-many relationships and timestamp tracking.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "database",
+        "roles",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Implement Role Assignment Endpoint",
+      "description": "Build POST /api/roles/assign to assign roles to users with authorization checks, validation, and audit logging.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "roles",
+        "api",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Create Role Request System",
+      "description": "Implement POST /api/roles/request and GET /api/roles/requests with request creation, status tracking, and notification triggers.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "roles",
+        "api",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Build Role Approval Workflow",
+      "description": "Create PUT /api/roles/requests/:id/approve and /reject endpoints with admin authorization, email notifications, and status updates.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "roles",
+        "api",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Implement Role Switching Endpoint",
+      "description": "Build POST /api/roles/switch to change active role for multi-role users with session updates and permission refresh.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "roles",
+        "api",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Create Permission Checking Middleware",
+      "description": "Implement Express middleware to check user permissions for each route with role/permission validation and error responses.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "roles",
+        "middleware",
+        "permissions",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Build Role-Based Access Control (RBAC)",
+      "description": "Design RBAC system with granular permissions, role hierarchies, permission inheritance, and resource-level access control.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "roles",
+        "rbac",
+        "permissions",
+        "sprint-1"
+      ],
+      "storyPoints": 13,
+      "estimatedHours": 26,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Implement Role Listing Endpoint",
+      "description": "Create GET /api/roles to fetch all available roles and GET /api/users/:id/roles for user-specific roles with permissions included.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "roles",
+        "api",
+        "sprint-1"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Create Bulk Role Management",
+      "description": "Build POST /api/roles/bulk-assign for admin bulk operations with validation, transaction handling, and audit logging.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "roles",
+        "api",
+        "admin",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Implement Role Revocation System",
+      "description": "Create DELETE /api/users/:id/roles/:roleId to revoke roles with cascading updates, notification system, and grace period handling.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "roles",
+        "api",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Build Role Analytics Endpoints",
+      "description": "Implement GET /api/analytics/roles with role distribution stats, role request metrics, and permission usage tracking.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "roles",
+        "analytics",
+        "api",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Create Default Role Configuration",
+      "description": "Set up system to assign default \"Participant\" role on registration with configurable defaults and automatic permission grants.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "roles",
+        "sprint-1"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Implement Role-Based Rate Limiting",
+      "description": "Configure different rate limits per role (e.g., organizers get higher limits) with Redis-based tracking and custom headers.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "roles",
+        "rate-limiting",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Build Role Verification System",
+      "description": "Create role verification for special roles (e.g., verified organizer) with document upload, manual review, and badge assignment.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "backend",
+        "roles",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Set Up Database Infrastructure",
+      "description": "Configure PostgreSQL database, create development/staging/production databases, set up automated backups, and implement connection pooling.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "devops",
+        "database",
+        "infrastructure",
+        "sprint-1"
+      ],
+      "storyPoints": 13,
+      "estimatedHours": 26,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Configure Redis for Sessions",
+      "description": "Install Redis for session storage and token blacklisting, set up persistence, configure memory limits, and implement clustering for production.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "devops",
+        "redis",
+        "infrastructure",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Set Up Email Service",
+      "description": "Configure SendGrid/AWS SES accounts, set up domain verification, configure SPF/DKIM records, and implement email bounce handling.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "devops",
+        "email",
+        "infrastructure",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Implement Secrets Management",
+      "description": "Set up environment variables for JWT secrets, OAuth client credentials, database URLs, and API keys using AWS Secrets Manager or similar.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "devops",
+        "security",
+        "secrets",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Configure File Storage",
+      "description": "Set up AWS S3 bucket for avatar storage, configure CDN for image delivery, implement upload size limits, and add virus scanning.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "devops",
+        "storage",
+        "s3",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Set Up Role Management Database Tables",
+      "description": "Create database migrations for role-related tables, indexes for performance optimization, and seed data for initial roles.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "devops",
+        "database",
+        "roles",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Configure Role-Based Caching",
+      "description": "Implement Redis caching for user roles and permissions with cache invalidation on role changes and TTL configuration.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "devops",
+        "redis",
+        "caching",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Set Up Role-Based Monitoring",
+      "description": "Configure monitoring for role assignment/revocation events, permission denial tracking, and suspicious role switching patterns.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "devops",
+        "monitoring",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Implement Role Backup System",
+      "description": "Create automated backups of role assignments, scheduled exports of role configurations, and role restoration procedures.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "devops",
+        "backup",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Write Unit Tests for Auth Components",
+      "description": "Create unit tests for all React components using Jest and React Testing Library with 80% coverage minimum.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "testing",
+        "unit-tests",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Write API Integration Tests",
+      "description": "Implement integration tests for all authentication endpoints using Supertest, covering happy paths and error scenarios.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "testing",
+        "integration-tests",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Create E2E Tests for Auth Flows",
+      "description": "Build end-to-end tests using Cypress/Playwright for registration, login, password reset, and email verification flows.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "testing",
+        "e2e-tests",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Perform Security Testing",
+      "description": "Conduct penetration testing on auth endpoints, test for SQL injection, XSS, CSRF vulnerabilities, and validate JWT implementation.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "testing",
+        "security",
+        "penetration-testing",
+        "sprint-1"
+      ],
+      "storyPoints": 13,
+      "estimatedHours": 26,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Load Testing for Authentication",
+      "description": "Execute load tests using K6/JMeter to validate system performance with 1000+ concurrent authentication requests.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "testing",
+        "load-testing",
+        "performance",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Test Role Assignment Flow",
+      "description": "Write tests for role assignment including authorization checks, invalid role handling, and notification triggers.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "testing",
+        "roles",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Test Permission Middleware",
+      "description": "Create unit tests for permission checking middleware covering all roles, permission combinations, and edge cases.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "testing",
+        "roles",
+        "permissions",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Test Role Switching",
+      "description": "Implement tests for multi-role switching including session updates, permission changes, and UI element visibility.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "testing",
+        "roles",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Test RBAC Implementation",
+      "description": "Validate role-based access control with unauthorized access attempts, permission inheritance, and resource-level permissions.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "testing",
+        "rbac",
+        "permissions",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "E2E Role Management Tests",
+      "description": "Create end-to-end tests for complete role lifecycle from request to approval to revocation using Cypress/Playwright.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "testing",
+        "roles",
+        "e2e-tests",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Load Test Role Checking",
+      "description": "Performance test permission checking system with 10,000+ concurrent permission checks and role switches.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "testing",
+        "roles",
+        "load-testing",
+        "performance",
+        "sprint-1"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Test Role-Based UI Rendering",
+      "description": "Validate UI components render correctly for each role with permission-based visibility and feature availability.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "testing",
+        "roles",
+        "ui",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "DOC-1.1.1: Create API Documentation",
+      "description": "Document all authentication endpoints using Swagger/OpenAPI with request/response examples and error codes.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "documentation",
+        "api",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "DOC-1.1.2: Write Frontend Integration Guide",
+      "description": "Create developer guide for implementing auth in frontend components with code examples and best practices.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "documentation",
+        "frontend",
+        "sprint-1"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "DOC-1.1.3: Document Security Measures",
+      "description": "Write security documentation covering authentication flow, token management, and security best practices implemented.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "documentation",
+        "security",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "DOC-1.2.1: Create Role Matrix Documentation",
+      "description": "Document all roles, their permissions, access levels, and responsibilities in a clear matrix format.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "documentation",
+        "roles",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "DOC-1.2.2: Write Role Management API Docs",
+      "description": "Document all role-related endpoints with request/response examples, authorization requirements, and error codes.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "documentation",
+        "roles",
+        "api",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "DOC-1.2.3: Create Role Request Guide",
+      "description": "Write user guide for requesting additional roles including requirements, approval process, and timeline expectations.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "documentation",
+        "roles",
+        "sprint-1"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "DOC-1.2.4: Document RBAC Implementation",
+      "description": "Create technical documentation of RBAC system architecture, permission hierarchy, and integration guidelines.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "documentation",
+        "rbac",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "DOC-1.2.5: Build Admin Role Management Guide",
+      "description": "Write admin guide for managing user roles, handling requests, bulk operations, and troubleshooting common issues.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "documentation",
+        "roles",
+        "admin",
+        "sprint-1"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 1: User Management & Authentication",
+      "sprintId": "6908a34f4e02fa9ee678bde9"
+    }
+  ]
+}
