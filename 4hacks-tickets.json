@@ -1447,6 +1447,5882 @@
       "estimatedHours": 10,
       "sprint": "Sprint 1: User Management & Authentication",
       "sprintId": "6908a34f4e02fa9ee678bde9"
+    },
+    {
+      "title": "Create Hackathon Creation Wizard Layout",
+      "description": "Build multi-step wizard interface with progress indicator, step navigation, save draft functionality, and validation between steps.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend",
+        "forms"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Build Basic Information Form",
+      "description": "Implement form with hackathon title, tagline, description (rich text editor), hackathon type (online/in-person/hybrid), and cover image upload.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend",
+        "forms",
+        "file-upload"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Create Date & Timeline Configuration",
+      "description": "Design date pickers for registration open/close, hacking start/end, submission deadline, judging period, and results announcement with timezone selector.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Build Location Management Interface",
+      "description": "Create location input for in-person events with venue name, address autocomplete, map integration, and virtual event platform URL for online events.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend",
+        "forms"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Implement Prize Configuration UI",
+      "description": "Build prize tier management with add/remove prizes, prize amount/description, prize categories, sponsor attribution, and special prizes section.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Create Tracks & Categories Manager",
+      "description": "Design interface to add multiple tracks/themes, track descriptions, track-specific prizes, color coding, and participant limits per track.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend",
+        "customization"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Build Sponsor Section Manager",
+      "description": "Implement sponsor tiers (platinum/gold/silver), logo upload with size validation, sponsor description, website links, and display order configuration.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend",
+        "file-upload"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Create Eligibility Requirements Form",
+      "description": "Build form for age restrictions, geographic limitations, skill level requirements, team size constraints, and custom eligibility rules.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend",
+        "forms"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Implement Schedule Builder",
+      "description": "Design drag-and-drop schedule creator with event sessions, workshops, keynotes, break times, and calendar view/list view toggle.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Build Resources & Links Manager",
+      "description": "Create interface to add resource categories, documentation links, API documentation, design assets, and tutorial videos.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Create Rules & Guidelines Editor",
+      "description": "Implement rich text editor for hackathon rules, code of conduct, submission guidelines, judging criteria, and terms & conditions.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Build FAQ Section Manager",
+      "description": "Design FAQ builder with question/answer pairs, category grouping, search functionality, and reorder capability.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Implement Mentor Management Interface",
+      "description": "Create mentor profiles section with mentor invitation form, expertise tags, availability schedule, and contact information.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend",
+        "forms"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Build Judge Configuration Panel",
+      "description": "Design judge invitation interface, scoring criteria builder, weight assignment for criteria, and judge assignment to tracks.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Create Registration Form Builder",
+      "description": "Implement custom form field creator with standard fields, custom questions (text/dropdown/checkbox), required/optional flags, and conditional logic.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend",
+        "forms"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Build Email Template Manager",
+      "description": "Design email template editor for registration confirmation, important updates, submission reminders, and results announcement.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend",
+        "email"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Implement Hackathon Preview Mode",
+      "description": "Create preview functionality showing participant view, mobile responsive preview, and publish/unpublish controls.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Build Hackathon Analytics Dashboard",
+      "description": "Design real-time statistics display with registration count, submission tracking, demographic breakdown, and engagement metrics.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Create Hackathon Database Schema",
+      "description": "Design hackathons, hackathon_tracks, hackathon_prizes, hackathon_sponsors, hackathon_schedule tables with relationships and constraints.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "backend"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Implement Hackathon Creation Endpoint",
+      "description": "Build POST /api/hackathons with organizer authorization, data validation, slug generation, and initial status setup.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "backend",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Create Hackathon Update Endpoints",
+      "description": "Implement PUT /api/hackathons/:id for updates with field-level updates, version tracking, and change history logging.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "backend",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Build Draft Management System",
+      "description": "Create POST /api/hackathons/draft and auto-save functionality with draft versioning and draft to published conversion.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "backend",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Implement Timeline Validation",
+      "description": "Build validation logic for date consistency, timezone handling, phase transitions, and deadline enforcement.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "backend"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 12,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Create Prize Management Endpoints",
+      "description": "Implement CRUD operations for prizes with POST/PUT/DELETE /api/hackathons/:id/prizes, prize tier validation, and sponsor linkage.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "backend",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Build Track Management System",
+      "description": "Create endpoints for track operations with capacity management, track-specific configuration, and participant distribution.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Implement Sponsor Management",
+      "description": "Build POST /api/hackathons/:id/sponsors with logo upload to S3, tier management, and display order configuration.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "backend",
+        "file-upload",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Create Schedule Management API",
+      "description": "Implement POST /api/hackathons/:id/schedule with event CRUD operations, conflict detection, and calendar export (ICS).",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "backend",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Build Registration Configuration",
+      "description": "Create custom form field storage, validation rules engine, conditional logic processor, and data encryption for sensitive fields.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "backend",
+        "forms"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Implement Eligibility Checking System",
+      "description": "Build eligibility rule engine, automated verification where possible, manual review queue, and rejection reason tracking.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Create FAQ Management Endpoints",
+      "description": "Implement CRUD for FAQs with search indexing, category management, and view count tracking.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Build Mentor Management System",
+      "description": "Create POST /api/hackathons/:id/mentors with invitation system, availability tracking, and skill matching algorithm.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "backend",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Implement Judge Management",
+      "description": "Build judge invitation endpoints, assignment to tracks/categories, scoring permission control, and conflict of interest tracking.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Create Email Campaign System",
+      "description": "Implement email template storage, variable substitution, scheduled sending, and delivery tracking.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "backend",
+        "email"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Build Hackathon Publishing System",
+      "description": "Create POST /api/hackathons/:id/publish with pre-publish validation, status transitions, and notification triggers.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "backend",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Implement Hackathon Cloning",
+      "description": "Build POST /api/hackathons/:id/clone to duplicate hackathon as template with selective field copying and reference updates.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "backend",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Set Up Hackathon Storage Infrastructure",
+      "description": "Configure S3 buckets for hackathon assets, CDN for image delivery, and backup strategies for hackathon data.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "devops",
+        "file-upload"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Implement Search Infrastructure",
+      "description": "Set up Elasticsearch for hackathon search with full-text indexing, faceted search, and autocomplete functionality.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "devops"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Configure Scheduled Job System",
+      "description": "Implement cron jobs for status transitions, reminder emails, and deadline enforcement using Bull queue or similar.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "devops",
+        "email"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Set Up Analytics Pipeline",
+      "description": "Create data pipeline for hackathon metrics, real-time aggregation, and analytics dashboard data.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "devops"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Test Hackathon Creation Wizard",
+      "description": "Validate multi-step form flow, data persistence between steps, validation rules, and error handling.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "testing",
+        "forms"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Test Date & Timeline Logic",
+      "description": "Verify timezone handling, date validation rules, phase transitions, and deadline enforcement.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Test Registration Form Builder",
+      "description": "Validate custom field creation, conditional logic, required field enforcement, and data storage.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Test Publishing Workflow",
+      "description": "Verify draft to published transition, validation checks, notification triggers, and visibility changes.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "E2E Hackathon Creation Test",
+      "description": "Complete end-to-end test from creation to publication including all configurations and settings.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Load Test Hackathon Operations",
+      "description": "Test system with 100+ concurrent hackathons, 10,000+ registrations per hackathon, and heavy asset uploads.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "testing",
+        "file-upload"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Create Hackathon Setup Guide",
+      "description": "Write comprehensive guide for organizers covering all setup steps, best practices, and common configurations.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "documentation"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Document Hackathon API Endpoints",
+      "description": "Create API documentation for all hackathon-related endpoints with examples and schema definitions.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "documentation",
+        "api",
+        "database"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Build Organizer FAQ",
+      "description": "Compile frequently asked questions about hackathon creation, management, and troubleshooting.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "documentation"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Create Theme Selection Interface",
+      "description": "Build theme picker with pre-designed templates, preview thumbnails, and apply theme functionality.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend",
+        "customization"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Implement Logo Upload Component",
+      "description": "Design logo uploader with drag-and-drop, file size validation (max 5MB), format validation (PNG/JPG/SVG), and preview display.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend",
+        "forms",
+        "file-upload"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Build Banner Image Manager",
+      "description": "Create banner upload for hackathon pages with recommended dimensions display, crop/resize tool, and mobile/desktop preview.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend",
+        "file-upload"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Design Color Scheme Picker",
+      "description": "Implement color palette selector with primary/secondary colors, accent color picker, text color contrast checker, and preset color schemes.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Create Custom Font Selector",
+      "description": "Build font selection dropdown with Google Fonts integration, heading/body font options, and font size adjustments.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Implement Background Pattern Selector",
+      "description": "Design background options with pattern library, custom pattern upload, opacity controls, and solid color option.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend",
+        "file-upload"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Build Layout Configuration Tool",
+      "description": "Create layout options for hackathon page with sidebar/no sidebar, section ordering, and widget placement.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Design Custom CSS Editor",
+      "description": "Implement advanced CSS input with syntax highlighting, CSS validation, preview mode, and reset to default option.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Create Mobile Responsive Preview",
+      "description": "Build device preview modes (mobile/tablet/desktop) with real-time updates and orientation switching.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Implement Branding Consistency Checker",
+      "description": "Design tool to verify brand colors in assets, contrast accessibility standards, and responsive image sizing.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "frontend",
+        "file-upload"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Create Theme Storage System",
+      "description": "Implement theme configuration storage with JSON schema for theme data, version control, and default theme fallback.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "backend",
+        "database",
+        "customization"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Build Asset Upload Endpoints",
+      "description": "Create POST /api/hackathons/:id/assets for logo/banner uploads with image optimization, format conversion, and CDN upload.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "backend",
+        "forms",
+        "file-upload",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Implement Theme Validation",
+      "description": "Build validation for color contrast ratios, font loading verification, and CSS security scanning.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "backend"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 12,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Create Theme Template System",
+      "description": "Implement pre-built theme templates with template storage, customization options, and template versioning.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "backend",
+        "customization"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Build CSS Sanitization",
+      "description": "Create CSS input sanitizer to prevent XSS attacks, remove malicious code, and validate CSS syntax.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Implement Asset Optimization",
+      "description": "Build automatic image compression, responsive image generation, and WebP conversion for performance.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "backend",
+        "forms",
+        "file-upload"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Test Theme Customization",
+      "description": "Verify theme changes apply correctly, preview matches live view, and responsive design works.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "testing",
+        "customization"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Test Asset Upload Limits",
+      "description": "Validate file size restrictions, format validation, and error handling for invalid uploads.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "testing",
+        "forms",
+        "file-upload"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Test Cross-Browser Rendering",
+      "description": "Verify custom themes render correctly across Chrome, Firefox, Safari, and Edge browsers.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "testing",
+        "customization"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Test CSS Security",
+      "description": "Validate CSS sanitization prevents XSS, malicious code injection, and system styling override.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "testing"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 12,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Create Branding Guidelines",
+      "description": "Write guide for effective hackathon branding including recommended image dimensions and color accessibility standards.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "documentation",
+        "file-upload"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Document Theme Customization",
+      "description": "Create documentation for theme system, customization options, and CSS customization guidelines.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-2",
+        "documentation",
+        "customization"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 2: Hackathon Creation & Management",
+      "sprintId": "6908a34f4e02fa9ee678bdec"
+    },
+    {
+      "title": "Create Hackathon Registration Page",
+      "description": "Build dedicated registration page with hackathon details summary, registration CTA button, deadline countdown timer, and spots remaining indicator.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend",
+        "registration"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Design Registration Form Interface",
+      "description": "Implement dynamic form renderer for custom fields, multi-step form if needed, progress indicator, and field validation display.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Build Individual Registration Flow",
+      "description": "Create individual participant registration with personal information fields, skill selection, experience level, and dietary restrictions/accessibility needs.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend",
+        "registration"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Implement Team Registration Option",
+      "description": "Design team registration mode with team creation during registration, existing team selection, and team code input field.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend",
+        "team-management",
+        "registration"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Create Registration Confirmation Page",
+      "description": "Build success page with confirmation message, registration details summary, next steps information, and add to calendar button.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend",
+        "registration"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Design Registration Status Dashboard",
+      "description": "Implement participant dashboard showing registration status, team information, hackathon countdown, and action items.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend",
+        "team-management",
+        "registration"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Build Waitlist Interface",
+      "description": "Create waitlist signup when hackathon is full with position in queue display, notification preferences, and automatic promotion alerts.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Implement Registration Editing",
+      "description": "Design interface to edit registration before deadline with change tracking, resubmission flow, and confirmation updates.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend",
+        "registration",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Create Check-in Interface",
+      "description": "Build QR code display for event check-in with mobile-friendly view, offline capability, and check-in status indicator.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Design Registration Certificate",
+      "description": "Implement downloadable participation certificate with custom template, participant name, and verification QR code.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Build Registration Analytics View",
+      "description": "Create organizer view of registration metrics with real-time counter, demographic charts, and timeline visualization.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend",
+        "registration"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Implement Bulk Registration Upload",
+      "description": "Design CSV upload for bulk registration with template download, validation feedback, and error reporting.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend",
+        "registration"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Create Registration Search & Filter",
+      "description": "Build searchable participant list with filters by status, team, skills, and export functionality.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend",
+        "team-management"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Design Registration Approval Queue",
+      "description": "Implement approval interface for organizers with application review, bulk actions, and rejection reason input. .",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Create Registration Database Schema",
+      "description": "Design registrations, registration_answers, waitlist, check_ins tables with foreign keys and indexes.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend",
+        "registration"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Build Registration Submission Endpoint",
+      "description": "Implement POST /api/hackathons/:id/register with custom field validation, duplicate checking, and capacity verification.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Create Registration Validation System",
+      "description": "Build eligibility verification, required field checking, custom rule processing, and age verification logic.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 12,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Implement Waitlist Management",
+      "description": "Create waitlist queue system with automatic promotion, notification triggers, and position tracking.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Build Registration Status Management",
+      "description": "Implement status transitions (pending/approved/rejected/withdrawn) with audit logging and notification hooks.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Create Registration Limits Enforcement",
+      "description": "Build capacity checking with total limit enforcement, track-specific limits, and team size validation.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend",
+        "team-management"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Implement Registration Editing API",
+      "description": "Create PUT /api/registrations/:id with edit deadline enforcement, change tracking, and re-validation.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend",
+        "registration",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Build Check-in System Backend",
+      "description": "Implement POST /api/registrations/:id/checkin with QR code generation, timestamp logging, and attendance tracking.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend",
+        "registration",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Create Bulk Registration Processing",
+      "description": "Build batch registration endpoint with CSV parsing, async processing, and result reporting.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend",
+        "registration"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Implement Registration Export",
+      "description": "Create data export endpoints with CSV/Excel generation, custom field mapping, and GDPR compliance.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Build Registration Notifications",
+      "description": "Implement email notifications for confirmation, waitlist updates, approval status, and reminders.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Create Registration Statistics API",
+      "description": "Build analytics endpoints with demographic aggregation, timeline data, and conversion funnel metrics.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Implement Duplicate Detection",
+      "description": "Create algorithm to detect duplicate registrations by email/name matching, IP tracking, and manual review flagging.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend",
+        "registration"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Build Registration Approval Workflow",
+      "description": "Implement approval queue endpoints with batch approval/rejection, custom criteria, and automated approvals.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Test Registration Form Validation",
+      "description": "Verify all field validations, custom field rendering, and error message display.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "testing"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 12,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Test Registration Capacity Limits",
+      "description": "Validate capacity enforcement, waitlist triggers, and overflow handling.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Test Waitlist Functionality",
+      "description": "Verify queue ordering, automatic promotion, and notification delivery.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Test Registration Approval Flow",
+      "description": "Validate approval workflow, status updates, and notification triggers.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Load Test Registration System",
+      "description": "Test with 5000+ concurrent registrations, form submission performance, and database scalability.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "testing",
+        "registration",
+        "submission",
+        "database"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Test Data Export Functionality",
+      "description": "Verify export formats, data completeness, and large dataset handling.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Create Registration User Guide",
+      "description": "Write participant guide for registration process, team formation, and troubleshooting.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "documentation",
+        "team-management",
+        "registration"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Document Registration Management",
+      "description": "Create organizer guide for managing registrations, approvals, and exports.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "documentation",
+        "registration"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Build Registration API Documentation",
+      "description": "Document all registration endpoints with request/response examples.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "documentation",
+        "registration"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Create Team Creation Modal",
+      "description": "Build team creation interface with team name input, description field, avatar upload, and public/private toggle.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend",
+        "team-management"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Design Team Profile Page",
+      "description": "Implement team display page with member list, team description, skills aggregate, and contact button.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend",
+        "team-management"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Build Team Invitation System",
+      "description": "Create invite modal with email/username input, custom message, role selection, and invitation link generator.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Implement Team Join Request Interface",
+      "description": "Design request to join form with introduction message, skills highlight, and request status tracking.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Create Team Discovery Page",
+      "description": "Build team browser with teams looking for members, filter by skills needed, team size, and quick join button.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend",
+        "team-management"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Design Team Management Dashboard",
+      "description": "Implement team admin panel with member management, role assignments, team settings, and dissolution option.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend",
+        "team-management"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Build Team Communication Interface",
+      "description": "Create team announcements section with team-only visibility, pinned messages, and @mention support.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend",
+        "team-management"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Implement Team Matching Algorithm UI",
+      "description": "Design skill-based matching interface with compatibility scores, suggested teams, and match preferences.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend",
+        "team-management"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Create Looking for Team Board",
+      "description": "Build participant showcase for teamless users with skill cards, availability, and contact options.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend",
+        "team-management"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Design Team Size Validation UI",
+      "description": "Implement visual indicators for team size limits with current/max display, warning messages, and lock when full.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend",
+        "team-management"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 12,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Build Team Transfer Interface",
+      "description": "Create team switching UI with leave team option, transfer leadership, and join different team.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend",
+        "team-management"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Implement Team Activity Feed",
+      "description": "Design activity timeline showing member joins/leaves, project updates, and milestone achievements.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Create Team Invitation Management",
+      "description": "Build pending invitations view with sent/received invites, expiry timers, and resend options.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Design Team Formation Deadline Display",
+      "description": "Implement countdown to team formation deadline with warning notifications and final team lock.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "frontend",
+        "team-management"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Create Team Database Schema",
+      "description": "Design teams, team_members, team_invitations, team_requests tables with relationships and constraints.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend",
+        "team-management"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Build Team Creation Endpoint",
+      "description": "Implement POST /api/hackathons/:id/teams with name uniqueness check, creator as admin, and initial member addition.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend",
+        "team-management",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Create Team Invitation System",
+      "description": "Build POST /api/teams/:id/invite with invitation token generation, email notifications, and expiry handling.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend",
+        "team-management",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Implement Team Join Request API",
+      "description": "Create POST /api/teams/:id/request-join with request storage, notification to admin, and approval workflow.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend",
+        "team-management",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Build Team Member Management",
+      "description": "Implement add/remove member endpoints with role changes, permission checking, and team size validation.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend",
+        "team-management"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Create Team Discovery API",
+      "description": "Build GET /api/hackathons/:id/teams with filters for open teams, skills needed, and sorting options.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend",
+        "team-management",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Implement Team Matching Algorithm",
+      "description": "Create skill compatibility scoring, team recommendation engine, and preference-based matching.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend",
+        "team-management",
+        "judging"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Build Team Size Enforcement",
+      "description": "Implement min/max size validation with registration blocking, team lock mechanisms, and exception handling.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend",
+        "team-management",
+        "registration"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Create Team Leadership Transfer",
+      "description": "Build PUT /api/teams/:id/transfer-leadership with permission verification and notification system.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend",
+        "team-management",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Implement Team Dissolution",
+      "description": "Create DELETE /api/teams/:id with member notifications, registration updates, and cascade handling.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend",
+        "team-management",
+        "registration",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Build Team Activity Logging",
+      "description": "Implement activity tracking for team events with timeline generation and notification triggers.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend",
+        "team-management"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Create Team Statistics API",
+      "description": "Build team analytics endpoints with member distribution, skill coverage, and formation patterns.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend",
+        "team-management"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Implement Team Communication Backend",
+      "description": "Create team message storage, mention processing, and read receipt tracking.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend",
+        "team-management"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Build Team Formation Deadline Enforcement",
+      "description": "Implement automatic team locking, solo participant handling, and deadline extension logic.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "backend",
+        "team-management"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Test Team Creation Flow",
+      "description": "Verify team creation with validation, duplicate name handling, and member addition.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "testing",
+        "team-management"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Test Invitation System",
+      "description": "Validate invitation sending, acceptance flow, and expiry handling.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Test Team Size Limits",
+      "description": "Verify min/max enforcement, full team handling, and edge cases.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "testing",
+        "team-management"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Test Team Discovery",
+      "description": "Validate search functionality, filters, and recommendation algorithm.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Test Team Management",
+      "description": "Verify role changes, member removal, and leadership transfer.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "E2E Team Formation Test",
+      "description": "Complete flow from creation through formation deadline with all features.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Create Team Formation Guide",
+      "description": "Write guide for participants on team creation, joining, and management.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "documentation",
+        "team-management"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Document Team Best Practices",
+      "description": "Create guide on optimal team composition, communication, and collaboration.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "documentation",
+        "team-management",
+        "communication"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Build Team API Documentation",
+      "description": "Document all team-related endpoints with examples and schemas.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "documentation",
+        "team-management",
+        "database"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Set Up Registration Queue System",
+      "description": "Configure message queue for bulk registration processing with retry logic and dead letter queue.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "devops",
+        "registration"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Implement Registration Caching",
+      "description": "Set up Redis caching for registration counts, team member lists, and frequently accessed data.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "devops",
+        "team-management",
+        "registration"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Configure Email Infrastructure",
+      "description": "Set up bulk email sending for registration confirmations with rate limiting and bounce handling.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "devops",
+        "registration"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Set Up Team Real-time Updates",
+      "description": "Configure WebSocket infrastructure for real-time team updates and notifications.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "devops",
+        "team-management"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Implement Team Data Backup",
+      "description": "Create automated backup for team data with point-in-time recovery capability.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-3",
+        "devops",
+        "team-management"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 3: Registration & Team Management",
+      "sprintId": "6908a34f4e02fa9ee678bdef"
+    },
+    {
+      "title": "Create Project Submission Page",
+      "description": "Build main submission interface with hackathon submission guidelines, deadline countdown, and submission status indicator.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Design Multi-Step Submission Form",
+      "description": "Implement step-by-step form with project basics, detailed description, team attribution, files/links, and review/submit steps.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend",
+        "team-management",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Build Project Title & Tagline Input",
+      "description": "Create form fields for catchy project name, 60-character tagline, and SEO-friendly slug generation.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Implement Rich Text Description Editor",
+      "description": "Design markdown/WYSIWYG editor with formatting toolbar, preview mode, image embedding, and code snippet support.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Create Category & Track Selection",
+      "description": "Build dropdown for track selection with single/multiple track support, category descriptions, and track requirements display.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Design Technology Stack Tagger",
+      "description": "Implement tech stack selector with searchable dropdown, popular technologies, custom tech addition, and version specification.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Build File Upload Manager",
+      "description": "Create drag-and-drop file uploader with multiple file support (100MB limit), progress indicators, file type validation, and thumbnail previews.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Implement Image Gallery Component",
+      "description": "Design image carousel for screenshots with main image selection, caption fields, drag to reorder, and lightbox preview.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Create Video Pitch Upload",
+      "description": "Build video upload/YouTube embed with 3-minute limit indicator, video preview player, and closed caption upload.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Design GitHub Repository Connector",
+      "description": "Implement GitHub URL input with repository validation, README preview, commit activity display, and contributors list.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Build Demo Link Section",
+      "description": "Create fields for live demo URL, demo credentials, testing instructions, and environment requirements.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Implement Presentation Upload",
+      "description": "Design slide deck uploader for PDF/PPT files with file size limit (50MB), page count display, and embedded viewer.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Create Team Attribution Interface",
+      "description": "Build team member contribution form with role selection per member, contribution percentage, and GitHub profile linking.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend",
+        "team-management"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Design Problem Statement Section",
+      "description": "Implement form fields for problem description, target audience, impact statement, and solution approach.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Build Technical Architecture Documenter",
+      "description": "Create section for architecture diagram upload, tech stack justification, scalability notes, and future improvements.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Implement Draft Auto-Save",
+      "description": "Design auto-save functionality with save indicator, version history, restore previous version, and offline support.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Create Submission Preview",
+      "description": "Build full preview mode showing public view, mobile responsiveness check, and missing fields highlighter.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Design Submission Confirmation",
+      "description": "Implement success screen with submission receipt, project URL, edit deadline reminder, and share buttons.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Create Project Database Schema",
+      "description": "Design projects, project_technologies, project_files, project_team_members tables with relationships and indexes.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "backend",
+        "team-management",
+        "submission"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Build Project Submission Endpoint",
+      "description": "Implement POST /api/hackathons/:id/projects with team validation, deadline checking, and duplicate prevention.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "backend",
+        "team-management",
+        "submission",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Create Draft Management System",
+      "description": "Build auto-save endpoint with version control, draft storage, and periodic cleanup.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Implement File Upload Processing",
+      "description": "Create multipart upload handler with virus scanning, file type validation, and S3 storage integration.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Build Image Processing Pipeline",
+      "description": "Implement image optimization with thumbnail generation, format conversion, and CDN distribution.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Create Video Upload Handler",
+      "description": "Build video processing with duration validation, format checking, and streaming URL generation.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Implement GitHub Integration API",
+      "description": "Create GitHub API integration for repository validation, stats fetching, and README extraction.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "backend",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Build Project Validation System",
+      "description": "Implement required field checking, content moderation, and submission completeness scoring.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "backend",
+        "submission",
+        "judging"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 12,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Create Technology Stack Management",
+      "description": "Build tech stack database with autocomplete API, popularity tracking, and version management.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "backend",
+        "api",
+        "database"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Implement Team Attribution System",
+      "description": "Create contribution tracking with percentage validation, member verification, and role assignment.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Build Submission Deadline Enforcement",
+      "description": "Implement hard deadline cutoff with timezone handling, grace period logic, and late submission flagging.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "backend",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Create Project Update System",
+      "description": "Build PUT /api/projects/:id with edit window enforcement, change tracking, and notification triggers.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "backend",
+        "submission",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Implement Project Withdrawal",
+      "description": "Create soft delete functionality with withdrawal reason tracking, team notification, and restoration option.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "backend",
+        "team-management"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Build Submission Analytics",
+      "description": "Implement metrics collection for submission patterns, completion rates, and average submission time.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "backend",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Test Submission Form Validation",
+      "description": "Verify all field validations, required field enforcement, and error messaging.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "testing"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 12,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Test File Upload Limits",
+      "description": "Validate file size restrictions, type checking, and upload progress accuracy.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Test Draft Saving",
+      "description": "Verify auto-save functionality, version management, and recovery options.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Test Deadline Enforcement",
+      "description": "Validate submission cutoff, timezone handling, and edge cases.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "testing",
+        "submission"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Test GitHub Integration",
+      "description": "Verify repository validation, data fetching, and error handling.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Load Test Submission System",
+      "description": "Test with 1000+ concurrent submissions, large file uploads, and storage scalability.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "testing",
+        "submission"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Create Submission Guide",
+      "description": "Write comprehensive guide for project submission process with screenshots and tips.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "documentation",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Document File Requirements",
+      "description": "Create documentation for accepted file formats, size limits, and best practices.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "documentation"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Build Submission API Documentation",
+      "description": "Document all submission endpoints with request/response examples.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "documentation",
+        "submission"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Create Project Gallery Homepage",
+      "description": "Build main gallery view with featured projects section, recent submissions, and category navigation.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Design Project Card Component",
+      "description": "Implement project preview card with thumbnail image, title/tagline, team name, tech stack badges, and view count.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend",
+        "team-management",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Build Gallery Filter Sidebar",
+      "description": "Create filtering interface with track/category filter, technology filter, team size filter, and submission date range.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend",
+        "team-management",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Implement Search Functionality",
+      "description": "Design search bar with instant results, search suggestions, advanced search options, and search history.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Create Project Detail Page",
+      "description": "Build comprehensive project view with all submission content, team information, related projects, and engagement metrics.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend",
+        "team-management",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Design Image Gallery Viewer",
+      "description": "Implement lightbox gallery with fullscreen mode, thumbnail navigation, zoom functionality, and download options.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Build Video Player Component",
+      "description": "Create custom video player with playback controls, quality selection, fullscreen support, and view tracking.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Implement Code Viewer",
+      "description": "Design syntax-highlighted code display with language detection, line numbers, copy button, and collapse/expand.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Create Social Sharing Tools",
+      "description": "Build share buttons for Twitter/LinkedIn/Facebook with custom OG tags, share tracking, and QR code generator.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Design Comments Section",
+      "description": "Implement commenting system with nested replies, mention support, edit/delete options, and moderation tools.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Build Like/Bookmark System",
+      "description": "Create engagement buttons with like counter, bookmark for later, collections creation, and activity feed.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Implement Related Projects",
+      "description": "Design recommendation section with similar projects, same team projects, and same tech stack projects.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend",
+        "team-management",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Create Project Statistics View",
+      "description": "Build analytics display with view count, engagement rate, demographic breakdown, and time-series charts.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Design Winner Badges",
+      "description": "Implement visual indicators for prize winners, track winners, special mentions, and sponsor picks.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Build Export/Embed Options",
+      "description": "Create project embed code generator, PDF export, and presentation mode.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "frontend",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Create Gallery Database Schema",
+      "description": "Design project_views, project_likes, project_comments, project_bookmarks tables with indexes.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "backend",
+        "submission"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Build Project Listing API",
+      "description": "Implement GET /api/projects with pagination, sorting options, and filter parameters.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "backend",
+        "submission",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Create Search Infrastructure",
+      "description": "Build Elasticsearch integration with full-text search, faceted search, and search relevance tuning.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "backend"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Implement View Tracking",
+      "description": "Create view counting system with unique visitor tracking, session-based counting, and bot filtering.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Build Engagement APIs",
+      "description": "Implement like/unlike endpoints with duplicate prevention, bookmark management, and activity logging.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Create Comment System Backend",
+      "description": "Build comment CRUD operations with threading support, mention notifications, and spam detection.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Implement Recommendation Engine",
+      "description": "Create ML-based recommendations using collaborative filtering, content similarity, and popularity metrics.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Build Social Meta Tags",
+      "description": "Generate dynamic OG tags with project thumbnail, description, and custom preview.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "backend",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Create Public API for Projects",
+      "description": "Build read-only API with rate limiting, API key management, and usage analytics.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "backend",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Implement Content Moderation",
+      "description": "Create flagging system with review queue, automated content scanning, and moderator tools.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Test Gallery Performance",
+      "description": "Verify page load times, image lazy loading, and smooth scrolling.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Test Search Functionality",
+      "description": "Validate search accuracy, filter combinations, and result relevance.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Test Engagement Features",
+      "description": "Verify like/bookmark functionality, comment system, and share tools.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Test Mobile Gallery",
+      "description": "Validate responsive design, touch interactions, and mobile performance.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Load Test Gallery",
+      "description": "Test with 10,000+ projects, high concurrent users, and heavy media content.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "testing",
+        "submission"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Create Gallery Navigation Guide",
+      "description": "Write user guide for browsing, searching, and filtering projects.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "documentation",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Document Engagement Features",
+      "description": "Create guide for commenting, liking, and sharing projects.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "documentation",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Build Public API Documentation",
+      "description": "Document public project API with rate limits and usage examples.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "documentation",
+        "submission",
+        "api"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Set Up Media Storage Infrastructure",
+      "description": "Configure S3 buckets for project files with lifecycle policies and CDN integration.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "devops",
+        "submission"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Implement Media Processing Pipeline",
+      "description": "Set up Lambda functions for image/video processing with queue-based processing.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "devops"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Configure Backup Strategy",
+      "description": "Implement automated backups for project data with versioning and disaster recovery.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "devops",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Set Up Search Infrastructure",
+      "description": "Deploy Elasticsearch cluster with index management and backup procedures.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "devops"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Implement Caching Layer",
+      "description": "Configure Redis/CDN for gallery performance with cache invalidation strategies.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "devops"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Set Up Analytics Pipeline",
+      "description": "Create data pipeline for project analytics with real-time and batch processing.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-4",
+        "devops",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 4: Project Submission & Showcase",
+      "sprintId": "6908a34f4e02fa9ee678bdf2"
+    },
+    {
+      "title": "Create Judge Invitation Interface",
+      "description": "Build judge invitation form with email input, custom message, expertise areas selection, and bulk invite CSV upload.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend",
+        "judging"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Design Judge Onboarding Flow",
+      "description": "Implement judge registration wizard with profile creation, expertise tags, availability schedule, and conflict of interest declaration.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend",
+        "registration",
+        "judging"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Build Judge Dashboard",
+      "description": "Create judge homepage with assigned hackathons, pending reviews count, deadlines calendar, and quick actions.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend",
+        "judging"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Implement Judge Profile Management",
+      "description": "Design profile editor with bio, expertise areas, LinkedIn integration, and judging history display.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Create Judge Assignment Interface",
+      "description": "Build organizer tool for assigning judges to tracks/categories with workload balancing and expertise matching.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend",
+        "judging"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Design Judge Availability Scheduler",
+      "description": "Implement calendar interface for availability slots, timezone display, and blackout dates.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Build Conflict of Interest Declaration",
+      "description": "Create form for declaring conflicts with company affiliations, team relationships, and automatic flagging.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend",
+        "team-management"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Implement Judge Communication Hub",
+      "description": "Design messaging interface for organizer-judge communication, announcements, and Q&A forum.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend",
+        "judging",
+        "communication"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Create Judge Training Materials Section",
+      "description": "Build resource center with judging guidelines, video tutorials, scoring rubric explanation, and FAQ section.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend",
+        "judging"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Design Judge Performance Metrics",
+      "description": "Implement analytics dashboard showing reviews completed, average scoring time, and score distribution.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend",
+        "judging"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Build Judge Team Interface",
+      "description": "Create interface for judge panels with lead judge assignment, panel discussions, and consensus tracking.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend",
+        "judging"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Implement Judge Feedback Collection",
+      "description": "Design post-judging survey with process feedback, platform usability, and improvement suggestions.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Create Judge Database Schema",
+      "description": "Design judges, judge_assignments, judge_expertise, judge_conflicts tables with relationships and constraints.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend",
+        "judging"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Build Judge Invitation System",
+      "description": "Implement POST /api/hackathons/:id/judges/invite with token generation, email sending, and acceptance tracking.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend",
+        "judging",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Create Judge Authentication",
+      "description": "Build judge-specific auth flow with role assignment, permission setup, and access control.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend",
+        "judging"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 12,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Implement Assignment Algorithm",
+      "description": "Create workload distribution algorithm with expertise matching, even distribution, and conflict avoidance.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Build Conflict Detection System",
+      "description": "Implement automated conflict checking with team member matching, company affiliation, and manual declaration.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend",
+        "team-management"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Create Judge Availability Management",
+      "description": "Build availability tracking system with timezone conversion, schedule conflicts, and capacity planning.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Implement Judge Notification System",
+      "description": "Create targeted notifications for new assignments, deadline reminders, and important updates.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Build Judge Analytics API",
+      "description": "Implement metrics collection for judging patterns, time spent, and score distributions.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Create Judge Backup System",
+      "description": "Build replacement judge mechanism for no-shows, withdrawals, and emergency reassignments.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend",
+        "judging"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Implement Judge Compensation Tracking",
+      "description": "Create system for tracking judge rewards, honorariums, and certificate generation.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend",
+        "judging"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Create Project Review Interface",
+      "description": "Build review page with project details display, scoring form, navigation controls, and progress tracker.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend",
+        "submission",
+        "judging"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Design Scoring Rubric Component",
+      "description": "Implement dynamic scoring criteria with weighted categories, score sliders (1-10), and description tooltips.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend",
+        "judging"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Build Feedback Text Editor",
+      "description": "Create rich text feedback form with category-specific comments, pros/cons sections, and improvement suggestions.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Implement Score Validation UI",
+      "description": "Design score requirement indicators with minimum scores per category, total score calculation, and validation messages.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 12,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Create Batch Review Mode",
+      "description": "Build efficient review interface with keyboard shortcuts, quick navigation, and bulk actions.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Design Comparison View",
+      "description": "Implement side-by-side project comparison with score differences, ranking table, and export options.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Build Review Progress Dashboard",
+      "description": "Create progress tracking with projects reviewed/remaining, time spent per review, and deadline countdown.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Implement Draft Saving",
+      "description": "Design auto-save for incomplete reviews with resume later option, draft indicator, and recovery system.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Create Scoring Calibration Tool",
+      "description": "Build score distribution viewer with histogram display, outlier detection, and normalization preview.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Design Mobile Judging Interface",
+      "description": "Implement mobile-optimized review interface with swipe navigation, responsive forms, and offline capability.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Build Judge Notes System",
+      "description": "Create private notes section with project-specific notes, flag for discussion, and bookmark projects.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Implement Review Submission Confirmation",
+      "description": "Design submission modal with score summary, edit option, and final lock confirmation.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Create Scoring Database Schema",
+      "description": "Design scores, score_criteria, judge_feedback, review_sessions tables with data integrity constraints.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend",
+        "judging"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Build Score Submission API",
+      "description": "Implement POST /api/projects/:id/scores with validation, duplicate prevention, and timestamp logging.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend",
+        "submission",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Create Scoring Criteria Management",
+      "description": "Build dynamic rubric system with weighted categories, custom criteria, and version control.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Implement Score Calculation Engine",
+      "description": "Create score aggregation with weighted averages, normalization, and statistical analysis.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Build Review Assignment Queue",
+      "description": "Implement fair project distribution with round-robin assignment, workload balancing, and priority queuing.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Create Score Validation System",
+      "description": "Build validation rules for complete scoring, range checking, and outlier detection.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend",
+        "judging"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 12,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Implement Feedback Storage",
+      "description": "Create structured feedback storage with categorization, sentiment analysis, and export capabilities.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Build Score Normalization",
+      "description": "Implement statistical normalization with z-score calculation, percentile ranking, and judge calibration.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend",
+        "judging"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Create Review Session Tracking",
+      "description": "Build session logging with time tracking, action history, and audit trail.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Implement Anti-Bias Measures",
+      "description": "Create blind review mode with project anonymization, random ordering, and bias detection algorithms.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Build Score Export System",
+      "description": "Implement data export with CSV generation, detailed reports, and API access.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Create Results Dashboard",
+      "description": "Build organizer dashboard with score overview, ranking table, and winner selection interface.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Design Winner Selection Tool",
+      "description": "Implement winner picker with category winners, grand prize, special awards, and honorable mentions.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Build Score Visualization",
+      "description": "Create charts and graphs with score distribution, category breakdown, and judge agreement metrics.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend",
+        "judging"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Implement Tie Breaker Interface",
+      "description": "Design tie resolution tool with manual override, additional criteria, and judge voting.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend",
+        "judging"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Create Results Announcement Page",
+      "description": "Build public results page with winner showcase, prize details, and project links.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Design Winner Badges Generator",
+      "description": "Implement badge creation tool with customizable designs, download options, and social media formats.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Build Certificate Generator",
+      "description": "Create certificate templates with participant names, achievement details, and verification QR codes.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Implement Results Timeline",
+      "description": "Design announcement scheduler with embargo period, staged reveals, and countdown timer.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Create Winner Notification System",
+      "description": "Build notification interface with email templates, in-app alerts, and celebration animations.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Design Prize Distribution Tracker",
+      "description": "Implement prize management with distribution status, claim deadlines, and fulfillment tracking.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Build Results Export Tool",
+      "description": "Create comprehensive export with all scores, rankings, feedback, and statistics.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Implement Public Voting Display",
+      "description": "Design public choice results with vote counts, percentage display, and voting verification.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Create Results Database Schema",
+      "description": "Design results, winners, prizes_awarded, certificates tables with audit logging.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Build Winner Calculation Engine",
+      "description": "Implement winner determination with category logic, prize allocation, and tie-breaking rules.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Create Results Publishing API",
+      "description": "Build POST /api/hackathons/:id/results/publish with validation, notifications, and rollback capability.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Implement Prize Assignment System",
+      "description": "Create prize allocation with winner mapping, multiple prizes per project, and sponsor prize handling.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Build Certificate Generation",
+      "description": "Implement PDF certificate creation with templates, batch generation, and verification system.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Create Results Notification Engine",
+      "description": "Build multi-channel notifications with email, SMS, and in-app delivery.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Implement Results Analytics",
+      "description": "Create analytics for score distributions, judge agreement, and historical comparisons.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend",
+        "judging"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Build Embargo System",
+      "description": "Implement results embargo with scheduled release, preview access, and automatic publishing.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Create Audit Trail",
+      "description": "Build comprehensive logging for score changes, winner selection, and result modifications.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Implement Public Voting Integration",
+      "description": "Create vote tallying system with fraud detection, unique voter verification, and result merging.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Test Judge Invitation Flow",
+      "description": "Verify invitation sending, acceptance process, and onboarding completion.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Test Assignment Algorithm",
+      "description": "Validate fair distribution, conflict detection, and workload balancing.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Test Scoring Interface",
+      "description": "Verify score submission, validation rules, and draft saving.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "testing",
+        "submission"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Test Score Calculations",
+      "description": "Validate weighted scoring, normalization, and aggregation accuracy.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "testing",
+        "judging"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Test Review Workflow",
+      "description": "Verify complete review process from assignment to submission.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "testing",
+        "submission"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Test Winner Selection",
+      "description": "Validate winner calculation, tie-breaking, and prize assignment.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Test Results Publication",
+      "description": "Verify embargo system, notifications, and public display.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Load Test Judging System",
+      "description": "Test with 100+ judges, 1000+ projects, and concurrent scoring.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "testing",
+        "submission",
+        "judging"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Create Judge Onboarding Guide",
+      "description": "Write comprehensive guide for new judges with platform overview and best practices.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "documentation",
+        "judging"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Document Judging Criteria",
+      "description": "Create detailed explanation of scoring rubrics and evaluation guidelines.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "documentation",
+        "judging"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Build Scoring Manual",
+      "description": "Write guide for consistent scoring with examples and common pitfalls.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "documentation",
+        "judging"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Create Review Best Practices",
+      "description": "Document efficient review techniques and feedback guidelines.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "documentation"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Document Results Process",
+      "description": "Create guide for results calculation, winner selection, and announcement procedures.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "documentation"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Set Up Judge Communication Infrastructure",
+      "description": "Configure email systems for judge invitations with bulk sending capabilities.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "devops",
+        "judging"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Implement Judge Session Management",
+      "description": "Set up secure session handling for judge portal with timeout controls.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "devops",
+        "judging"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Configure Score Calculation Pipeline",
+      "description": "Build async processing for score aggregation with queue management.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "devops"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Set Up Score Backup System",
+      "description": "Implement real-time score backup with versioning and recovery procedures.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "devops"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Configure Results Caching",
+      "description": "Set up caching for results pages with invalidation on updates.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "devops"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Implement Certificate Generation Service",
+      "description": "Deploy PDF generation service with template management and storage.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-5",
+        "devops"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 5: Judging System",
+      "sprintId": "6908a34f4e02fa9ee678bdf5"
+    },
+    {
+      "title": "Create Q&A Forum Interface",
+      "description": "Build forum homepage with question list, category navigation, search bar, and ask question button.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Design Question Creation Form",
+      "description": "Implement question composer with title, description, tags, category selection, and markdown support.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Build Answer Component",
+      "description": "Create answer interface with rich text editor, code snippets, image upload, and best answer marking.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Implement Comment Threading",
+      "description": "Design nested comments with reply functionality, collapse/expand, and mention support.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Create Discord Integration Widget",
+      "description": "Build Discord server widget with member count, online status, join button, and recent activity.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Design Slack Integration Panel",
+      "description": "Implement Slack workspace connector with channel listing, message preview, and join workspace link.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Build Mentor Chat Interface",
+      "description": "Create one-on-one chat with mentor availability status, message history, and video call button.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "frontend",
+        "communication"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Implement Help Desk Ticket System",
+      "description": "Design ticket creation form with issue category, priority level, attachments, and ticket tracking.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Create Team Finding Board",
+      "description": "Build team recruitment board with skill requirements, project ideas, team size, and application button.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "frontend",
+        "team-management",
+        "submission"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Design Upvote/Downvote System",
+      "description": "Implement voting mechanism with vote counts, sort by votes, and user vote history.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Build Search & Filter Interface",
+      "description": "Create advanced search with keyword search, tag filters, date range, and answered/unanswered filter.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Implement User Reputation Display",
+      "description": "Design reputation badges with points display, achievement levels, and contribution stats.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Create Forum Database Schema",
+      "description": "Design questions, answers, comments, votes, tags tables with full-text search indexes.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "backend"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Build Question CRUD API",
+      "description": "Implement question endpoints with create, read, update, delete, and soft delete functionality.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Create Answer Management System",
+      "description": "Build answer API with best answer selection, edit history, and version control.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "backend",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Implement Voting System",
+      "description": "Create vote tracking with duplicate prevention, karma calculation, and vote history.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Build Discord Bot Integration",
+      "description": "Implement Discord bot with OAuth flow, webhook setup, and bi-directional messaging.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Create Slack App Integration",
+      "description": "Build Slack app with workspace installation, event subscriptions, and slash commands.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Implement Mention System",
+      "description": "Create @mention detection with notification triggers, user lookup, and mention validation.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Build Search Infrastructure",
+      "description": "Implement Elasticsearch for forum with relevance scoring, faceted search, and autocomplete.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "backend",
+        "judging"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Create Moderation System",
+      "description": "Build content moderation with flag system, review queue, and automated spam detection.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Implement Reputation Engine",
+      "description": "Create reputation calculation with action points, level thresholds, and badge assignments.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Create Participant Directory",
+      "description": "Build searchable directory with participant cards, filter sidebar, grid/list view toggle, and pagination.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Design Advanced Filter Panel",
+      "description": "Implement multi-criteria filters with skills, location, experience level, availability, and save filter sets.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Build Participant Profile Card",
+      "description": "Create profile preview with avatar, name, skills, team status, and quick actions.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "frontend",
+        "team-management"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Implement Direct Messaging Interface",
+      "description": "Design DM system with conversation list, message composer, online status, and read receipts.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Create Networking Scheduler",
+      "description": "Build meeting scheduler with availability grid, time slot booking, and calendar integration.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Design Virtual Meetup Rooms",
+      "description": "Implement video room interface with room list, participant count, join button, and room creation.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Build Ice Breaker Tools",
+      "description": "Create conversation starters with random questions, common interests, and skill matches.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Implement Contact Exchange",
+      "description": "Design business card exchange with QR code, vCard download, and LinkedIn connect.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Create Networking Analytics",
+      "description": "Build personal analytics with connections made, messages sent, and meeting stats.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "frontend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Design Speed Networking Interface",
+      "description": "Implement rapid networking with timer, next match button, and notes capability.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "frontend",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Create Networking Database Schema",
+      "description": "Design user_connections, messages, meeting_schedules, networking_sessions tables.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "backend"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Build Participant Search API",
+      "description": "Implement GET /api/participants with filtering, sorting, and relevance scoring.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "backend",
+        "judging",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Create Messaging System",
+      "description": "Build real-time messaging with WebSocket support, message history, and encryption.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Implement Meeting Scheduler",
+      "description": "Create scheduling API with availability checking, timezone conversion, and reminder system.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "backend",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Build Video Room Integration",
+      "description": "Implement video API integration with room creation, access tokens, and participant limits.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "backend",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Create Connection Tracking",
+      "description": "Build connection system with mutual connections, connection requests, and privacy controls.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Implement Matching Algorithm",
+      "description": "Create skill-based matching with compatibility scoring, interest matching, and random pairing.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "backend",
+        "judging"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Build Networking Analytics",
+      "description": "Implement analytics collection for networking metrics, engagement tracking, and success rates.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "backend"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Test Notification Delivery",
+      "description": "Verify email, push, and in-app notification delivery across different scenarios.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Test Preference Management",
+      "description": "Validate preference settings, unsubscribe functionality, and digest options.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Test Forum Functionality",
+      "description": "Verify question creation, answering, voting, and search capabilities.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Test Third-Party Integrations",
+      "description": "Validate Discord/Slack integrations, webhook delivery, and sync functionality.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Test Messaging System",
+      "description": "Verify real-time message delivery, online status, and notification triggers.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Test Video Rooms",
+      "description": "Validate room creation, participant limits, and connection quality.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Load Test Communication",
+      "description": "Test with 1000+ concurrent users, message throughput, and notification scaling.",
+      "type": "task",
+      "priority": "low",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "testing"
+      ],
+      "storyPoints": 3,
+      "estimatedHours": 6,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Create Communication Guide",
+      "description": "Write guide for announcement system, notification preferences, and channel options.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "documentation"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Document Notification API",
+      "description": "Create API documentation for notification endpoints with webhook examples.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "documentation",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Build Forum Guidelines",
+      "description": "Write community guidelines, posting rules, and moderation policies.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "documentation"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Create Integration Setup Guides",
+      "description": "Document Discord/Slack setup with step-by-step instructions and troubleshooting.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "documentation"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Write Networking Guide",
+      "description": "Create guide for using networking features, scheduling meetings, and best practices.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "documentation"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Set Up Email Infrastructure",
+      "description": "Configure email service with SMTP setup, domain verification, and deliverability monitoring.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "devops"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Implement Push Notification Service",
+      "description": "Deploy web push service with VAPID keys, service workers, and CDN distribution.",
+      "type": "task",
+      "priority": "high",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "devops",
+        "api"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 10,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Configure Message Queue",
+      "description": "Set up RabbitMQ/AWS SQS for notification processing with monitoring and alerts.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "devops"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Deploy Discord Bot",
+      "description": "Set up Discord bot hosting with webhook endpoints and event listeners.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "devops"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Configure Slack App",
+      "description": "Deploy Slack app with OAuth server and event subscription endpoints.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "devops"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Set Up Forum Search",
+      "description": "Configure Elasticsearch cluster for forum search with backup and scaling.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "devops"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Implement WebSocket Infrastructure",
+      "description": "Deploy WebSocket servers with load balancing, sticky sessions, and failover.",
+      "type": "task",
+      "priority": "critical",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "devops"
+      ],
+      "storyPoints": 8,
+      "estimatedHours": 16,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Configure Video Service",
+      "description": "Set up video room service with TURN/STUN servers and bandwidth management.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "devops"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
+    },
+    {
+      "title": "Set Up Real-time Monitoring",
+      "description": "Implement monitoring for chat, notifications, and video services with alerting.",
+      "type": "task",
+      "priority": "medium",
+      "status": "todo",
+      "labels": [
+        "sprint-6",
+        "devops",
+        "communication"
+      ],
+      "storyPoints": 5,
+      "estimatedHours": 8,
+      "sprint": "Sprint 6: Communication & Community",
+      "sprintId": "6908a34f4e02fa9ee678bdf8"
     }
   ]
 }

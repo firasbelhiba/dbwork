@@ -2,15 +2,30 @@ import React from 'react';
 import { Issue } from '@/types/issue';
 import { Badge } from '@/components/common';
 import { getInitials } from '@/lib/utils';
+import { SprintStatus } from '@/types/sprint';
 import Link from 'next/link';
 
 interface IssueCardProps {
   issue: Issue;
 }
 
+const getSprintStatusVariant = (status: SprintStatus) => {
+  switch (status) {
+    case SprintStatus.ACTIVE:
+      return 'success' as const;
+    case SprintStatus.COMPLETED:
+      return 'default' as const;
+    case SprintStatus.PLANNED:
+      return 'warning' as const;
+    default:
+      return 'default' as const;
+  }
+};
+
 export const IssueCard: React.FC<IssueCardProps> = ({ issue }) => {
   const assignee = typeof issue.assignee === 'object' ? issue.assignee : null;
   const projectKey = typeof issue.projectId === 'object' ? issue.projectId.key : '';
+  const sprint = typeof issue.sprintId === 'object' ? issue.sprintId : null;
 
   return (
     <Link
@@ -29,9 +44,18 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue }) => {
       </h4>
 
       {/* Issue Key */}
-      <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+      <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
         {projectKey}-{issue._id.slice(-4)}
       </p>
+
+      {/* Sprint Badge */}
+      {sprint && (
+        <div className="mb-3">
+          <Badge variant={getSprintStatusVariant(sprint.status)} dot>
+            {sprint.name}
+          </Badge>
+        </div>
+      )}
 
       {/* Footer */}
       <div className="flex items-center justify-between">
