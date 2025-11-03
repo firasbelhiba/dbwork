@@ -338,6 +338,7 @@ export class IssuesService {
       .populate('assignee', 'firstName lastName email avatar')
       .populate('reporter', 'firstName lastName email avatar')
       .populate('projectId', 'name key')
+      .populate('sprintId', 'name status')
       .limit(20)
       .exec();
   }
@@ -362,6 +363,7 @@ export class IssuesService {
       .find(query)
       .populate('assignee', 'firstName lastName email avatar')
       .populate('reporter', 'firstName lastName email avatar')
+      .populate('sprintId', 'name status')
       .sort({ order: 1, createdAt: -1 })
       .exec();
 
@@ -376,6 +378,7 @@ export class IssuesService {
       .find({ sprintId })
       .populate('assignee', 'firstName lastName email avatar')
       .populate('reporter', 'firstName lastName email avatar')
+      .populate('sprintId', 'name status')
       .sort({ status: 1, order: 1 })
       .exec();
   }
@@ -385,6 +388,7 @@ export class IssuesService {
       .find({ projectId, sprintId: null })
       .populate('assignee', 'firstName lastName email avatar')
       .populate('reporter', 'firstName lastName email avatar')
+      .populate('sprintId', 'name status')
       .sort({ order: 1, createdAt: -1 })
       .exec();
   }
@@ -405,6 +409,7 @@ export class IssuesService {
       .populate('assignee', 'firstName lastName email avatar')
       .populate('reporter', 'firstName lastName email avatar')
       .populate('projectId', 'name key')
+      .populate('sprintId', 'name status')
       .sort({ createdAt: -1 })
       .exec();
   }
