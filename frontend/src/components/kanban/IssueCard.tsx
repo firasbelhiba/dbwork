@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Issue } from '@/types/issue';
-import { Badge } from '@/components/common';
+import { Badge, Dropdown, DropdownItem } from '@/components/common';
 import { getInitials } from '@/lib/utils';
 import { SprintStatus } from '@/types/sprint';
 import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
+import { UserRole } from '@/types/user';
 
 interface IssueCardProps {
   issue: Issue;
+  onArchive?: (issueId: string) => void;
+  onDelete?: (issueId: string) => void;
 }
 
 const getSprintStatusVariant = (status: SprintStatus) => {
@@ -22,21 +26,75 @@ const getSprintStatusVariant = (status: SprintStatus) => {
   }
 };
 
-export const IssueCard: React.FC<IssueCardProps> = ({ issue }) => {
+export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete }) => {
+  const { user } = useAuth();
   const assignee = typeof issue.assignee === 'object' ? issue.assignee : null;
   const projectKey = typeof issue.projectId === 'object' ? issue.projectId.key : '';
   const sprint = typeof issue.sprintId === 'object' ? issue.sprintId : null;
 
+  // Check if user can archive/delete (Admin or PM only)
+  const canManage = user?.role === UserRole.ADMIN || user?.role === UserRole.PROJECT_MANAGER;
+
+  const handleArchive = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onArchive) {
+      onArchive(issue._id);
+    }
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onDelete) {
+      onDelete(issue._id);
+    }
+  };
+
   return (
-    <Link
-      href={`/issues/${issue._id}`}
-      className="block bg-white dark:bg-dark-400 rounded-lg border border-gray-200 dark:border-dark-300 p-4 hover:shadow-md transition-all cursor-pointer"
-    >
-      {/* Issue Type & Priority */}
-      <div className="flex items-center gap-2 mb-2">
-        <Badge variant={issue.type as any}>{issue.type}</Badge>
-        <Badge variant={issue.priority as any}>{issue.priority}</Badge>
-      </div>
+    <div className="relative bg-white dark:bg-dark-400 rounded-lg border border-gray-200 dark:border-dark-300 p-4 hover:shadow-md transition-all group">
+      {/* 3-Dot Menu (Top Right) */}
+      {canManage && (
+        <div className="absolute top-2 right-2 z-10" onClick={(e) => e.stopPropagation()}>
+          <Dropdown
+            align="right"
+            trigger={
+              <button className="p-1 rounded hover:bg-gray-100 dark:hover:bg-dark-300 opacity-0 group-hover:opacity-100 transition-opacity">
+                <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 16 16">
+                  <circle cx="8" cy="2" r="1.5" />
+                  <circle cx="8" cy="8" r="1.5" />
+                  <circle cx="8" cy="14" r="1.5" />
+                </svg>
+              </button>
+            }
+          >
+            <DropdownItem onClick={handleArchive}>
+              <div className="flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                </svg>
+                <span>Archive</span>
+              </div>
+            </DropdownItem>
+            <DropdownItem onClick={handleDelete} variant="danger">
+              <div className="flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                <span>Delete</span>
+              </div>
+            </DropdownItem>
+          </Dropdown>
+        </div>
+      )}
+
+      {/* Card Content (Wrapped in Link) */}
+      <Link href={`/issues/${issue._id}`} className="block">
+        {/* Issue Type & Priority */}
+        <div className="flex items-center gap-2 mb-2">
+          <Badge variant={issue.type as any}>{issue.type}</Badge>
+          <Badge variant={issue.priority as any}>{issue.priority}</Badge>
+        </div>
 
       {/* Title */}
       <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2 line-clamp-2">
@@ -85,17 +143,18 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue }) => {
         )}
       </div>
 
-      {/* Story Points */}
-      {issue.storyPoints && (
-        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-dark-300">
-          <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-            </svg>
-            <span>{issue.storyPoints} points</span>
+        {/* Story Points */}
+        {issue.storyPoints && (
+          <div className="mt-3 pt-3 border-t border-gray-200 dark:border-dark-300">
+            <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              </svg>
+              <span>{issue.storyPoints} points</span>
+            </div>
           </div>
-        </div>
-      )}
-    </Link>
+        )}
+      </Link>
+    </div>
   );
 };

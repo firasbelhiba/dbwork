@@ -6,9 +6,11 @@ import { IssueCard } from './IssueCard';
 
 interface SortableIssueCardProps {
   issue: Issue;
+  onArchive?: (issueId: string) => void;
+  onDelete?: (issueId: string) => void;
 }
 
-export const SortableIssueCard: React.FC<SortableIssueCardProps> = ({ issue }) => {
+export const SortableIssueCard: React.FC<SortableIssueCardProps> = ({ issue, onArchive, onDelete }) => {
   const {
     attributes,
     listeners,
@@ -26,7 +28,7 @@ export const SortableIssueCard: React.FC<SortableIssueCardProps> = ({ issue }) =
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <IssueCard issue={issue} />
+      <IssueCard issue={issue} onArchive={onArchive} onDelete={onDelete} />
     </div>
   );
 };

@@ -193,6 +193,34 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
     return issues.filter((issue) => issue.status === statusId);
   };
 
+  const handleArchiveIssue = async (issueId: string) => {
+    if (!confirm('Are you sure you want to archive this issue?')) return;
+
+    try {
+      await issuesAPI.archive(issueId);
+      toast.success('Issue archived successfully');
+      // Remove from list
+      setIssues((prevIssues) => prevIssues.filter((i) => i._id !== issueId));
+    } catch (error: any) {
+      console.error('Error archiving issue:', error);
+      toast.error(error?.response?.data?.message || 'Failed to archive issue');
+    }
+  };
+
+  const handleDeleteIssue = async (issueId: string) => {
+    if (!confirm('Are you sure you want to delete this issue? This action cannot be undone.')) return;
+
+    try {
+      await issuesAPI.delete(issueId);
+      toast.success('Issue deleted successfully');
+      // Remove from list
+      setIssues((prevIssues) => prevIssues.filter((i) => i._id !== issueId));
+    } catch (error: any) {
+      console.error('Error deleting issue:', error);
+      toast.error(error?.response?.data?.message || 'Failed to delete issue');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -232,6 +260,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
                   title={column.name}
                   color={column.color}
                   issues={getIssuesByStatus(column.id)}
+                  onArchiveIssue={handleArchiveIssue}
+                  onDeleteIssue={handleDeleteIssue}
                 />
               ))}
             </div>

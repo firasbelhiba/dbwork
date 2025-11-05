@@ -11,9 +11,11 @@ interface KanbanColumnProps {
   issues: Issue[];
   dragHandleProps?: any;
   dragHandleRef?: (node: HTMLElement | null) => void;
+  onArchiveIssue?: (issueId: string) => void;
+  onDeleteIssue?: (issueId: string) => void;
 }
 
-export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, color, issues, dragHandleProps, dragHandleRef }) => {
+export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, color, issues, dragHandleProps, dragHandleRef, onArchiveIssue, onDeleteIssue }) => {
   const { setNodeRef } = useDroppable({ id });
 
   // Map Tailwind color classes to actual vibrant colors
@@ -89,7 +91,12 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, color, is
               </div>
             ) : (
               issues.map((issue) => (
-                <SortableIssueCard key={issue._id} issue={issue} />
+                <SortableIssueCard
+                  key={issue._id}
+                  issue={issue}
+                  onArchive={onArchiveIssue}
+                  onDelete={onDeleteIssue}
+                />
               ))
             )}
           </div>
