@@ -269,14 +269,14 @@ export default function IssueDetailPage() {
             {/* Main Content */}
             <div className="col-span-2 space-y-6">
               {/* Description */}
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Description</h2>
-                <p className="text-gray-700 whitespace-pre-wrap">{issue.description || 'No description provided.'}</p>
+              <div className="bg-white dark:bg-dark-600 rounded-lg border border-gray-200 dark:border-dark-400 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Description</h2>
+                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{issue.description || 'No description provided.'}</p>
               </div>
 
               {/* Comments */}
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-dark-600 rounded-lg border border-gray-200 dark:border-dark-400 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                   Comments ({comments.length})
                 </h2>
 
@@ -305,7 +305,7 @@ export default function IssueDetailPage() {
                 {/* Comments List */}
                 <div className="space-y-4">
                   {comments.length === 0 ? (
-                    <p className="text-gray-500 text-center py-8">No comments yet</p>
+                    <p className="text-gray-500 dark:text-gray-400 text-center py-8">No comments yet</p>
                   ) : (
                     comments.map((comment) => {
                       const commentUser = typeof comment.userId === 'object' ? comment.userId : null;
@@ -315,18 +315,18 @@ export default function IssueDetailPage() {
                             {commentUser && getInitials(commentUser.firstName, commentUser.lastName)}
                           </div>
                           <div className="flex-1">
-                            <div className="bg-gray-50 rounded-lg p-4">
+                            <div className="bg-gray-50 dark:bg-dark-500 rounded-lg p-4">
                               <div className="flex items-center justify-between mb-2">
-                                <span className="font-medium text-gray-900">
+                                <span className="font-medium text-gray-900 dark:text-white">
                                   {commentUser ? `${commentUser.firstName} ${commentUser.lastName}` : 'User'}
                                 </span>
-                                <span className="text-xs text-gray-500">
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
                                   {getRelativeTime(comment.createdAt)}
                                 </span>
                               </div>
-                              <p className="text-gray-700 whitespace-pre-wrap">{comment.content}</p>
+                              <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{comment.content}</p>
                               {comment.isEdited && (
-                                <span className="text-xs text-gray-500 mt-2 block">(edited)</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400 mt-2 block">(edited)</span>
                               )}
                             </div>
                             {/* Reactions */}
@@ -360,8 +360,8 @@ export default function IssueDetailPage() {
             {/* Sidebar */}
             <div className="space-y-6">
               {/* Status */}
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">Status</h3>
+              <div className="bg-white dark:bg-dark-600 rounded-lg border border-gray-200 dark:border-dark-400 p-4">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Status</h3>
                 <Select
                   value={issue.status}
                   onChange={(e) => handleStatusChange(e.target.value)}
@@ -375,33 +375,33 @@ export default function IssueDetailPage() {
               </div>
 
               {/* Details */}
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">Details</h3>
+              <div className="bg-white dark:bg-dark-600 rounded-lg border border-gray-200 dark:border-dark-400 p-4">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Details</h3>
                 <div className="space-y-3">
                   <div>
-                    <span className="text-xs text-gray-600 block mb-1">Assignee</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400 block mb-1">Assignee</span>
                     {assignee ? (
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-medium">
                           {getInitials(assignee.firstName, assignee.lastName)}
                         </div>
-                        <span className="text-sm text-gray-900">
+                        <span className="text-sm text-gray-900 dark:text-white">
                           {assignee.firstName} {assignee.lastName}
                         </span>
                       </div>
                     ) : (
-                      <span className="text-sm text-gray-500">Unassigned</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">Unassigned</span>
                     )}
                   </div>
 
                   <div>
-                    <span className="text-xs text-gray-600 block mb-1">Reporter</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400 block mb-1">Reporter</span>
                     {reporter && (
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded-full bg-secondary text-white flex items-center justify-center text-xs font-medium">
                           {getInitials(reporter.firstName, reporter.lastName)}
                         </div>
-                        <span className="text-sm text-gray-900">
+                        <span className="text-sm text-gray-900 dark:text-white">
                           {reporter.firstName} {reporter.lastName}
                         </span>
                       </div>
@@ -409,20 +409,20 @@ export default function IssueDetailPage() {
                   </div>
 
                   <div>
-                    <span className="text-xs text-gray-600 block mb-1">Priority</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400 block mb-1">Priority</span>
                     <Badge variant={issue.priority as any}>{issue.priority}</Badge>
                   </div>
 
                   {issue.storyPoints && issue.storyPoints > 0 && (
                     <div>
-                      <span className="text-xs text-gray-600 block mb-1">Story Points</span>
-                      <span className="text-sm text-gray-900 dark:text-gray-100">{issue.storyPoints}</span>
+                      <span className="text-xs text-gray-600 dark:text-gray-400 block mb-1">Story Points</span>
+                      <span className="text-sm text-gray-900 dark:text-white">{issue.storyPoints}</span>
                     </div>
                   )}
 
                   {issue.labels && issue.labels.length > 0 && (
                     <div>
-                      <span className="text-xs text-gray-600 block mb-1">Labels</span>
+                      <span className="text-xs text-gray-600 dark:text-gray-400 block mb-1">Labels</span>
                       <div className="flex flex-wrap gap-1">
                         {issue.labels.map((label, index) => (
                           <Badge key={index} variant="default">{label}</Badge>
@@ -432,44 +432,44 @@ export default function IssueDetailPage() {
                   )}
 
                   <div>
-                    <span className="text-xs text-gray-600 block mb-1">Due Date</span>
-                    <span className="text-sm text-gray-900 dark:text-gray-100">
+                    <span className="text-xs text-gray-600 dark:text-gray-400 block mb-1">Due Date</span>
+                    <span className="text-sm text-gray-900 dark:text-white">
                       {issue.dueDate ? formatDateTime(issue.dueDate) : 'No due date set'}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-xs text-gray-600 block mb-1">Created</span>
-                    <span className="text-sm text-gray-900 dark:text-gray-100">{formatDateTime(issue.createdAt)}</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400 block mb-1">Created</span>
+                    <span className="text-sm text-gray-900 dark:text-white">{formatDateTime(issue.createdAt)}</span>
                   </div>
 
                   <div>
-                    <span className="text-xs text-gray-600 block mb-1">Updated</span>
-                    <span className="text-sm text-gray-900 dark:text-gray-100">{getRelativeTime(issue.updatedAt)}</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400 block mb-1">Updated</span>
+                    <span className="text-sm text-gray-900 dark:text-white">{getRelativeTime(issue.updatedAt)}</span>
                   </div>
                 </div>
               </div>
 
               {/* Time Tracking */}
               {issue.timeTracking && (
-                <div className="bg-white rounded-lg border border-gray-200 p-4">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Time Tracking</h3>
+                <div className="bg-white dark:bg-dark-600 rounded-lg border border-gray-200 dark:border-dark-400 p-4">
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Time Tracking</h3>
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Estimated:</span>
-                      <span className="text-gray-900">{issue.timeTracking.estimatedHours}h</span>
+                      <span className="text-gray-600 dark:text-gray-400">Estimated:</span>
+                      <span className="text-gray-900 dark:text-white">{issue.timeTracking.estimatedHours}h</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Logged:</span>
-                      <span className="text-gray-900">{issue.timeTracking.loggedHours}h</span>
+                      <span className="text-gray-600 dark:text-gray-400">Logged:</span>
+                      <span className="text-gray-900 dark:text-white">{issue.timeTracking.loggedHours}h</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Remaining:</span>
-                      <span className="text-gray-900">
+                      <span className="text-gray-600 dark:text-gray-400">Remaining:</span>
+                      <span className="text-gray-900 dark:text-white">
                         {Math.max((issue.timeTracking.estimatedHours || 0) - issue.timeTracking.loggedHours, 0)}h
                       </span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                    <div className="w-full bg-gray-200 dark:bg-dark-400 rounded-full h-2 mt-2">
                       <div
                         className="bg-primary h-2 rounded-full"
                         style={{
