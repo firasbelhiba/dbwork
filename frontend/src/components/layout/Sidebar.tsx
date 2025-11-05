@@ -292,11 +292,13 @@ export const Sidebar: React.FC = () => {
         </button>
       </div>
 
-      {/* Changelog Modal */}
-      <ChangelogModal
-        isOpen={showChangelogModal}
-        onClose={() => setShowChangelogModal(false)}
-      />
+      {/* Changelog Modal - Only render when open */}
+      {showChangelogModal && (
+        <ChangelogModal
+          isOpen={showChangelogModal}
+          onClose={() => setShowChangelogModal(false)}
+        />
+      )}
     </aside>
   );
 };
