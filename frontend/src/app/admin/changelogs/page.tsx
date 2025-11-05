@@ -51,12 +51,16 @@ export default function AdminChangelogsPage() {
       setLoading(true);
       const response = await changelogsAPI.getAll({ page: currentPage, limit });
       const data: ChangelogListResponse = response.data;
-      setChangelogs(data.items);
-      setTotal(data.total);
-      setTotalPages(data.pages);
+      setChangelogs(data?.items || []);
+      setTotal(data?.total || 0);
+      setTotalPages(data?.pages || 1);
     } catch (error: any) {
       console.error('Error fetching changelogs:', error);
       toast.error('Failed to load changelogs');
+      // Set empty data on error
+      setChangelogs([]);
+      setTotal(0);
+      setTotalPages(1);
     } finally {
       setLoading(false);
     }
