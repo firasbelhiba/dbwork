@@ -25,8 +25,8 @@ export default function DashboardPage() {
     if (user?._id) {
       fetchDashboardData();
     } else {
-      // Auth finished but no user - stop loading
-      setLoading(false);
+      // Auth finished but no user - redirect to login
+      window.location.href = '/login';
     }
   }, [user, authLoading]);
 
