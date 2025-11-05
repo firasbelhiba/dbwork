@@ -35,10 +35,9 @@ export class Issue {
 
   @Prop({
     type: String,
-    enum: Object.values(IssueStatus),
     default: IssueStatus.TODO
   })
-  status: IssueStatus;
+  status: string; // Can be IssueStatus enum or custom status ID
 
   @Prop({ type: Types.ObjectId, ref: 'User', default: null })
   assignee: Types.ObjectId;

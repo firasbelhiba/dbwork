@@ -2,6 +2,8 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -9,18 +11,32 @@ import { Issue, IssueDocument } from './schemas/issue.schema';
 import { CreateIssueDto, UpdateIssueDto, FilterIssuesDto, AddTimeLogDto } from './dto';
 import { ActivitiesService } from '../activities/activities.service';
 import { ActionType, EntityType } from '../activities/schemas/activity.schema';
+import { ProjectsService } from '../projects/projects.service';
 
 @Injectable()
 export class IssuesService {
   constructor(
     @InjectModel(Issue.name) private issueModel: Model<IssueDocument>,
     private activitiesService: ActivitiesService,
+    @Inject(forwardRef(() => ProjectsService))
+    private projectsService: ProjectsService,
   ) {}
 
   async create(createIssueDto: CreateIssueDto, reporterId: string): Promise<IssueDocument> {
     // Validate parent issue if provided
     if (createIssueDto.parentIssue) {
       await this.validateParentIssue(createIssueDto.parentIssue, createIssueDto.projectId);
+    }
+
+    // Get project to determine default status
+    const project = await this.projectsService.findOne(createIssueDto.projectId);
+
+    // If status not provided and project has custom statuses, use the first one
+    let status: string | undefined = createIssueDto.status;
+    if (!status && project.customStatuses && project.customStatuses.length > 0) {
+      // Sort by order and get the first status
+      const sortedStatuses = [...project.customStatuses].sort((a, b) => a.order - b.order);
+      status = sortedStatuses[0].id;
     }
 
     // Generate issue key - find the highest issue number globally across all issues
@@ -50,6 +66,7 @@ export class IssuesService {
       ...createIssueDto,
       key: issueKey,
       reporter: reporterId,
+      status: status as any, // Use determined status (custom status ID or enum value)
       timeTracking: {
         estimatedHours: createIssueDto.estimatedHours || null,
         loggedHours: 0,
