@@ -35,17 +35,13 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
   // Check if user can archive/delete (Admin or PM only)
   const canManage = user?.role === UserRole.ADMIN || user?.role === UserRole.PROJECT_MANAGER;
 
-  const handleArchive = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleArchive = () => {
     if (onArchive) {
       onArchive(issue._id);
     }
   };
 
-  const handleDelete = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleDelete = () => {
     if (onDelete) {
       onDelete(issue._id);
     }
