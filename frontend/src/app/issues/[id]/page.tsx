@@ -110,6 +110,28 @@ export default function IssueDetailPage() {
     }
   };
 
+  const handleDeleteIssue = async () => {
+    if (!issue) return;
+
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete ${issue.key}?\n\nThis action cannot be undone.`
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      await issuesAPI.delete(issueId);
+      toast.success('Issue deleted successfully!');
+      // Redirect to project page or issues list
+      const projectId = typeof issue.projectId === 'object' ? issue.projectId._id : issue.projectId;
+      router.push(`/projects/${projectId}`);
+    } catch (error: any) {
+      console.error('Error deleting issue:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to delete issue';
+      toast.error(errorMessage);
+    }
+  };
+
   if (loading) {
     return (
       <DashboardLayout>
@@ -198,16 +220,30 @@ export default function IssueDetailPage() {
             <div className="flex items-start gap-3 mb-4">
               <Badge variant={issue.type as any}>{issue.type}</Badge>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex-1">{issue.title}</h1>
-              <Button
-                variant="outline"
-                onClick={() => setShowEditModal(true)}
-                className="flex items-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                Edit
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowEditModal(true)}
+                  className="flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Edit
+                </Button>
+                {(user?.role === UserRole.ADMIN || user?.role === UserRole.PROJECT_MANAGER) && (
+                  <Button
+                    variant="outline"
+                    onClick={handleDeleteIssue}
+                    className="flex items-center gap-2 text-danger-600 hover:text-danger-700 hover:border-danger-600 dark:text-danger-400 dark:hover:text-danger-300 dark:hover:border-danger-400"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete
+                  </Button>
+                )}
+              </div>
             </div>
 
             {/* Parent Issue Link */}
