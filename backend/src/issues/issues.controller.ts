@@ -56,8 +56,9 @@ export class IssuesController {
   getByProject(
     @Param('projectId') projectId: string,
     @Query('status') status?: string,
+    @Query('isArchived') isArchived?: string,
   ) {
-    return this.issuesService.getIssuesByProject(projectId, status);
+    return this.issuesService.getIssuesByProject(projectId, status, isArchived);
   }
 
   @Get('project/:projectId/backlog')
@@ -70,8 +71,11 @@ export class IssuesController {
   @Get('sprint/:sprintId')
   @ApiOperation({ summary: 'Get issues by sprint' })
   @ApiResponse({ status: 200, description: 'Sprint issues' })
-  getBySprint(@Param('sprintId') sprintId: string) {
-    return this.issuesService.getIssuesBySprint(sprintId);
+  getBySprint(
+    @Param('sprintId') sprintId: string,
+    @Query('isArchived') isArchived?: string,
+  ) {
+    return this.issuesService.getIssuesBySprint(sprintId, isArchived);
   }
 
   @Get('key/:key')

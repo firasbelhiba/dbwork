@@ -382,12 +382,19 @@ export class IssuesService {
       .exec();
   }
 
-  async getIssuesByProject(projectId: string, status?: string): Promise<IssueDocument[]> {
-    console.log('[getIssuesByProject] Called with projectId:', projectId);
+  async getIssuesByProject(projectId: string, status?: string, isArchived?: string): Promise<IssueDocument[]> {
+    console.log('[getIssuesByProject] Called with projectId:', projectId, 'isArchived:', isArchived);
     const query: any = {
       projectId: new Types.ObjectId(projectId),
-      isArchived: false // Exclude archived issues
     };
+
+    // Handle archived filter
+    // If isArchived === 'all', don't filter by isArchived
+    // Otherwise, only show non-archived issues
+    if (isArchived !== 'all') {
+      query.isArchived = false;
+    }
+
     if (status) query.status = status;
     console.log('[getIssuesByProject] Query:', JSON.stringify(query));
 
@@ -409,12 +416,23 @@ export class IssuesService {
     return results;
   }
 
-  async getIssuesBySprint(sprintId: string): Promise<IssueDocument[]> {
+  async getIssuesBySprint(sprintId: string, isArchived?: string): Promise<IssueDocument[]> {
+    console.log('[getIssuesBySprint] Called with sprintId:', sprintId, 'isArchived:', isArchived);
+    const query: any = {
+      sprintId: new Types.ObjectId(sprintId),
+    };
+
+    // Handle archived filter
+    // If isArchived === 'all', don't filter by isArchived
+    // Otherwise, only show non-archived issues
+    if (isArchived !== 'all') {
+      query.isArchived = false;
+    }
+
+    console.log('[getIssuesBySprint] Query:', JSON.stringify(query));
+
     return this.issueModel
-      .find({
-        sprintId: new Types.ObjectId(sprintId),
-        isArchived: false // Exclude archived issues
-      })
+      .find(query)
       .populate('assignee', 'firstName lastName email avatar')
       .populate('reporter', 'firstName lastName email avatar')
       .populate('sprintId', 'name status')
