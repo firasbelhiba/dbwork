@@ -120,7 +120,7 @@ export default function ProfilePage() {
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading profile...</p>
+            <p className="mt-4 text-gray-600 dark:text-gray-400">Loading profile...</p>
           </div>
         </div>
       </DashboardLayout>
@@ -154,13 +154,13 @@ export default function ProfilePage() {
         />
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Profile Settings</h1>
-          <p className="text-gray-600 mt-1">Manage your account settings and preferences</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Profile Settings</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">Manage your account settings and preferences</p>
         </div>
 
         {/* Profile Information */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Profile Information</h2>
+        <div className="bg-white dark:bg-dark-600 rounded-lg shadow-sm border border-gray-200 dark:border-dark-400 p-8 mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Profile Information</h2>
           <form onSubmit={handleProfileSubmit} className="space-y-6">
             {/* Email (Read-only) */}
             <Input
@@ -194,13 +194,13 @@ export default function ProfilePage() {
 
             {/* Role (Read-only) */}
             <div>
-              <label className="block text-sm font-medium text-gray-900 mb-1.5">
+              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1.5">
                 Role
               </label>
-              <div className="flex h-10 w-full rounded-md border-2 border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-900">
+              <div className="flex h-10 w-full rounded-md border-2 border-gray-300 dark:border-dark-400 bg-gray-100 dark:bg-dark-500 px-3 py-2 text-sm text-gray-900 dark:text-white">
                 {user.role}
               </div>
-              <p className="mt-1.5 text-sm text-gray-600">Your role is managed by administrators</p>
+              <p className="mt-1.5 text-sm text-gray-600 dark:text-gray-400">Your role is managed by administrators</p>
             </div>
 
             {/* Actions */}
@@ -217,8 +217,8 @@ export default function ProfilePage() {
         </div>
 
         {/* Change Password */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Change Password</h2>
+        <div className="bg-white dark:bg-dark-600 rounded-lg shadow-sm border border-gray-200 dark:border-dark-400 p-8">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Change Password</h2>
           <form onSubmit={handlePasswordSubmit} className="space-y-6">
             {/* Current Password */}
             <Input
@@ -234,7 +234,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"
                   tabIndex={-1}
                 >
                   {showCurrentPassword ? (
@@ -266,7 +266,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"
                   tabIndex={-1}
                 >
                   {showNewPassword ? (
@@ -297,7 +297,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"
                   tabIndex={-1}
                 >
                   {showConfirmPassword ? (
@@ -329,26 +329,26 @@ export default function ProfilePage() {
         </div>
 
         {/* Account Information */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mt-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Account Information</h2>
+        <div className="bg-white dark:bg-dark-600 rounded-lg shadow-sm border border-gray-200 dark:border-dark-400 p-8 mt-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Account Information</h2>
           <div className="space-y-4 text-sm">
-            <div className="flex items-center justify-between py-3 border-b border-gray-200">
-              <span className="text-gray-600">User ID</span>
-              <span className="text-gray-900 font-mono">{user._id}</span>
+            <div className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-dark-400">
+              <span className="text-gray-600 dark:text-gray-400">User ID</span>
+              <span className="text-gray-900 dark:text-white font-mono">{user._id}</span>
             </div>
-            <div className="flex items-center justify-between py-3 border-b border-gray-200">
-              <span className="text-gray-600">Account Status</span>
+            <div className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-dark-400">
+              <span className="text-gray-600 dark:text-gray-400">Account Status</span>
               <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                 user.isActive
-                  ? 'bg-success-100 text-success-700'
-                  : 'bg-gray-200 text-gray-800'
+                  ? 'bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-400'
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
               }`}>
                 {user.isActive ? 'Active' : 'Inactive'}
               </span>
             </div>
             <div className="flex items-center justify-between py-3">
-              <span className="text-gray-600">Member Since</span>
-              <span className="text-gray-900">
+              <span className="text-gray-600 dark:text-gray-400">Member Since</span>
+              <span className="text-gray-900 dark:text-white">
                 {new Date(user.createdAt).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
