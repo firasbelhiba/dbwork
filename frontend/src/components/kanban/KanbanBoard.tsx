@@ -73,16 +73,24 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
       let response;
       const params = showArchived ? { isArchived: 'all' } : {};
 
+      console.log('[KanbanBoard] fetchIssues called with showArchived:', showArchived, 'params:', params);
+
       if (sprintId) {
         // For sprint view
+        console.log('[KanbanBoard] Fetching sprint issues:', sprintId);
         response = await issuesAPI.getBySprint(sprintId, params);
       } else {
         // For project view
+        console.log('[KanbanBoard] Fetching project issues:', projectId);
         response = await issuesAPI.getByProject(projectId, params);
       }
 
       console.log('[KanbanBoard] Fetched issues:', response.data.length, 'issues', showArchived ? '(including archived)' : '(active only)');
-      console.log('[KanbanBoard] Sample issue statuses:', response.data.slice(0, 5).map((i: any) => ({ key: i.key, status: i.status, isArchived: i.isArchived })));
+      console.log('[KanbanBoard] Sample issues:', response.data.slice(0, 5).map((i: any) => ({ key: i.key, status: i.status, isArchived: i.isArchived })));
+
+      const archivedCount = response.data.filter((i: any) => i.isArchived).length;
+      console.log('[KanbanBoard] Archived issues in response:', archivedCount);
+
       setIssues(response.data);
     } catch (error) {
       console.error('Error fetching issues:', error);
