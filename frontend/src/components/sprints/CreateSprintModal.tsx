@@ -73,7 +73,7 @@ export const CreateSprintModal: React.FC<CreateSprintModalProps> = ({
 
     setLoading(true);
     try {
-      await sprintsAPI.create({
+      const response = await sprintsAPI.create({
         projectId,
         name: formData.name.trim(),
         goal: formData.goal.trim(),
@@ -81,8 +81,11 @@ export const CreateSprintModal: React.FC<CreateSprintModalProps> = ({
         endDate: new Date(formData.endDate),
       });
 
+      console.log('Sprint created:', response.data);
       toast.success('Sprint created successfully');
-      onSprintCreated();
+
+      // Await the callback to ensure sprints are refetched before closing
+      await onSprintCreated();
       handleClose();
     } catch (error: any) {
       console.error('Error creating sprint:', error);
