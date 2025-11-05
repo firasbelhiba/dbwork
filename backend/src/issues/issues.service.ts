@@ -64,6 +64,7 @@ export class IssuesService {
 
     const issue = new this.issueModel({
       ...createIssueDto,
+      projectId: new Types.ObjectId(createIssueDto.projectId), // Ensure ObjectId conversion
       key: issueKey,
       reporter: reporterId,
       status: status as any, // Use determined status (custom status ID or enum value)
