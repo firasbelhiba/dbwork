@@ -12,17 +12,23 @@ import { RecentActivityWidget } from '@/components/activities/RecentActivityWidg
 import Link from 'next/link';
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [assignedIssues, setAssignedIssues] = useState<Issue[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Wait for auth to finish loading first
+    if (authLoading) return;
+
     if (user?._id) {
       fetchDashboardData();
+    } else {
+      // Auth finished but no user - stop loading
+      setLoading(false);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   const calculateStatsFromIssues = (issues: Issue[]) => {
     return {
