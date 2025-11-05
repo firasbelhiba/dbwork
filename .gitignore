@@ -42,3 +42,6 @@ delete-duplicate-issues.js
 jira-import.json
 jira-import-transformed.json
 Jira.csv
+
+# Development changelog (local tracking only)
+changelog.md
