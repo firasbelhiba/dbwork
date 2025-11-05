@@ -165,12 +165,20 @@ export default function ProjectSettingsPage() {
       return;
     }
 
+    console.log('[handleRemoveMember] Removing user:', userId);
+    console.log('[handleRemoveMember] Project ID:', projectId);
+    console.log('[handleRemoveMember] Current user:', currentUser);
+
     try {
-      await projectsAPI.removeMember(projectId, userId);
+      const response = await projectsAPI.removeMember(projectId, userId);
+      console.log('[handleRemoveMember] Success response:', response);
       toast.success('Member removed successfully');
       fetchProjectData();
     } catch (error: any) {
-      console.error('Error removing member:', error);
+      console.error('[handleRemoveMember] Error removing member:', error);
+      console.error('[handleRemoveMember] Error response:', error.response);
+      console.error('[handleRemoveMember] Error status:', error.response?.status);
+      console.error('[handleRemoveMember] Error data:', error.response?.data);
       const errorMessage = error.response?.data?.message || 'Failed to remove member';
       toast.error(errorMessage);
     }
