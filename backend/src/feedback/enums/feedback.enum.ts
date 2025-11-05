@@ -7,5 +7,6 @@ export enum FeedbackType {
 
 export enum FeedbackStatus {
   OPEN = 'open',
+  TO_TEST = 'to_test',
   RESOLVED = 'resolved',
 }

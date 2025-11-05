@@ -104,4 +104,14 @@ export class FeedbackController {
   reopen(@Param('id') id: string, @CurrentUser() user) {
     return this.feedbackService.reopen(id, user._id);
   }
+
+  @Patch(':id/to-test')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Mark feedback as to test (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Feedback marked as to test' })
+  @ApiResponse({ status: 403, description: 'Forbidden - admin only' })
+  @ApiResponse({ status: 404, description: 'Feedback not found' })
+  toTest(@Param('id') id: string, @CurrentUser() user) {
+    return this.feedbackService.toTest(id, user._id);
+  }
 }

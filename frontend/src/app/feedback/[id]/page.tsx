@@ -79,6 +79,21 @@ export default function FeedbackDetailPage() {
     }
   };
 
+  const handleToTest = async () => {
+    if (!feedback) return;
+    try {
+      setActionLoading(true);
+      const response = await feedbackAPI.toTest(feedback._id);
+      setFeedback(response.data);
+      toast.success('Feedback marked as to test');
+    } catch (error: any) {
+      console.error('Error marking feedback as to test:', error);
+      toast.error(error.response?.data?.message || 'Failed to mark feedback as to test');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleDelete = async () => {
     if (!feedback) return;
     if (!confirm('Are you sure you want to delete this feedback?')) return;
@@ -129,6 +144,8 @@ export default function FeedbackDetailPage() {
     switch (status) {
       case FeedbackStatus.OPEN:
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+      case FeedbackStatus.TO_TEST:
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
       case FeedbackStatus.RESOLVED:
         return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
       default:
@@ -191,7 +208,7 @@ export default function FeedbackDetailPage() {
                   {getTypeLabel(feedback.type)}
                 </span>
                 <span className={`text-sm font-medium px-2.5 py-0.5 rounded-full ${getStatusColor(feedback.status)}`}>
-                  {feedback.status === FeedbackStatus.OPEN ? 'Open' : 'Resolved'}
+                  {feedback.status === FeedbackStatus.OPEN ? 'Open' : feedback.status === FeedbackStatus.TO_TEST ? 'To Test' : 'Resolved'}
                 </span>
               </div>
 
@@ -366,11 +383,27 @@ export default function FeedbackDetailPage() {
             {/* Admin Actions */}
             {isAdmin && (
               <>
-                {feedback.status === FeedbackStatus.OPEN ? (
-                  <Button onClick={handleResolve} disabled={actionLoading}>
-                    {actionLoading ? 'Resolving...' : 'Mark as Resolved'}
-                  </Button>
-                ) : (
+                {feedback.status === FeedbackStatus.OPEN && (
+                  <>
+                    <Button variant="outline" onClick={handleToTest} disabled={actionLoading}>
+                      {actionLoading ? 'Marking as To Test...' : 'To Test'}
+                    </Button>
+                    <Button onClick={handleResolve} disabled={actionLoading}>
+                      {actionLoading ? 'Resolving...' : 'Mark as Resolved'}
+                    </Button>
+                  </>
+                )}
+                {feedback.status === FeedbackStatus.TO_TEST && (
+                  <>
+                    <Button variant="outline" onClick={handleReopen} disabled={actionLoading}>
+                      {actionLoading ? 'Reopening...' : 'Reopen'}
+                    </Button>
+                    <Button onClick={handleResolve} disabled={actionLoading}>
+                      {actionLoading ? 'Resolving...' : 'Mark as Resolved'}
+                    </Button>
+                  </>
+                )}
+                {feedback.status === FeedbackStatus.RESOLVED && (
                   <Button variant="outline" onClick={handleReopen} disabled={actionLoading}>
                     {actionLoading ? 'Reopening...' : 'Reopen'}
                   </Button>

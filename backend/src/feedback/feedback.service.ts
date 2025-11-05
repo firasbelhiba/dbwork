@@ -267,6 +267,33 @@ export class FeedbackService {
     return this.findOne(id);
   }
 
+  async toTest(id: string, adminUserId: string): Promise<FeedbackDocument> {
+    const feedback = await this.feedbackModel.findById(id).exec();
+
+    if (!feedback) {
+      throw new NotFoundException('Feedback not found');
+    }
+
+    if (feedback.status === FeedbackStatus.TO_TEST) {
+      throw new BadRequestException('Feedback is already marked as to test');
+    }
+
+    feedback.status = FeedbackStatus.TO_TEST;
+
+    await feedback.save();
+
+    // Log activity
+    await this.activitiesService.logActivity(
+      adminUserId,
+      ActionType.UPDATED,
+      EntityType.FEEDBACK,
+      feedback._id.toString(),
+      feedback.title,
+    );
+
+    return this.findOne(id);
+  }
+
   async getStats(): Promise<{
     totalFeedback: number;
     openFeedback: number;

@@ -243,6 +243,7 @@ export const feedbackAPI = {
   upvote: (id: string) => api.post(`/feedback/${id}/upvote`),
   resolve: (id: string) => api.patch(`/feedback/${id}/resolve`),
   reopen: (id: string) => api.patch(`/feedback/${id}/reopen`),
+  toTest: (id: string) => api.patch(`/feedback/${id}/to-test`),
   getStats: () => api.get('/feedback/stats'),
 };
 
