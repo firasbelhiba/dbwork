@@ -124,7 +124,37 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
     } else {
       // Handle issue dragging (existing logic)
       const issueId = active.id as string;
-      const newStatus = over.id as string;
+      const overId = over.id as string;
+
+      // Determine if we dropped on a column or an issue
+      let newStatus: string;
+      const isOverColumn = columns.some((col) => col.id === overId);
+
+      if (isOverColumn) {
+        // Dropped on a column droppable area
+        newStatus = overId;
+      } else {
+        // Dropped on an issue - find which column that issue belongs to
+        const targetIssue = issues.find((i) => i._id === overId);
+        if (targetIssue) {
+          newStatus = targetIssue.status;
+        } else {
+          console.error('Could not determine target column');
+          return;
+        }
+      }
+
+      // Validate that newStatus is a valid column ID
+      const validStatuses = ['todo', 'in_progress', 'in_review', 'testing', 'done'];
+      const isValidStatus = validStatuses.includes(newStatus) || columns.some((col) => col.id === newStatus);
+
+      if (!isValidStatus) {
+        console.error(`Invalid status: ${newStatus}. Not updating issue.`);
+        toast.error('Invalid target column');
+        return;
+      }
+
+      console.log(`[KanbanBoard] Moving issue ${issueId} to status: ${newStatus}`);
 
       // Optimistic update
       setIssues((prevIssues) =>
@@ -136,8 +166,10 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
       // Update on backend
       try {
         await issuesAPI.update(issueId, { status: newStatus as any });
+        toast.success('Issue moved successfully');
       } catch (error) {
         console.error('Error updating issue:', error);
+        toast.error('Failed to move issue');
         // Revert on error
         fetchIssues();
       }
