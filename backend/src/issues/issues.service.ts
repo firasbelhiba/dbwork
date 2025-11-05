@@ -105,6 +105,7 @@ export class IssuesService {
       reporter,
       labels,
       search,
+      isArchived,
       page = 1,
       limit = 50,
       sortBy = 'createdAt',
@@ -121,6 +122,13 @@ export class IssuesService {
     if (assignee) query.assignee = new Types.ObjectId(assignee);
     if (reporter) query.reporter = new Types.ObjectId(reporter);
     if (labels && labels.length > 0) query.labels = { $in: labels };
+
+    // Exclude archived issues by default
+    if (isArchived !== undefined) {
+      query.isArchived = isArchived === 'true' || isArchived === true;
+    } else {
+      query.isArchived = false;
+    }
 
     if (search) {
       query.$text = { $search: search };
@@ -376,7 +384,10 @@ export class IssuesService {
 
   async getIssuesByProject(projectId: string, status?: string): Promise<IssueDocument[]> {
     console.log('[getIssuesByProject] Called with projectId:', projectId);
-    const query: any = { projectId: new Types.ObjectId(projectId) };
+    const query: any = {
+      projectId: new Types.ObjectId(projectId),
+      isArchived: false // Exclude archived issues
+    };
     if (status) query.status = status;
     console.log('[getIssuesByProject] Query:', JSON.stringify(query));
 
@@ -400,7 +411,10 @@ export class IssuesService {
 
   async getIssuesBySprint(sprintId: string): Promise<IssueDocument[]> {
     return this.issueModel
-      .find({ sprintId: new Types.ObjectId(sprintId) })
+      .find({
+        sprintId: new Types.ObjectId(sprintId),
+        isArchived: false // Exclude archived issues
+      })
       .populate('assignee', 'firstName lastName email avatar')
       .populate('reporter', 'firstName lastName email avatar')
       .populate('sprintId', 'name status')
@@ -410,7 +424,11 @@ export class IssuesService {
 
   async getBacklog(projectId: string): Promise<IssueDocument[]> {
     return this.issueModel
-      .find({ projectId: new Types.ObjectId(projectId), sprintId: null })
+      .find({
+        projectId: new Types.ObjectId(projectId),
+        sprintId: null,
+        isArchived: false // Exclude archived issues
+      })
       .populate('assignee', 'firstName lastName email avatar')
       .populate('reporter', 'firstName lastName email avatar')
       .populate('sprintId', 'name status')
@@ -455,5 +473,61 @@ export class IssuesService {
     if (parentIssue.parentIssue) {
       throw new BadRequestException('Cannot create sub-issue of a sub-issue. Maximum nesting level is 2.');
     }
+  }
+
+  async archive(id: string, userId?: string): Promise<IssueDocument> {
+    const issue = await this.issueModel
+      .findByIdAndUpdate(
+        id,
+        { isArchived: true, archivedAt: new Date() },
+        { new: true },
+      )
+      .exec();
+
+    if (!issue) {
+      throw new NotFoundException('Issue not found');
+    }
+
+    // Log activity
+    if (userId) {
+      await this.activitiesService.logActivity(
+        userId,
+        ActionType.ARCHIVED,
+        EntityType.ISSUE,
+        issue._id.toString(),
+        issue.title,
+        issue.projectId.toString(),
+      );
+    }
+
+    return issue;
+  }
+
+  async restore(id: string, userId?: string): Promise<IssueDocument> {
+    const issue = await this.issueModel
+      .findByIdAndUpdate(
+        id,
+        { isArchived: false, archivedAt: null },
+        { new: true },
+      )
+      .exec();
+
+    if (!issue) {
+      throw new NotFoundException('Issue not found');
+    }
+
+    // Log activity
+    if (userId) {
+      await this.activitiesService.logActivity(
+        userId,
+        ActionType.RESTORED,
+        EntityType.ISSUE,
+        issue._id.toString(),
+        issue.title,
+        issue.projectId.toString(),
+      );
+    }
+
+    return issue;
   }
 }

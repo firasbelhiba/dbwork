@@ -48,6 +48,8 @@ export interface Issue {
   parentIssue: Issue | string | null;
   subIssueCount?: number;
   order: number;
+  isArchived?: boolean;
+  archivedAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }

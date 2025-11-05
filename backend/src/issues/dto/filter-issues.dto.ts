@@ -1,4 +1,4 @@
-import { IsOptional, IsEnum, IsMongoId, IsString, IsArray, IsNumber, Min } from 'class-validator';
+import { IsOptional, IsEnum, IsMongoId, IsString, IsArray, IsNumber, Min, IsBoolean } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IssueType, IssuePriority, IssueStatus } from '@common/enums';
@@ -49,6 +49,11 @@ export class FilterIssuesDto {
   @IsOptional()
   @IsString()
   search?: string;
+
+  @ApiProperty({ required: false, description: 'Filter by archived status. Defaults to false (excludes archived).' })
+  @IsOptional()
+  @IsString()
+  isArchived?: string | boolean;
 
   @ApiProperty({ required: false, default: 1 })
   @IsOptional()

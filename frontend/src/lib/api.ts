@@ -138,6 +138,8 @@ export const issuesAPI = {
   removeWatcher: (id: string, userId: string) => api.delete(`/issues/${id}/watchers/${userId}`),
   addBlocker: (id: string, blockerIssueId: string) => api.post(`/issues/${id}/blockers/${blockerIssueId}`),
   removeBlocker: (id: string, blockerIssueId: string) => api.delete(`/issues/${id}/blockers/${blockerIssueId}`),
+  archive: (id: string) => api.patch(`/issues/${id}/archive`),
+  restore: (id: string) => api.patch(`/issues/${id}/restore`),
 };
 
 // Sprints API

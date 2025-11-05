@@ -29,6 +29,7 @@ export default function IssueDetailPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [archiving, setArchiving] = useState(false);
   const [unauthorized, setUnauthorized] = useState(false);
 
   useEffect(() => {
@@ -131,6 +132,38 @@ export default function IssueDetailPage() {
     }
   };
 
+  const handleArchiveIssue = async () => {
+    if (!issue) return;
+
+    setArchiving(true);
+    try {
+      const response = await issuesAPI.archive(issueId);
+      setIssue(response.data);
+      toast.success('Issue archived successfully!');
+    } catch (error: any) {
+      console.error('Error archiving issue:', error);
+      toast.error(error?.response?.data?.message || 'Failed to archive issue');
+    } finally {
+      setArchiving(false);
+    }
+  };
+
+  const handleRestoreIssue = async () => {
+    if (!issue) return;
+
+    setArchiving(true);
+    try {
+      const response = await issuesAPI.restore(issueId);
+      setIssue(response.data);
+      toast.success('Issue restored successfully!');
+    } catch (error: any) {
+      console.error('Error restoring issue:', error);
+      toast.error(error?.response?.data?.message || 'Failed to restore issue');
+    } finally {
+      setArchiving(false);
+    }
+  };
+
   if (loading) {
     return (
       <DashboardLayout>
@@ -218,6 +251,9 @@ export default function IssueDetailPage() {
             />
             <div className="flex items-start gap-3 mb-4">
               <Badge variant={issue.type as any}>{issue.type}</Badge>
+              {issue.isArchived && (
+                <Badge variant="default" className="bg-gray-500 text-white">ARCHIVED</Badge>
+              )}
               <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex-1">{issue.title}</h1>
               <div className="flex items-center gap-2">
                 <Button
@@ -231,16 +267,43 @@ export default function IssueDetailPage() {
                   Edit
                 </Button>
                 {(user?.role === UserRole.ADMIN || user?.role === UserRole.PROJECT_MANAGER) && (
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowDeleteModal(true)}
-                    className="flex items-center gap-2 text-danger-600 hover:text-danger-700 hover:border-danger-600 dark:text-danger-400 dark:hover:text-danger-300 dark:hover:border-danger-400"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                    Delete
-                  </Button>
+                  <>
+                    {issue.isArchived ? (
+                      <Button
+                        variant="outline"
+                        onClick={handleRestoreIssue}
+                        disabled={archiving}
+                        className="flex items-center gap-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        {archiving ? 'Restoring...' : 'Restore'}
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        onClick={handleArchiveIssue}
+                        disabled={archiving}
+                        className="flex items-center gap-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                        </svg>
+                        {archiving ? 'Archiving...' : 'Archive'}
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowDeleteModal(true)}
+                      className="flex items-center gap-2 text-danger-600 hover:text-danger-700 hover:border-danger-600 dark:text-danger-400 dark:hover:text-danger-300 dark:hover:border-danger-400"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Delete
+                    </Button>
+                  </>
                 )}
               </div>
             </div>

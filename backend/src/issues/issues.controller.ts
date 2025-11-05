@@ -176,4 +176,24 @@ export class IssuesController {
   updateOrder(@Param('id') id: string, @Body('order') order: number) {
     return this.issuesService.updateOrder(id, order);
   }
+
+  @Patch(':id/archive')
+  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
+  @ApiOperation({ summary: 'Archive an issue (Admin/PM only)' })
+  @ApiResponse({ status: 200, description: 'Issue archived successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden - admin/PM only' })
+  @ApiResponse({ status: 404, description: 'Issue not found' })
+  archive(@Param('id') id: string, @CurrentUser() user) {
+    return this.issuesService.archive(id, user._id);
+  }
+
+  @Patch(':id/restore')
+  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
+  @ApiOperation({ summary: 'Restore an archived issue (Admin/PM only)' })
+  @ApiResponse({ status: 200, description: 'Issue restored successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden - admin/PM only' })
+  @ApiResponse({ status: 404, description: 'Issue not found' })
+  restore(@Param('id') id: string, @CurrentUser() user) {
+    return this.issuesService.restore(id, user._id);
+  }
 }
