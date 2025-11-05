@@ -5,7 +5,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { IChangelog, ChangelogListResponse } from '@/types';
 import { changelogsAPI } from '@/lib/api';
-import { ChangelogCard, ChangelogFormModal } from '@/components/changelog';
+import { ChangelogAccordion, ChangelogFormModal } from '@/components/changelog';
 import { Button } from '@/components/common/Button';
 import { Breadcrumb, LogoLoader } from '@/components/common';
 import { UserRole } from '@/types/user';
@@ -162,11 +162,12 @@ export default function AdminChangelogsPage() {
 
         {/* Changelog List */}
         {!loading && changelogs.length > 0 && (
-          <div className="space-y-4">
-            {changelogs.map((changelog) => (
-              <ChangelogCard
+          <div className="space-y-3">
+            {changelogs.map((changelog, index) => (
+              <ChangelogAccordion
                 key={changelog._id}
                 changelog={changelog}
+                defaultExpanded={index === 0}
                 onEdit={handleEdit}
                 onDelete={handleDeleteClick}
               />
