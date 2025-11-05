@@ -13,7 +13,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 
 export default function AdminChangelogsPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [changelogs, setChangelogs] = useState<IChangelog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,16 +31,20 @@ export default function AdminChangelogsPage() {
 
   // Check admin access
   useEffect(() => {
-    if (user && user.role !== UserRole.ADMIN) {
-      router.push('/dashboard');
-    }
-  }, [user, router]);
+    if (authLoading) return;
 
-  useEffect(() => {
-    if (user?.role === UserRole.ADMIN) {
-      fetchChangelogs();
+    if (!user) {
+      router.push('/login');
+      return;
     }
-  }, [user, currentPage]);
+
+    if (user.role !== UserRole.ADMIN) {
+      router.push('/dashboard');
+      return;
+    }
+
+    fetchChangelogs();
+  }, [user, authLoading, currentPage, router]);
 
   const fetchChangelogs = async () => {
     try {
@@ -95,6 +99,18 @@ export default function AdminChangelogsPage() {
     fetchChangelogs();
   };
 
+  // Show loading while auth is being checked
+  if (authLoading || loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-full">
+          <LogoLoader size="lg" text="Loading..." />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Don't render anything if redirecting
   if (!user || user.role !== UserRole.ADMIN) {
     return null;
   }
