@@ -10,6 +10,8 @@ import {
   useSensor,
   useSensors,
   closestCorners,
+  pointerWithin,
+  rectIntersection,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -213,7 +215,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
           sensors={sensors}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
-          collisionDetection={closestCorners}
+          collisionDetection={pointerWithin}
         >
           <SortableContext items={columns.map((col) => col.id)} strategy={horizontalListSortingStrategy}>
             <div

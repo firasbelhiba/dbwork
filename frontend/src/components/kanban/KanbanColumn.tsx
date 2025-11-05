@@ -82,7 +82,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, color, is
 
         {/* Issues List */}
         <SortableContext items={issues.map((i) => i._id)} strategy={verticalListSortingStrategy}>
-          <div ref={setNodeRef} className="space-y-3 min-h-[200px] p-4">
+          <div ref={setNodeRef} className="space-y-3 min-h-[400px] p-4" style={{ minHeight: '400px' }}>
             {issues.length === 0 ? (
               <div className="text-center py-8 text-gray-400 dark:text-gray-500 text-sm">
                 Drop issues here
