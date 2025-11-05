@@ -161,24 +161,22 @@ export default function ProjectSettingsPage() {
   };
 
   const handleRemoveMember = async (userId: string) => {
+    // Validate userId
+    if (!userId || userId.trim() === '') {
+      toast.error('Invalid user ID. This member may have been deleted from the system.');
+      return;
+    }
+
     if (!confirm('Are you sure you want to remove this member from the project?')) {
       return;
     }
 
-    console.log('[handleRemoveMember] Removing user:', userId);
-    console.log('[handleRemoveMember] Project ID:', projectId);
-    console.log('[handleRemoveMember] Current user:', currentUser);
-
     try {
-      const response = await projectsAPI.removeMember(projectId, userId);
-      console.log('[handleRemoveMember] Success response:', response);
+      await projectsAPI.removeMember(projectId, userId);
       toast.success('Member removed successfully');
       fetchProjectData();
     } catch (error: any) {
       console.error('[handleRemoveMember] Error removing member:', error);
-      console.error('[handleRemoveMember] Error response:', error.response);
-      console.error('[handleRemoveMember] Error status:', error.response?.status);
-      console.error('[handleRemoveMember] Error data:', error.response?.data);
       const errorMessage = error.response?.data?.message || 'Failed to remove member';
       toast.error(errorMessage);
     }
@@ -452,37 +450,46 @@ export default function ProjectSettingsPage() {
 
                 <div className="divide-y divide-gray-200 dark:divide-dark-300">
                   {project.members && project.members.length > 0 ? (
-                    project.members.map((member: ProjectMember) => {
-                      const memberUser = typeof member.userId === 'object' ? member.userId : null;
-                      return (
-                        <div key={memberUser?._id} className="p-6 flex items-center justify-between">
-                          <div className="flex items-center">
-                            <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium">
-                              {memberUser && getInitials(memberUser.firstName, memberUser.lastName)}
-                            </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                {memberUser?.firstName} {memberUser?.lastName}
+                    <>
+                      {project.members.map((member: ProjectMember) => {
+                        const memberUser = typeof member.userId === 'object' ? member.userId : null;
+
+                        // Skip null members (deleted users)
+                        if (!memberUser) {
+                          return null;
+                        }
+
+                        return (
+                          <div key={memberUser._id} className="p-6 flex items-center justify-between">
+                            <div className="flex items-center">
+                              <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium">
+                                {getInitials(memberUser.firstName, memberUser.lastName)}
                               </div>
-                              <div className="text-sm text-gray-500 dark:text-gray-400">{memberUser?.email}</div>
+                              <div className="ml-4">
+                                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                  {memberUser.firstName} {memberUser.lastName}
+                                </div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400">{memberUser.email}</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <Badge variant={getRoleBadgeVariant(memberUser.role || UserRole.VIEWER)}>
+                                {memberUser.role ? memberUser.role.replace(/_/g, ' ') : 'Viewer'}
+                              </Badge>
+                              <button
+                                onClick={() => handleRemoveMember(memberUser._id)}
+                                className="text-danger-600 hover:text-danger-900 dark:text-danger-400 dark:hover:text-danger-300"
+                                title="Remove member"
+                              >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
                             </div>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <Badge variant={getRoleBadgeVariant(memberUser?.role || UserRole.VIEWER)}>
-                              {memberUser?.role ? memberUser.role.replace(/_/g, ' ') : 'Viewer'}
-                            </Badge>
-                            <button
-                              onClick={() => handleRemoveMember(memberUser?._id || '')}
-                              className="text-danger-600 hover:text-danger-900 dark:text-danger-400 dark:hover:text-danger-300"
-                            >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })
+                        );
+                      })}
+                    </>
                   ) : (
                     <div className="p-12 text-center">
                       <svg className="w-12 h-12 mx-auto mb-3 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

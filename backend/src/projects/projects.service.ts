@@ -93,6 +93,15 @@ export class ProjectsService {
       throw new NotFoundException('Project not found');
     }
 
+    // Clean up orphaned members (users that were deleted)
+    const originalMemberCount = project.members.length;
+    project.members = project.members.filter((member) => member.userId !== null);
+
+    // If we removed any orphaned members, save the project
+    if (project.members.length < originalMemberCount) {
+      await project.save();
+    }
+
     return project;
   }
 
