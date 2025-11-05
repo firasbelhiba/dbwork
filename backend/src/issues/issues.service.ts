@@ -158,7 +158,14 @@ export class IssuesService {
       .findById(id)
       .populate('assignee', 'firstName lastName email avatar role')
       .populate('reporter', 'firstName lastName email avatar role')
-      .populate('projectId', 'name key description')
+      .populate({
+        path: 'projectId',
+        select: 'name key description members',
+        populate: {
+          path: 'members.userId',
+          select: 'firstName lastName email avatar'
+        }
+      })
       .populate('sprintId', 'name status startDate endDate')
       .populate('watchers', 'firstName lastName email avatar')
       .populate('blockedBy', 'key title status')
