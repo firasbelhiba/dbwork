@@ -8,7 +8,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { notificationsAPI } from '@/lib/api';
 import { getInitials } from '@/lib/utils';
 import { CommandPalette } from '@/components/command/CommandPalette';
-import { ChangelogModal } from '@/components/changelog';
+import { UserRole } from '@/types/user';
 
 export const Header: React.FC = () => {
   const { user, logout } = useAuth();
@@ -17,7 +17,6 @@ export const Header: React.FC = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
-  const [showChangelogModal, setShowChangelogModal] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -169,18 +168,17 @@ export const Header: React.FC = () => {
                 >
                   Profile Settings
                 </Link>
-                <button
-                  onClick={() => {
-                    setShowUserMenu(false);
-                    setShowChangelogModal(true);
-                  }}
-                  className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-400"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  What's New
-                </button>
+                {user.role === UserRole.ADMIN && (
+                  <Link
+                    href="/admin/changelogs"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-400"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Manage Changelogs
+                  </Link>
+                )}
                 <button
                   onClick={logout}
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-400"
@@ -196,14 +194,6 @@ export const Header: React.FC = () => {
       {/* Command Palette */}
       {showCommandPalette && (
         <CommandPalette onClose={handleCloseCommandPalette} />
-      )}
-
-      {/* Changelog Modal */}
-      {showChangelogModal && (
-        <ChangelogModal
-          isOpen={showChangelogModal}
-          onClose={() => setShowChangelogModal(false)}
-        />
       )}
     </header>
   );
