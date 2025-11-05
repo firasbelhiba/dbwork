@@ -9,9 +9,11 @@ interface KanbanColumnProps {
   title: string;
   color: string;
   issues: Issue[];
+  dragHandleProps?: any;
+  dragHandleRef?: (node: HTMLElement | null) => void;
 }
 
-export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, color, issues }) => {
+export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, color, issues, dragHandleProps, dragHandleRef }) => {
   const { setNodeRef } = useDroppable({ id });
 
   // Map Tailwind color classes to actual vibrant colors
@@ -67,8 +69,10 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, color, is
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         {/* Column Header with Color */}
         <div
-          className="px-4 py-3 border-b border-white/20"
+          ref={dragHandleRef}
+          className="px-4 py-3 border-b border-white/20 cursor-grab active:cursor-grabbing"
           style={{ backgroundColor: bgColor }}
+          {...dragHandleProps}
         >
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-white">{title}</h3>

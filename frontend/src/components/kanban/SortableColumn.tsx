@@ -19,6 +19,7 @@ export const SortableColumn: React.FC<SortableColumnProps> = ({ id, title, color
     transform,
     transition,
     isDragging,
+    setActivatorNodeRef,
   } = useSortable({ id });
 
   const style = {
@@ -28,12 +29,14 @@ export const SortableColumn: React.FC<SortableColumnProps> = ({ id, title, color
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div ref={setNodeRef} style={style}>
       <KanbanColumn
         id={id}
         title={title}
         color={color}
         issues={issues}
+        dragHandleProps={{ ...attributes, ...listeners }}
+        dragHandleRef={setActivatorNodeRef}
       />
     </div>
   );

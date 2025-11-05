@@ -83,11 +83,22 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
   const handleDragStart = (event: DragStartEvent) => {
     const issue = issues.find((i) => i._id === event.active.id);
     setActiveIssue(issue || null);
+    console.log('[KanbanBoard] Drag started:', {
+      activeId: event.active.id,
+      isIssue: !!issue,
+      isColumn: columns.some((col) => col.id === event.active.id)
+    });
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveIssue(null);
+
+    console.log('[KanbanBoard] Drag ended:', {
+      activeId: active.id,
+      overId: over?.id,
+      hasOver: !!over
+    });
 
     if (!over || active.id === over.id) return;
 
