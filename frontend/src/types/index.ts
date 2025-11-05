@@ -4,3 +4,4 @@ export * from './issue';
 export * from './sprint';
 export * from './comment';
 export * from './notification';
+export * from './changelog';

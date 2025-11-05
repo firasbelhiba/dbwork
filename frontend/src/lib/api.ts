@@ -246,4 +246,14 @@ export const feedbackAPI = {
   getStats: () => api.get('/feedback/stats'),
 };
 
+// Changelogs API
+export const changelogsAPI = {
+  getAll: (params?: any) => api.get('/changelogs', { params }),
+  getById: (id: string) => api.get(`/changelogs/${id}`),
+  getLatest: () => api.get('/changelogs/latest'),
+  create: (data: any) => api.post('/changelogs', data),
+  update: (id: string, data: any) => api.patch(`/changelogs/${id}`, data),
+  delete: (id: string) => api.delete(`/changelogs/${id}`),
+};
+
 export default api;

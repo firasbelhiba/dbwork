@@ -16,6 +16,7 @@ import { ActivityLogsModule } from './activity-logs/activity-logs.module';
 import { ActivitiesModule } from './activities/activities.module';
 import { ReportsModule } from './reports/reports.module';
 import { FeedbackModule } from './feedback/feedback.module';
+import { ChangelogsModule } from './changelogs/changelogs.module';
 import { MailModule } from './mail/mail.module';
 import { WebSocketModule } from './websocket/websocket.module';
 import { HttpExceptionFilter } from './common/filters';
@@ -45,6 +46,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     ActivitiesModule,
     ReportsModule,
     FeedbackModule,
+    ChangelogsModule,
     MailModule,
     WebSocketModule
   ],
