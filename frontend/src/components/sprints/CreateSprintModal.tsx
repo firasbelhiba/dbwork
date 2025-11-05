@@ -79,7 +79,6 @@ export const CreateSprintModal: React.FC<CreateSprintModalProps> = ({
         goal: formData.goal.trim(),
         startDate: new Date(formData.startDate),
         endDate: new Date(formData.endDate),
-        status: 'planned',
       });
 
       toast.success('Sprint created successfully');
