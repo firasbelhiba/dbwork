@@ -43,16 +43,17 @@ const mainNavItems: NavItem[] = [
       </svg>
     ),
   },
-  {
-    name: 'Feedback',
-    href: '/feedback',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-      </svg>
-    ),
-  },
 ];
+
+const feedbackNavItem: NavItem = {
+  name: 'Feedback',
+  href: '/feedback',
+  icon: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+    </svg>
+  ),
+};
 
 const reportsNavItem: NavItem = {
   name: 'Reports',
@@ -238,6 +239,23 @@ export const Sidebar: React.FC = () => {
           </div>
         )}
       </nav>
+
+      {/* Feedback at bottom */}
+      <div className="border-t border-gray-200 dark:border-dark-400 p-3">
+        <Link
+          href={feedbackNavItem.href}
+          className={cn(
+            'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+            pathname === feedbackNavItem.href || pathname.startsWith(feedbackNavItem.href + '/')
+              ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
+              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-400 hover:text-gray-900 dark:hover:text-gray-100'
+          )}
+          title={collapsed ? feedbackNavItem.name : undefined}
+        >
+          {feedbackNavItem.icon}
+          {!collapsed && <span>{feedbackNavItem.name}</span>}
+        </Link>
+      </div>
     </aside>
   );
 };
