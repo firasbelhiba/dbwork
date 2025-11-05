@@ -24,10 +24,10 @@ export class UpdateIssueDto {
   @IsEnum(IssuePriority)
   priority?: IssuePriority;
 
-  @ApiProperty({ enum: IssueStatus, required: false })
+  @ApiProperty({ required: false, description: 'Status can be either a predefined status or a custom status ID' })
   @IsOptional()
-  @IsEnum(IssueStatus)
-  status?: IssueStatus;
+  @IsString()
+  status?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
