@@ -32,9 +32,10 @@ interface KanbanBoardProps {
   projectId: string;
   sprintId?: string;
   zoomLevel: number;
+  showArchived?: boolean;
 }
 
-export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, zoomLevel }) => {
+export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, zoomLevel, showArchived = false }) => {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [activeIssue, setActiveIssue] = useState<Issue | null>(null);
   const [loading, setLoading] = useState(true);
@@ -51,7 +52,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
   useEffect(() => {
     fetchProject();
     fetchIssues();
-  }, [projectId, sprintId]);
+  }, [projectId, sprintId, showArchived]);
 
   const fetchProject = async () => {
     try {
@@ -69,9 +70,24 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
 
   const fetchIssues = async () => {
     try {
-      const response = sprintId
-        ? await issuesAPI.getBySprint(sprintId)
-        : await issuesAPI.getByProject(projectId);
+      let response;
+      if (sprintId) {
+        // For sprint view, we need to add the isArchived parameter
+        const params = showArchived ? { isArchived: 'all' } : {};
+        response = await issuesAPI.getBySprint(sprintId);
+        // Filter archived issues on frontend if backend doesn't support the param yet
+        if (!showArchived) {
+          response.data = response.data.filter((issue: Issue) => !issue.isArchived);
+        }
+      } else {
+        // For project view
+        const params = showArchived ? { isArchived: 'all' } : {};
+        response = await issuesAPI.getByProject(projectId, params);
+        // Filter archived issues on frontend if needed
+        if (!showArchived) {
+          response.data = response.data.filter((issue: Issue) => !issue.isArchived);
+        }
+      }
       console.log('[KanbanBoard] Fetched issues:', response.data.length, 'issues');
       console.log('[KanbanBoard] Sample issue statuses:', response.data.slice(0, 5).map((i: any) => ({ key: i.key, status: i.status })));
       setIssues(response.data);

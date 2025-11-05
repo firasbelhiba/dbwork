@@ -42,6 +42,7 @@ export default function ProjectDetailPage() {
   const [isDemoEventModalOpen, setIsDemoEventModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [zoomLevel, setZoomLevel] = useState(100);
+  const [showArchived, setShowArchived] = useState(false);
 
   useEffect(() => {
     if (projectId && !authLoading) {
@@ -362,6 +363,30 @@ export default function ProjectDetailPage() {
                     Manage Columns
                   </Button>
 
+                  {/* Show Archived Toggle */}
+                  <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 px-3 py-2">
+                    <label htmlFor="show-archived" className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer flex items-center gap-2">
+                      <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                      </svg>
+                      Show Archived
+                    </label>
+                    <button
+                      id="show-archived"
+                      type="button"
+                      onClick={() => setShowArchived(!showArchived)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                        showArchived ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          showArchived ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
                   {/* Zoom Controls */}
                   <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-1">
                     <button
@@ -463,6 +488,7 @@ export default function ProjectDetailPage() {
               projectId={projectId}
               sprintId={selectedSprintId === 'all' ? undefined : selectedSprintId}
               zoomLevel={zoomLevel}
+              showArchived={showArchived}
             />
           ) : view === 'calendar' ? (
             <ProjectCalendar
