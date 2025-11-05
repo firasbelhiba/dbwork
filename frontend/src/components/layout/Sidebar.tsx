@@ -8,7 +8,6 @@ import { projectsAPI } from '@/lib/api';
 import { Project } from '@/types/project';
 import { UserRole } from '@/types/user';
 import { useAuth } from '@/contexts/AuthContext';
-import { ChangelogModal } from '@/components/changelog';
 
 interface NavItem {
   name: string;
@@ -71,7 +70,6 @@ export const Sidebar: React.FC = () => {
   const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [collapsed, setCollapsed] = useState(false);
-  const [showChangelogModal, setShowChangelogModal] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -261,7 +259,7 @@ export const Sidebar: React.FC = () => {
         )}
       </nav>
 
-      {/* Feedback and Changelog at bottom */}
+      {/* Feedback at bottom */}
       <div className="border-t border-gray-200 dark:border-dark-400 p-3 space-y-1">
         <Link
           href={feedbackNavItem.href}
@@ -276,29 +274,7 @@ export const Sidebar: React.FC = () => {
           {feedbackNavItem.icon}
           {!collapsed && <span>{feedbackNavItem.name}</span>}
         </Link>
-
-        <button
-          onClick={() => setShowChangelogModal(true)}
-          className={cn(
-            'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
-            'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-400 hover:text-gray-900 dark:hover:text-gray-100'
-          )}
-          title={collapsed ? 'Changelog' : undefined}
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          {!collapsed && <span>Changelog</span>}
-        </button>
       </div>
-
-      {/* Changelog Modal - Only render when open */}
-      {showChangelogModal && (
-        <ChangelogModal
-          isOpen={showChangelogModal}
-          onClose={() => setShowChangelogModal(false)}
-        />
-      )}
     </aside>
   );
 };
