@@ -272,6 +272,13 @@ export const Sidebar: React.FC = () => {
           </svg>
           {!collapsed && <span>What's New</span>}
         </button>
+
+        {/* Version Display */}
+        {!collapsed && (
+          <div className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400 text-center">
+            Version 1.0.1
+          </div>
+        )}
       </div>
 
       {/* Changelog Modal - Only render when open */}
