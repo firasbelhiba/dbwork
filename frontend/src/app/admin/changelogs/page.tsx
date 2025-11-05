@@ -121,14 +121,16 @@ export default function AdminChangelogsPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Breadcrumb */}
-        <Breadcrumb
-          items={[
-            { label: 'Admin', href: '/admin' },
-            { label: 'Changelogs', href: '/admin/changelogs' },
-          ]}
-        />
+      <div className="p-8">
+        <div className="space-y-6">
+          {/* Breadcrumb */}
+          <Breadcrumb
+            items={[
+              { label: 'Admin', href: '/admin' },
+              { label: 'Changelogs', href: '/admin/changelogs' },
+            ]}
+            className="mb-6"
+          />
 
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -239,6 +241,7 @@ export default function AdminChangelogsPage() {
             </div>
           </div>
         )}
+        </div>
       </div>
 
       {/* Form Modal */}
