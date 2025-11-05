@@ -39,6 +39,11 @@ export default function DashboardPage() {
   };
 
   const fetchDashboardData = async () => {
+    if (!user?._id) {
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -52,10 +57,10 @@ export default function DashboardPage() {
           reportsAPI.getIssueStatistics(),
         ]);
 
-        setProjects(projectsRes.data);
+        setProjects(projectsRes.data || []);
         const issuesData = issuesRes.data.items || issuesRes.data.issues || issuesRes.data;
         setAssignedIssues(Array.isArray(issuesData) ? issuesData : []);
-        setStats(statsRes.data);
+        setStats(statsRes.data || {});
       } else {
         // Non-admin: Get user's projects and assigned issues (fetch more for accurate stats)
         const [projectsRes, issuesRes] = await Promise.all([
@@ -63,7 +68,7 @@ export default function DashboardPage() {
           issuesAPI.getAll({ assignee: user?._id, limit: 100 }),
         ]);
 
-        setProjects(projectsRes.data);
+        setProjects(projectsRes.data || []);
         const issuesData = issuesRes.data.items || issuesRes.data.issues || issuesRes.data;
         const userIssues = Array.isArray(issuesData) ? issuesData : [];
 
@@ -73,8 +78,12 @@ export default function DashboardPage() {
         // Calculate statistics from all assigned issues
         setStats(calculateStatsFromIssues(userIssues));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching dashboard data:', error);
+      // Set empty data on error to prevent infinite loading
+      setProjects([]);
+      setAssignedIssues([]);
+      setStats({});
     } finally {
       setLoading(false);
     }
