@@ -151,6 +151,7 @@ export default function FeedbackPage() {
               >
                 <option value="">All Status</option>
                 <option value={FeedbackStatus.OPEN}>Open</option>
+                <option value={FeedbackStatus.TO_TEST}>To Test</option>
                 <option value={FeedbackStatus.RESOLVED}>Resolved</option>
               </Select>
             </div>
