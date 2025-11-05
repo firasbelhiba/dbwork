@@ -189,10 +189,10 @@ function NewIssueForm() {
         />
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
             {parentIssue ? 'Create Sub-issue' : 'Create New Issue'}
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
             {parentIssue
               ? `Creating a sub-issue under ${parentIssue.key} - ${parentIssue.title}`
               : 'Fill in the details to create a new issue'}
@@ -215,10 +215,10 @@ function NewIssueForm() {
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8">
           {error && (
-            <div className="mb-6 p-4 bg-danger-50 border-2 border-danger-200 rounded-md">
-              <p className="text-sm text-danger-700 font-medium">{error}</p>
+            <div className="mb-6 p-4 bg-danger-50 dark:bg-danger-900/20 border-2 border-danger-200 dark:border-danger-800 rounded-md">
+              <p className="text-sm text-danger-700 dark:text-danger-300 font-medium">{error}</p>
             </div>
           )}
 
@@ -277,7 +277,7 @@ function NewIssueForm() {
             {/* Type and Priority */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-1.5">
+                <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1.5">
                   Type
                 </label>
                 <Select
@@ -293,7 +293,7 @@ function NewIssueForm() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-1.5">
+                <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1.5">
                   Priority
                 </label>
                 <Select
@@ -312,7 +312,7 @@ function NewIssueForm() {
             {/* Assignee and Sprint */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-1.5">
+                <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1.5">
                   Assignee
                 </label>
                 <Select
@@ -330,7 +330,7 @@ function NewIssueForm() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-1.5">
+                <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1.5">
                   Sprint
                 </label>
                 <Select
@@ -382,7 +382,7 @@ function NewIssueForm() {
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
+          <div className="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
             <Button
               type="button"
               variant="outline"
