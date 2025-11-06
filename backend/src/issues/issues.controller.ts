@@ -93,6 +93,17 @@ export class IssuesController {
     return this.issuesService.getSubIssues(id);
   }
 
+  @Patch('bulk-update')
+  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
+  @ApiOperation({ summary: 'Bulk update issues' })
+  @ApiResponse({ status: 200, description: 'Issues successfully updated' })
+  bulkUpdate(
+    @Body('issueIds') issueIds: string[],
+    @Body('updateData') updateData: Partial<UpdateIssueDto>,
+  ) {
+    return this.issuesService.bulkUpdate(issueIds, updateData);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get issue by ID' })
   @ApiResponse({ status: 200, description: 'Issue information' })
@@ -107,17 +118,6 @@ export class IssuesController {
   @ApiResponse({ status: 404, description: 'Issue not found' })
   update(@Param('id') id: string, @Body() updateIssueDto: UpdateIssueDto, @CurrentUser() user) {
     return this.issuesService.update(id, updateIssueDto, user._id);
-  }
-
-  @Patch('bulk-update')
-  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
-  @ApiOperation({ summary: 'Bulk update issues' })
-  @ApiResponse({ status: 200, description: 'Issues successfully updated' })
-  bulkUpdate(
-    @Body('issueIds') issueIds: string[],
-    @Body('updateData') updateData: Partial<UpdateIssueDto>,
-  ) {
-    return this.issuesService.bulkUpdate(issueIds, updateData);
   }
 
   @Delete(':id')
