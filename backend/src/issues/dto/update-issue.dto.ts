@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsEnum, IsMongoId, IsArray, IsObject, IsDate, IsNumber } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsMongoId, IsArray, IsObject, IsDate, IsNumber, IsBoolean } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IssueType, IssuePriority, IssueStatus } from '@common/enums';
@@ -65,4 +65,9 @@ export class UpdateIssueDto {
   @IsOptional()
   @IsNumber()
   order?: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsBoolean()
+  isArchived?: boolean;
 }
