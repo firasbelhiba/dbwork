@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Issue } from '@/types/issue';
 import { SortableIssueCard } from './SortableIssueCard';
+import { Dropdown, DropdownItem } from '@/components/common';
+import { useAuth } from '@/contexts/AuthContext';
+import { UserRole } from '@/types/user';
 
 interface KanbanColumnProps {
   id: string;
@@ -13,10 +16,31 @@ interface KanbanColumnProps {
   dragHandleRef?: (node: HTMLElement | null) => void;
   onArchiveIssue?: (issueId: string) => void;
   onDeleteIssue?: (issueId: string) => void;
+  onArchiveAllInColumn?: (columnId: string, issueIds: string[]) => void;
 }
 
-export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, color, issues, dragHandleProps, dragHandleRef, onArchiveIssue, onDeleteIssue }) => {
+export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, color, issues, dragHandleProps, dragHandleRef, onArchiveIssue, onDeleteIssue, onArchiveAllInColumn }) => {
   const { setNodeRef } = useDroppable({ id });
+  const { user } = useAuth();
+  const [showArchiveModal, setShowArchiveModal] = useState(false);
+
+  // Check if user can manage (Admin or PM only)
+  const canManage = user?.role === UserRole.ADMIN || user?.role === UserRole.PROJECT_MANAGER;
+
+  const handleArchiveAll = () => {
+    if (issues.length === 0) {
+      return;
+    }
+    setShowArchiveModal(true);
+  };
+
+  const confirmArchiveAll = () => {
+    if (onArchiveAllInColumn) {
+      const issueIds = issues.map(issue => issue._id);
+      onArchiveAllInColumn(id, issueIds);
+    }
+    setShowArchiveModal(false);
+  };
 
   // Map Tailwind color classes to actual vibrant colors
   const colorMap: Record<string, string> = {
@@ -71,14 +95,43 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, color, is
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         {/* Column Header with Color */}
         <div
-          ref={dragHandleRef}
-          className="px-4 py-3 border-b border-white/20 cursor-grab active:cursor-grabbing"
+          className="px-4 py-3 border-b border-white/20 relative group"
           style={{ backgroundColor: bgColor }}
-          {...dragHandleProps}
         >
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-white">{title}</h3>
-            <span className="text-xs text-white bg-white/20 px-2 py-1 rounded-full">{issues.length}</span>
+            <div ref={dragHandleRef} className="flex-1 cursor-grab active:cursor-grabbing" {...dragHandleProps}>
+              <h3 className="font-semibold text-white">{title}</h3>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-white bg-white/20 px-2 py-1 rounded-full">{issues.length}</span>
+
+              {/* 3-Dot Menu */}
+              {canManage && issues.length > 0 && (
+                <div onClick={(e) => e.stopPropagation()}>
+                  <Dropdown
+                    align="right"
+                    trigger={
+                      <button className="p-1 rounded hover:bg-white/20 transition-colors">
+                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 16 16">
+                          <circle cx="8" cy="2" r="1.5" />
+                          <circle cx="8" cy="8" r="1.5" />
+                          <circle cx="8" cy="14" r="1.5" />
+                        </svg>
+                      </button>
+                    }
+                  >
+                    <DropdownItem onClick={handleArchiveAll}>
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                        </svg>
+                        <span>Archive All ({issues.length})</span>
+                      </div>
+                    </DropdownItem>
+                  </Dropdown>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -102,6 +155,44 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, color, is
           </div>
         </SortableContext>
       </div>
+
+      {/* Archive All Confirmation Modal */}
+      {showArchiveModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowArchiveModal(false)}>
+          <div className="bg-white dark:bg-dark-400 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0">
+                <svg className="w-6 h-6 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                  Archive All Issues in "{title}"?
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  You are about to archive <span className="font-semibold">{issues.length} issue{issues.length !== 1 ? 's' : ''}</span> from this column.
+                  Archived issues can be restored later from the archived view.
+                </p>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setShowArchiveModal(false)}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-dark-300 hover:bg-gray-200 dark:hover:bg-dark-200 rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmArchiveAll}
+                    className="px-4 py-2 text-sm font-medium text-white bg-warning hover:bg-warning/90 rounded-lg transition-colors"
+                  >
+                    Archive All
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

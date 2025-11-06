@@ -238,6 +238,19 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
     }
   };
 
+  const handleArchiveAllInColumn = async (columnId: string, issueIds: string[]) => {
+    try {
+      // Archive all issues using the bulkUpdate endpoint
+      await issuesAPI.bulkUpdate(issueIds, { isArchived: true });
+      toast.success(`Successfully archived ${issueIds.length} issue${issueIds.length !== 1 ? 's' : ''}`);
+      // Remove from list
+      setIssues((prevIssues) => prevIssues.filter((i) => !issueIds.includes(i._id)));
+    } catch (error: any) {
+      console.error('Error archiving issues:', error);
+      toast.error(error?.response?.data?.message || 'Failed to archive issues');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -279,6 +292,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
                   issues={getIssuesByStatus(column.id)}
                   onArchiveIssue={handleArchiveIssue}
                   onDeleteIssue={handleDeleteIssue}
+                  onArchiveAllInColumn={handleArchiveAllInColumn}
                 />
               ))}
             </div>

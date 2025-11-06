@@ -11,9 +11,10 @@ interface SortableColumnProps {
   issues: Issue[];
   onArchiveIssue?: (issueId: string) => void;
   onDeleteIssue?: (issueId: string) => void;
+  onArchiveAllInColumn?: (columnId: string, issueIds: string[]) => void;
 }
 
-export const SortableColumn: React.FC<SortableColumnProps> = ({ id, title, color, issues, onArchiveIssue, onDeleteIssue }) => {
+export const SortableColumn: React.FC<SortableColumnProps> = ({ id, title, color, issues, onArchiveIssue, onDeleteIssue, onArchiveAllInColumn }) => {
   const {
     attributes,
     listeners,
@@ -41,6 +42,7 @@ export const SortableColumn: React.FC<SortableColumnProps> = ({ id, title, color
         dragHandleRef={setActivatorNodeRef}
         onArchiveIssue={onArchiveIssue}
         onDeleteIssue={onDeleteIssue}
+        onArchiveAllInColumn={onArchiveAllInColumn}
       />
     </div>
   );
