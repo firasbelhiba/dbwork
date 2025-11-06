@@ -502,38 +502,38 @@ export default function ProjectDetailPage() {
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto"></div>
-                <p className="mt-4 text-gray-600">Loading issues...</p>
+                <p className="mt-4 text-gray-600 dark:text-gray-400">Loading issues...</p>
               </div>
             </div>
           ) : (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
               {issues.length === 0 ? (
-                <div className="px-6 py-12 text-center text-gray-500">
-                  <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                  <svg className="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
-                  <p className="text-lg font-medium">No issues found</p>
+                  <p className="text-lg font-medium text-gray-900 dark:text-gray-100">No issues found</p>
                   <p className="text-sm mt-1">Create your first issue to get started</p>
                 </div>
               ) : (
-                <div className="divide-y divide-gray-200">
+                <div className="divide-y divide-gray-200 dark:divide-gray-700">
                   {issues.map((issue) => (
                     <Link
                       key={issue._id}
                       href={`/issues/${issue._id}`}
-                      className="block px-6 py-4 hover:bg-gray-50 transition-colors"
+                      className="block px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-2">
                             <Badge variant={issue.type as any}>{issue.type}</Badge>
                             <Badge variant={issue.priority as any}>{issue.priority}</Badge>
-                            <span className="text-xs text-gray-500">{issue.key}</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">{issue.key}</span>
                           </div>
-                          <h3 className="text-sm font-medium text-gray-900 mb-1">
+                          <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
                             {issue.title}
                           </h3>
-                          <div className="flex items-center gap-4 text-xs text-gray-500">
+                          <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                             {issue.assignee && (
                               <span>
                                 Assigned to: {typeof issue.assignee === 'object'
