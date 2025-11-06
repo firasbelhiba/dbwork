@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   DndContext,
   DragEndEvent,
@@ -40,6 +41,10 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
   const [activeIssue, setActiveIssue] = useState<Issue | null>(null);
   const [loading, setLoading] = useState(true);
   const [columns, setColumns] = useState<CustomStatus[]>([]);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showArchiveModal, setShowArchiveModal] = useState(false);
+  const [issueToDelete, setIssueToDelete] = useState<string | null>(null);
+  const [issueToArchive, setIssueToArchive] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -210,28 +215,42 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
     return issues.filter((issue) => issue.status === statusId);
   };
 
-  const handleArchiveIssue = async (issueId: string) => {
-    if (!confirm('Are you sure you want to archive this issue?')) return;
+  const handleArchiveIssue = (issueId: string) => {
+    setIssueToArchive(issueId);
+    setShowArchiveModal(true);
+  };
+
+  const confirmArchiveIssue = async () => {
+    if (!issueToArchive) return;
 
     try {
-      await issuesAPI.archive(issueId);
+      await issuesAPI.archive(issueToArchive);
       toast.success('Issue archived successfully');
       // Remove from list
-      setIssues((prevIssues) => prevIssues.filter((i) => i._id !== issueId));
+      setIssues((prevIssues) => prevIssues.filter((i) => i._id !== issueToArchive));
+      setShowArchiveModal(false);
+      setIssueToArchive(null);
     } catch (error: any) {
       console.error('Error archiving issue:', error);
       toast.error(error?.response?.data?.message || 'Failed to archive issue');
     }
   };
 
-  const handleDeleteIssue = async (issueId: string) => {
-    if (!confirm('Are you sure you want to delete this issue? This action cannot be undone.')) return;
+  const handleDeleteIssue = (issueId: string) => {
+    setIssueToDelete(issueId);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteIssue = async () => {
+    if (!issueToDelete) return;
 
     try {
-      await issuesAPI.delete(issueId);
+      await issuesAPI.delete(issueToDelete);
       toast.success('Issue deleted successfully');
       // Remove from list
-      setIssues((prevIssues) => prevIssues.filter((i) => i._id !== issueId));
+      setIssues((prevIssues) => prevIssues.filter((i) => i._id !== issueToDelete));
+      setShowDeleteModal(false);
+      setIssueToDelete(null);
     } catch (error: any) {
       console.error('Error deleting issue:', error);
       toast.error(error?.response?.data?.message || 'Failed to delete issue');
@@ -306,6 +325,108 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
             ) : null}
           </DragOverlay>
         </DndContext>
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteModal && typeof window !== 'undefined' && createPortal(
+          <div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center"
+            style={{ zIndex: 9999 }}
+            onClick={() => {
+              setShowDeleteModal(false);
+              setIssueToDelete(null);
+            }}
+          >
+            <div
+              className="bg-white dark:bg-dark-400 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                    Delete Issue?
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Are you sure you want to delete this issue? This action cannot be undone and all data associated with this issue will be permanently removed.
+                  </p>
+                  <div className="flex justify-end gap-3">
+                    <button
+                      onClick={() => {
+                        setShowDeleteModal(false);
+                        setIssueToDelete(null);
+                      }}
+                      className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-dark-300 hover:bg-gray-200 dark:hover:bg-dark-200 rounded-lg transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={confirmDeleteIssue}
+                      className="px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
+                    >
+                      Delete Issue
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+
+        {/* Archive Confirmation Modal */}
+        {showArchiveModal && typeof window !== 'undefined' && createPortal(
+          <div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center"
+            style={{ zIndex: 9999 }}
+            onClick={() => {
+              setShowArchiveModal(false);
+              setIssueToArchive(null);
+            }}
+          >
+            <div
+              className="bg-white dark:bg-dark-400 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <svg className="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                    Archive Issue?
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Are you sure you want to archive this issue? Archived issues can be restored later from the archived view.
+                  </p>
+                  <div className="flex justify-end gap-3">
+                    <button
+                      onClick={() => {
+                        setShowArchiveModal(false);
+                        setIssueToArchive(null);
+                      }}
+                      className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-dark-300 hover:bg-gray-200 dark:hover:bg-dark-200 rounded-lg transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={confirmArchiveIssue}
+                      className="px-4 py-2 text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 rounded-lg transition-colors"
+                    >
+                      Archive Issue
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 };
