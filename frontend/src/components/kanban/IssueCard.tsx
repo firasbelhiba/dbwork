@@ -87,9 +87,12 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
       {/* Card Content (Wrapped in Link) */}
       <Link href={`/issues/${issue._id}`} className="block">
         {/* Issue Type & Priority */}
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
           <Badge variant={issue.type as any}>{issue.type}</Badge>
           <Badge variant={issue.priority as any}>{issue.priority}</Badge>
+          {issue.isArchived && (
+            <Badge variant="warning">ARCHIVED</Badge>
+          )}
         </div>
 
       {/* Title */}
