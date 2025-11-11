@@ -145,8 +145,8 @@ export class IssuesService {
     const [issues, total] = await Promise.all([
       this.issueModel
         .find(query)
-        .populate('assignees', 'firstName lastName email avatar')
-        .populate('reporter', 'firstName lastName email avatar')
+        .populate({ path: 'assignees', select: 'firstName lastName email avatar', model: 'User' })
+        .populate({ path: 'reporter', select: 'firstName lastName email avatar', model: 'User' })
         .populate('projectId', 'name key')
         .populate('sprintId', 'name status')
         .sort(sort)
@@ -168,8 +168,8 @@ export class IssuesService {
   async findOne(id: string): Promise<any> {
     const issue = await this.issueModel
       .findById(id)
-      .populate('assignees', 'firstName lastName email avatar role')
-      .populate('reporter', 'firstName lastName email avatar role')
+      .populate({ path: 'assignees', select: 'firstName lastName email avatar role', model: 'User' })
+      .populate({ path: 'reporter', select: 'firstName lastName email avatar role', model: 'User' })
       .populate({
         path: 'projectId',
         select: 'name key description members',
@@ -179,7 +179,7 @@ export class IssuesService {
         }
       })
       .populate('sprintId', 'name status startDate endDate')
-      .populate('watchers', 'firstName lastName email avatar')
+      .populate({ path: 'watchers', select: 'firstName lastName email avatar', model: 'User' })
       .populate('blockedBy', 'key title status')
       .populate('blocks', 'key title status')
       .populate('parentIssue', 'key title status')
@@ -201,8 +201,8 @@ export class IssuesService {
   async findByKey(key: string): Promise<IssueDocument> {
     const issue = await this.issueModel
       .findOne({ key: key.toUpperCase() })
-      .populate('assignees', 'firstName lastName email avatar')
-      .populate('reporter', 'firstName lastName email avatar')
+      .populate({ path: 'assignees', select: 'firstName lastName email avatar', model: 'User' })
+      .populate({ path: 'reporter', select: 'firstName lastName email avatar', model: 'User' })
       .populate('projectId', 'name key')
       .exec();
 
@@ -219,8 +219,8 @@ export class IssuesService {
 
     const issue = await this.issueModel
       .findByIdAndUpdate(id, updateIssueDto, { new: true })
-      .populate('assignees', 'firstName lastName email avatar')
-      .populate('reporter', 'firstName lastName email avatar')
+      .populate({ path: 'assignees', select: 'firstName lastName email avatar', model: 'User' })
+      .populate({ path: 'reporter', select: 'firstName lastName email avatar', model: 'User' })
       .populate('projectId', 'name key')
       .populate('sprintId', 'name status')
       .exec();
@@ -382,8 +382,8 @@ export class IssuesService {
 
     return this.issueModel
       .find(searchQuery)
-      .populate('assignees', 'firstName lastName email avatar')
-      .populate('reporter', 'firstName lastName email avatar')
+      .populate({ path: 'assignees', select: 'firstName lastName email avatar', model: 'User' })
+      .populate({ path: 'reporter', select: 'firstName lastName email avatar', model: 'User' })
       .populate('projectId', 'name key')
       .populate('sprintId', 'name status')
       .limit(20)
@@ -418,8 +418,8 @@ export class IssuesService {
 
     const results = await this.issueModel
       .find(query)
-      .populate('assignees', 'firstName lastName email avatar')
-      .populate('reporter', 'firstName lastName email avatar')
+      .populate({ path: 'assignees', select: 'firstName lastName email avatar', model: 'User' })
+      .populate({ path: 'reporter', select: 'firstName lastName email avatar', model: 'User' })
       .populate('sprintId', 'name status')
       .sort({ order: 1, createdAt: -1 })
       .exec();
@@ -459,8 +459,8 @@ export class IssuesService {
 
     return this.issueModel
       .find(query)
-      .populate('assignees', 'firstName lastName email avatar')
-      .populate('reporter', 'firstName lastName email avatar')
+      .populate({ path: 'assignees', select: 'firstName lastName email avatar', model: 'User' })
+      .populate({ path: 'reporter', select: 'firstName lastName email avatar', model: 'User' })
       .populate('sprintId', 'name status')
       .sort({ status: 1, order: 1 })
       .exec();
@@ -473,8 +473,8 @@ export class IssuesService {
         sprintId: null,
         isArchived: false // Exclude archived issues
       })
-      .populate('assignees', 'firstName lastName email avatar')
-      .populate('reporter', 'firstName lastName email avatar')
+      .populate({ path: 'assignees', select: 'firstName lastName email avatar', model: 'User' })
+      .populate({ path: 'reporter', select: 'firstName lastName email avatar', model: 'User' })
       .populate('sprintId', 'name status')
       .sort({ order: 1, createdAt: -1 })
       .exec();
@@ -493,8 +493,8 @@ export class IssuesService {
 
     return this.issueModel
       .find({ parentIssue: parentIssueId })
-      .populate('assignees', 'firstName lastName email avatar')
-      .populate('reporter', 'firstName lastName email avatar')
+      .populate({ path: 'assignees', select: 'firstName lastName email avatar', model: 'User' })
+      .populate({ path: 'reporter', select: 'firstName lastName email avatar', model: 'User' })
       .populate('projectId', 'name key')
       .populate('sprintId', 'name status')
       .sort({ createdAt: -1 })
