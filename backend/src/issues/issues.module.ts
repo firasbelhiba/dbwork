@@ -5,6 +5,7 @@ import { IssuesController } from './issues.controller';
 import { Issue, IssueSchema } from './schemas/issue.schema';
 import { UsersModule } from '../users/users.module';
 import { ActivitiesModule } from '../activities/activities.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { ProjectsModule } from '../projects/projects.module';
 
 @Module({
@@ -12,6 +13,7 @@ import { ProjectsModule } from '../projects/projects.module';
     MongooseModule.forFeature([{ name: Issue.name, schema: IssueSchema }]),
     UsersModule, // UsersModule exports MongooseModule with User model
     ActivitiesModule,
+    NotificationsModule,
     forwardRef(() => ProjectsModule),
   ],
   controllers: [IssuesController],

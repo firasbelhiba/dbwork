@@ -43,7 +43,8 @@
       "Bash(cmd //c \"dir /b /s \"\"c:\\Users\\firas\\OneDrive\\Documents\\workhole 2\\dbwork\\public\\Logos\"\" | findstr /i \"\"horizontal\"\"\")",
       "Bash(cmd //c \"dir /b /ad public\\Logos 2>nul\")",
       "Bash(cmd //c \"dir /s /b \"\"c:\\Users\\firas\\OneDrive\\Documents\\workhole 2\\dbwork\\frontend\\src\\app\\projects\"\" | findstr /i \"\"page.tsx\"\"\")",
-      "Bash(cmd //c \"dir /b \"\"c:\\Users\\firas\\OneDrive\\Documents\\workhole 2\\dbwork\\frontend\\src\\components\"\" 2>nul\")"
+      "Bash(cmd //c \"dir /b \"\"c:\\Users\\firas\\OneDrive\\Documents\\workhole 2\\dbwork\\frontend\\src\\components\"\" 2>nul\")",
+      "Bash(cd c:UsersfirasOneDriveDocumentsworkhole 2dbwork)"
     ],
     "deny": [],
     "ask": []

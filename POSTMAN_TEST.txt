@@ -1,0 +1,33 @@
+POSTMAN TEST FOR ASSIGNEES POPULATE ISSUE
+==========================================
+
+ENDPOINT:
+GET https://dbwork.onrender.com/issues/project/690335789fda89142fb7c584
+
+HEADERS:
+Authorization: Bearer <YOUR_AUTH_TOKEN>
+
+WHAT TO CHECK:
+1. Look at any issue in the response that has "assignees" field
+2. If assignees looks like this (STRINGS):
+   "assignees": ["68ff7f146d57d8e73e9f82d3"]
+   = POPULATE IS BROKEN
+
+3. If assignees looks like this (OBJECTS):
+   "assignees": [
+     {
+       "_id": "68ff7f146d57d8e73e9f82d3",
+       "firstName": "Firas",
+       "lastName": "Belhiba",
+       "email": "firasbelhiba@gmail.com",
+       "avatar": null
+     }
+   ]
+   = POPULATE IS WORKING
+
+ALTERNATIVE ENDPOINTS TO TEST:
+- GET https://dbwork.onrender.com/issues (all issues)
+- GET https://dbwork.onrender.com/issues/sprint/<SPRINT_ID>
+- GET https://dbwork.onrender.com/issues/<ISSUE_ID> (single issue)
+
+All should populate assignees if working correctly.

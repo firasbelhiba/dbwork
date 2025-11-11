@@ -8,6 +8,7 @@ import { CreateFeedbackCommentDto } from './dto/create-feedback-comment.dto';
 import { UpdateFeedbackCommentDto } from './dto/update-feedback-comment.dto';
 import { FeedbackStatus } from './enums/feedback.enum';
 import { ActivitiesService } from '../activities/activities.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { ActionType, EntityType } from '../activities/schemas/activity.schema';
 
 @Injectable()
@@ -18,6 +19,7 @@ export class FeedbackService {
     @InjectModel(FeedbackComment.name)
     private feedbackCommentModel: Model<FeedbackCommentDocument>,
     private activitiesService: ActivitiesService,
+    private notificationsService: NotificationsService,
   ) {}
 
   async create(
@@ -339,7 +341,9 @@ export class FeedbackService {
     createCommentDto: CreateFeedbackCommentDto,
   ): Promise<FeedbackCommentDocument> {
     // Verify feedback exists
-    const feedback = await this.feedbackModel.findById(feedbackId).exec();
+    const feedback = await this.feedbackModel.findById(feedbackId)
+      .populate({ path: 'userId', select: 'firstName lastName email avatar', model: 'User' })
+      .exec();
     if (!feedback) {
       throw new NotFoundException('Feedback not found');
     }
@@ -351,6 +355,22 @@ export class FeedbackService {
     });
 
     const savedComment = await comment.save();
+
+    // Notify feedback author if someone else commented
+    const feedbackAuthorId = typeof feedback.userId === 'object'
+      ? (feedback.userId as any)._id.toString()
+      : feedback.userId.toString();
+
+    if (feedbackAuthorId !== userId) {
+      await this.notificationsService.create({
+        userId: feedbackAuthorId,
+        type: 'feedback_commented' as any,
+        title: 'New Comment on Your Feedback',
+        message: `Someone commented on your feedback: ${feedback.title}`,
+        link: `/feedback/${feedbackId}`,
+        metadata: { feedbackId, commentedBy: userId },
+      });
+    }
 
     // Populate user data before returning
     return this.feedbackCommentModel

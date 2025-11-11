@@ -1,7 +1,8 @@
 const { MongoClient } = require('mongodb');
+require('dotenv').config({ path: './backend/.env' });
 
-const uri = 'mongodb://localhost:27017';
-const dbName = 'dbwork';
+const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+const dbName = 'dar-pm';
 
 async function migrateAssigneeToAssignees() {
   const client = new MongoClient(uri);

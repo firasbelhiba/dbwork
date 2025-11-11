@@ -11,6 +11,7 @@ import { Issue, IssueDocument } from './schemas/issue.schema';
 import { User, UserDocument } from '../users/schemas/user.schema';
 import { CreateIssueDto, UpdateIssueDto, FilterIssuesDto, AddTimeLogDto } from './dto';
 import { ActivitiesService } from '../activities/activities.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { ActionType, EntityType } from '../activities/schemas/activity.schema';
 import { ProjectsService } from '../projects/projects.service';
 
@@ -20,6 +21,7 @@ export class IssuesService {
     @InjectModel(Issue.name) private issueModel: Model<IssueDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private activitiesService: ActivitiesService,
+    private notificationsService: NotificationsService,
     @Inject(forwardRef(() => ProjectsService))
     private projectsService: ProjectsService,
   ) {}
@@ -273,6 +275,41 @@ export class IssuesService {
         projectId,
         changes,
       );
+
+      // Send notifications for assignee changes
+      if (changes.assignees?.added && changes.assignees.added.length > 0) {
+        for (const assigneeId of changes.assignees.added) {
+          // Don't notify the user who made the change
+          if (assigneeId !== userId) {
+            await this.notificationsService.create({
+              userId: assigneeId,
+              type: 'issue_assigned' as any,
+              title: 'Issue Assigned',
+              message: `You have been assigned to ${issue.key}: ${issue.title}`,
+              link: `/issues/${issue._id}`,
+              metadata: { issueKey: issue.key, assignedBy: userId },
+            });
+          }
+        }
+      }
+
+      // Send notification for status change
+      if (changes.status && issue.assignees && Array.isArray(issue.assignees)) {
+        for (const assignee of issue.assignees) {
+          const assigneeId = typeof assignee === 'object' ? (assignee as any)._id.toString() : assignee.toString();
+          // Don't notify the user who made the change
+          if (assigneeId !== userId) {
+            await this.notificationsService.create({
+              userId: assigneeId,
+              type: 'issue_updated' as any,
+              title: 'Issue Status Changed',
+              message: `${issue.key}: ${issue.title} status changed to ${changes.status.to}`,
+              link: `/issues/${issue._id}`,
+              metadata: { issueKey: issue.key, statusChange: changes.status, updatedBy: userId },
+            });
+          }
+        }
+      }
     }
 
     return issue;

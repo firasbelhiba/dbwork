@@ -5,6 +5,7 @@ import { FeedbackService } from './feedback.service';
 import { Feedback, FeedbackSchema } from './schemas/feedback.schema';
 import { FeedbackComment, FeedbackCommentSchema } from './schemas/feedback-comment.schema';
 import { ActivitiesModule } from '../activities/activities.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { ActivitiesModule } from '../activities/activities.module';
       { name: FeedbackComment.name, schema: FeedbackCommentSchema },
     ]),
     ActivitiesModule,
+    NotificationsModule,
   ],
   controllers: [FeedbackController],
   providers: [FeedbackService],
