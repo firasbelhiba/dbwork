@@ -5,7 +5,7 @@ import { UserPreferences } from '@common/interfaces';
 
 export type UserDocument = User & Document;
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, collection: 'users' })
 export class User {
   @Prop({ required: true, unique: true, lowercase: true, trim: true })
   email: string;
