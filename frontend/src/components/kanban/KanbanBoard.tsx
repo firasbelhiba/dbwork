@@ -96,6 +96,15 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
       const archivedCount = response.data.filter((i: any) => i.isArchived).length;
       console.log('[KanbanBoard] Archived issues in response:', archivedCount);
 
+      // DEBUG: Check assignees in API response
+      console.log('[KanbanBoard] ASSIGNEES CHECK:', response.data.slice(0, 3).map((i: any) => ({
+        key: i.key,
+        assignees: i.assignees,
+        assigneesLength: i.assignees?.length,
+        firstAssigneeType: typeof i.assignees?.[0],
+        firstAssigneeSample: i.assignees?.[0]
+      })));
+
       setIssues(response.data);
     } catch (error) {
       console.error('Error fetching issues:', error);

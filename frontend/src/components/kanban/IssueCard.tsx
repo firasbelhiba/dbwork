@@ -28,7 +28,19 @@ const getSprintStatusVariant = (status: SprintStatus) => {
 
 export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete }) => {
   const { user } = useAuth();
+
+  // DEBUG: Log assignees data
+  console.log(`[IssueCard] ${issue.key} assignees:`, {
+    raw: issue.assignees,
+    isArray: Array.isArray(issue.assignees),
+    length: issue.assignees?.length,
+    types: issue.assignees?.map(a => typeof a),
+    sample: issue.assignees?.[0]
+  });
+
   const assignees = issue.assignees?.filter(a => typeof a === 'object').map(a => a as any) || [];
+  console.log(`[IssueCard] ${issue.key} filtered assignees:`, assignees.length);
+
   const projectKey = typeof issue.projectId === 'object' ? issue.projectId.key : '';
   const sprint = typeof issue.sprintId === 'object' ? issue.sprintId : null;
 
