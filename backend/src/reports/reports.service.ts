@@ -56,31 +56,34 @@ export class ReportsService {
 
     const issues = await this.issueModel
       .find(query)
-      .populate('assignee', 'firstName lastName email')
+      .populate('assignees', 'firstName lastName email')
       .exec();
 
     const performanceByUser: Record<string, any> = {};
 
     issues.forEach((issue) => {
-      if (!issue.assignee) return;
+      if (!issue.assignees || issue.assignees.length === 0) return;
 
-      const userId = (issue.assignee as any)._id.toString();
-      if (!performanceByUser[userId]) {
-        performanceByUser[userId] = {
-          user: issue.assignee,
-          total: 0,
-          completed: 0,
-          inProgress: 0,
-          todo: 0,
-          storyPoints: 0,
-        };
-      }
+      // Count issue for each assignee
+      issue.assignees.forEach((assignee: any) => {
+        const userId = assignee._id.toString();
+        if (!performanceByUser[userId]) {
+          performanceByUser[userId] = {
+            user: assignee,
+            total: 0,
+            completed: 0,
+            inProgress: 0,
+            todo: 0,
+            storyPoints: 0,
+          };
+        }
 
-      performanceByUser[userId].total++;
-      if (issue.status === 'done') performanceByUser[userId].completed++;
-      if (issue.status === 'in_progress') performanceByUser[userId].inProgress++;
-      if (issue.status === 'todo') performanceByUser[userId].todo++;
-      performanceByUser[userId].storyPoints += issue.storyPoints || 0;
+        performanceByUser[userId].total++;
+        if (issue.status === 'done') performanceByUser[userId].completed++;
+        if (issue.status === 'in_progress') performanceByUser[userId].inProgress++;
+        if (issue.status === 'todo') performanceByUser[userId].todo++;
+        performanceByUser[userId].storyPoints += issue.storyPoints || 0;
+      });
     });
 
     return Object.values(performanceByUser);
@@ -259,33 +262,36 @@ export class ReportsService {
 
     const issues = await this.issueModel
       .find({ projectId: new mongoose.Types.ObjectId(projectId) })
-      .populate('assignee', 'firstName lastName')
+      .populate('assignees', 'firstName lastName')
       .exec();
 
     const workloadByUser: Record<string, any> = {};
 
     issues.forEach((issue) => {
-      if (!issue.assignee) return;
+      if (!issue.assignees || issue.assignees.length === 0) return;
 
-      const userId = (issue.assignee as any)._id.toString();
-      const userName = `${(issue.assignee as any).firstName} ${(issue.assignee as any).lastName}`;
+      // Count issue for each assignee
+      issue.assignees.forEach((assignee: any) => {
+        const userId = assignee._id.toString();
+        const userName = `${assignee.firstName} ${assignee.lastName}`;
 
-      if (!workloadByUser[userId]) {
-        workloadByUser[userId] = {
-          name: userName,
-          todo: 0,
-          inProgress: 0,
-          done: 0,
-        };
-      }
+        if (!workloadByUser[userId]) {
+          workloadByUser[userId] = {
+            name: userName,
+            todo: 0,
+            inProgress: 0,
+            done: 0,
+          };
+        }
 
-      if (todoStatus && issue.status === todoStatus.id) {
-        workloadByUser[userId].todo++;
-      } else if (inProgressStatus && issue.status === inProgressStatus.id) {
-        workloadByUser[userId].inProgress++;
-      } else if (doneStatus && issue.status === doneStatus.id) {
-        workloadByUser[userId].done++;
-      }
+        if (todoStatus && issue.status === todoStatus.id) {
+          workloadByUser[userId].todo++;
+        } else if (inProgressStatus && issue.status === inProgressStatus.id) {
+          workloadByUser[userId].inProgress++;
+        } else if (doneStatus && issue.status === doneStatus.id) {
+          workloadByUser[userId].done++;
+        }
+      });
     });
 
     return { projectId, workload: Object.values(workloadByUser) };

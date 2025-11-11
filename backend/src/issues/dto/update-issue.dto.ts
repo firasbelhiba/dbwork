@@ -29,10 +29,11 @@ export class UpdateIssueDto {
   @IsString()
   status?: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, type: [String], description: 'Array of user IDs to assign to this issue' })
   @IsOptional()
-  @IsMongoId()
-  assignee?: string;
+  @IsArray()
+  @IsMongoId({ each: true })
+  assignees?: string[];
 
   @ApiProperty({ required: false })
   @IsOptional()

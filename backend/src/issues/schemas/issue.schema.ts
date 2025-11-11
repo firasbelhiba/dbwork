@@ -39,8 +39,8 @@ export class Issue {
   })
   status: string; // Can be IssueStatus enum or custom status ID
 
-  @Prop({ type: Types.ObjectId, ref: 'User', default: null })
-  assignee: Types.ObjectId;
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
+  assignees: Types.ObjectId[];
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   reporter: Types.ObjectId;
@@ -102,7 +102,7 @@ export const IssueSchema = SchemaFactory.createForClass(Issue);
 IssueSchema.index({ key: 1 }, { unique: true });
 IssueSchema.index({ projectId: 1, status: 1 });
 IssueSchema.index({ projectId: 1, sprintId: 1 });
-IssueSchema.index({ assignee: 1 });
+IssueSchema.index({ assignees: 1 });
 IssueSchema.index({ reporter: 1 });
 IssueSchema.index({ status: 1 });
 IssueSchema.index({ priority: 1 });

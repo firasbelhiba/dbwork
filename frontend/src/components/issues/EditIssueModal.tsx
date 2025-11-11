@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Input, Select, Textarea } from '@/components/common';
+import { MultiUserSelect } from '@/components/common/MultiUserSelect';
 import { issuesAPI, projectsAPI, usersAPI, sprintsAPI } from '@/lib/api';
 import { Issue } from '@/types/issue';
 import { User } from '@/types/user';
@@ -27,7 +28,7 @@ export const EditIssueModal: React.FC<EditIssueModalProps> = ({
 
   // Get initial values from issue
   const getInitialFormData = () => {
-    const assigneeId = issue.assignee && typeof issue.assignee === 'object' ? issue.assignee._id : issue.assignee || '';
+    const assigneeIds = issue.assignees?.map(a => typeof a === 'object' ? a._id : a) || [];
     const sprintId = issue.sprintId && typeof issue.sprintId === 'object' ? issue.sprintId._id : issue.sprintId || '';
     const projectId = typeof issue.projectId === 'object' ? issue.projectId._id : issue.projectId;
 
@@ -38,7 +39,7 @@ export const EditIssueModal: React.FC<EditIssueModalProps> = ({
       type: issue.type || 'task',
       priority: issue.priority || 'medium',
       status: issue.status || 'todo',
-      assignee: assigneeId,
+      assignees: assigneeIds,
       sprintId: sprintId,
       storyPoints: issue.storyPoints || 0,
       dueDate: issue.dueDate ? new Date(issue.dueDate).toISOString().split('T')[0] : '',
@@ -104,11 +105,7 @@ export const EditIssueModal: React.FC<EditIssueModalProps> = ({
         status: formData.status,
       };
 
-      if (formData.assignee) {
-        updateData.assignee = formData.assignee;
-      } else {
-        updateData.assignee = null;
-      }
+      updateData.assignees = formData.assignees || [];
 
       if (formData.sprintId) {
         updateData.sprintId = formData.sprintId;
@@ -229,20 +226,14 @@ export const EditIssueModal: React.FC<EditIssueModalProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1.5">
-                Assignee
+                Assignees
               </label>
-              <Select
-                name="assignee"
-                value={formData.assignee}
-                onChange={handleChange}
-              >
-                <option value="">Unassigned</option>
-                {users.map(u => (
-                  <option key={u._id} value={u._id}>
-                    {u.firstName} {u.lastName}
-                  </option>
-                ))}
-              </Select>
+              <MultiUserSelect
+                users={users}
+                selectedUserIds={formData.assignees}
+                onChange={(userIds) => setFormData(prev => ({ ...prev, assignees: userIds }))}
+                placeholder="Select assignees..."
+              />
             </div>
 
             <div>

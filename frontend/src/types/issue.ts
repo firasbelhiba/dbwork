@@ -33,7 +33,7 @@ export interface Issue {
   type: IssueType;
   priority: IssuePriority;
   status: IssueStatus;
-  assignee: User | string | null;
+  assignees: (User | string)[];
   reporter: User | string;
   labels: string[];
   customFields: Record<string, any>;

@@ -76,7 +76,7 @@ export class IssuesService {
     });
 
     const savedIssue = await (await issue.save()).populate([
-      { path: 'assignee', select: 'firstName lastName email avatar' },
+      { path: 'assignees', select: 'firstName lastName email avatar' },
       { path: 'reporter', select: 'firstName lastName email avatar' },
       { path: 'projectId', select: 'name key' },
     ]);
@@ -101,7 +101,7 @@ export class IssuesService {
       status,
       type,
       priority,
-      assignee,
+      assignees,
       reporter,
       labels,
       search,
@@ -119,7 +119,9 @@ export class IssuesService {
     if (status) query.status = status;
     if (type) query.type = type;
     if (priority) query.priority = priority;
-    if (assignee) query.assignee = new Types.ObjectId(assignee);
+    if (assignees && assignees.length > 0) {
+      query.assignees = { $in: assignees.map(id => new Types.ObjectId(id)) };
+    }
     if (reporter) query.reporter = new Types.ObjectId(reporter);
     if (labels && labels.length > 0) query.labels = { $in: labels };
 
@@ -141,7 +143,7 @@ export class IssuesService {
     const [issues, total] = await Promise.all([
       this.issueModel
         .find(query)
-        .populate('assignee', 'firstName lastName email avatar')
+        .populate('assignees', 'firstName lastName email avatar')
         .populate('reporter', 'firstName lastName email avatar')
         .populate('projectId', 'name key')
         .populate('sprintId', 'name status')
@@ -164,7 +166,7 @@ export class IssuesService {
   async findOne(id: string): Promise<any> {
     const issue = await this.issueModel
       .findById(id)
-      .populate('assignee', 'firstName lastName email avatar role')
+      .populate('assignees', 'firstName lastName email avatar role')
       .populate('reporter', 'firstName lastName email avatar role')
       .populate({
         path: 'projectId',
@@ -197,7 +199,7 @@ export class IssuesService {
   async findByKey(key: string): Promise<IssueDocument> {
     const issue = await this.issueModel
       .findOne({ key: key.toUpperCase() })
-      .populate('assignee', 'firstName lastName email avatar')
+      .populate('assignees', 'firstName lastName email avatar')
       .populate('reporter', 'firstName lastName email avatar')
       .populate('projectId', 'name key')
       .exec();
@@ -215,7 +217,7 @@ export class IssuesService {
 
     const issue = await this.issueModel
       .findByIdAndUpdate(id, updateIssueDto, { new: true })
-      .populate('assignee', 'firstName lastName email avatar')
+      .populate('assignees', 'firstName lastName email avatar')
       .populate('reporter', 'firstName lastName email avatar')
       .populate('projectId', 'name key')
       .populate('sprintId', 'name status')
@@ -231,16 +233,26 @@ export class IssuesService {
       if (updateIssueDto.status && originalIssue?.status !== updateIssueDto.status) {
         changes.status = { from: originalIssue.status, to: updateIssueDto.status };
       }
-      if (updateIssueDto.assignee && originalIssue?.assignee?.toString() !== updateIssueDto.assignee) {
-        changes.assignee = true;
+
+      // Check if assignees changed
+      if (updateIssueDto.assignees) {
+        const oldAssignees = (originalIssue?.assignees || []).map(id => id.toString()).sort();
+        const newAssignees = updateIssueDto.assignees.map(id => id.toString()).sort();
+        if (JSON.stringify(oldAssignees) !== JSON.stringify(newAssignees)) {
+          changes.assignees = {
+            added: newAssignees.filter(id => !oldAssignees.includes(id)),
+            removed: oldAssignees.filter(id => !newAssignees.includes(id))
+          };
+        }
       }
+
       if (updateIssueDto.priority && originalIssue?.priority !== updateIssueDto.priority) {
         changes.priority = { from: originalIssue.priority, to: updateIssueDto.priority };
       }
 
       const actionType = changes.status ? ActionType.STATUS_CHANGED
         : changes.priority ? ActionType.PRIORITY_CHANGED
-        : changes.assignee ? ActionType.ASSIGNED
+        : changes.assignees ? ActionType.ASSIGNED
         : ActionType.UPDATED;
 
       // Extract projectId properly (handle both ObjectId and populated object)
@@ -368,7 +380,7 @@ export class IssuesService {
 
     return this.issueModel
       .find(searchQuery)
-      .populate('assignee', 'firstName lastName email avatar')
+      .populate('assignees', 'firstName lastName email avatar')
       .populate('reporter', 'firstName lastName email avatar')
       .populate('projectId', 'name key')
       .populate('sprintId', 'name status')
@@ -404,7 +416,7 @@ export class IssuesService {
 
     const results = await this.issueModel
       .find(query)
-      .populate('assignee', 'firstName lastName email avatar')
+      .populate('assignees', 'firstName lastName email avatar')
       .populate('reporter', 'firstName lastName email avatar')
       .populate('sprintId', 'name status')
       .sort({ order: 1, createdAt: -1 })
@@ -433,7 +445,7 @@ export class IssuesService {
 
     return this.issueModel
       .find(query)
-      .populate('assignee', 'firstName lastName email avatar')
+      .populate('assignees', 'firstName lastName email avatar')
       .populate('reporter', 'firstName lastName email avatar')
       .populate('sprintId', 'name status')
       .sort({ status: 1, order: 1 })
@@ -447,7 +459,7 @@ export class IssuesService {
         sprintId: null,
         isArchived: false // Exclude archived issues
       })
-      .populate('assignee', 'firstName lastName email avatar')
+      .populate('assignees', 'firstName lastName email avatar')
       .populate('reporter', 'firstName lastName email avatar')
       .populate('sprintId', 'name status')
       .sort({ order: 1, createdAt: -1 })
@@ -467,7 +479,7 @@ export class IssuesService {
 
     return this.issueModel
       .find({ parentIssue: parentIssueId })
-      .populate('assignee', 'firstName lastName email avatar')
+      .populate('assignees', 'firstName lastName email avatar')
       .populate('reporter', 'firstName lastName email avatar')
       .populate('projectId', 'name key')
       .populate('sprintId', 'name status')

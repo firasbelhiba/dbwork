@@ -28,7 +28,7 @@ const getSprintStatusVariant = (status: SprintStatus) => {
 
 export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete }) => {
   const { user } = useAuth();
-  const assignee = typeof issue.assignee === 'object' ? issue.assignee : null;
+  const assignees = issue.assignees?.filter(a => typeof a === 'object').map(a => a as any) || [];
   const projectKey = typeof issue.projectId === 'object' ? issue.projectId.key : '';
   const sprint = typeof issue.sprintId === 'object' ? issue.sprintId : null;
 
@@ -131,13 +131,27 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
           )}
         </div>
 
-        {/* Assignee Avatar */}
-        {assignee && (
-          <div
-            className="w-6 h-6 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center text-xs font-medium border-2 border-gray-300 dark:border-gray-600 shadow-sm"
-            title={`${assignee.firstName} ${assignee.lastName}`}
-          >
-            {getInitials(assignee.firstName, assignee.lastName)}
+        {/* Assignee Avatars */}
+        {assignees.length > 0 && (
+          <div className="flex items-center -space-x-2">
+            {assignees.slice(0, 3).map((assignee: any, index: number) => (
+              <div
+                key={assignee._id}
+                className="w-6 h-6 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center text-xs font-medium border-2 border-white dark:border-gray-800 shadow-sm"
+                title={`${assignee.firstName} ${assignee.lastName}`}
+                style={{ zIndex: assignees.length - index }}
+              >
+                {getInitials(assignee.firstName, assignee.lastName)}
+              </div>
+            ))}
+            {assignees.length > 3 && (
+              <div
+                className="w-6 h-6 rounded-full bg-gray-500 dark:bg-gray-600 text-white flex items-center justify-center text-xs font-medium border-2 border-white dark:border-gray-800 shadow-sm"
+                title={`${assignees.length - 3} more assignees`}
+              >
+                +{assignees.length - 3}
+              </div>
+            )}
           </div>
         )}
       </div>

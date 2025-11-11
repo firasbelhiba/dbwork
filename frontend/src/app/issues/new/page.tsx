@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button, Input, Select, Textarea, Breadcrumb } from '@/components/common';
+import { MultiUserSelect } from '@/components/common/MultiUserSelect';
 import { issuesAPI, projectsAPI, usersAPI, sprintsAPI } from '@/lib/api';
 import { Project } from '@/types/project';
 import { User } from '@/types/user';
@@ -27,7 +28,7 @@ function NewIssueForm() {
     description: '',
     type: 'task',
     priority: 'medium',
-    assignee: '',
+    assignees: [] as string[],
     sprintId: '',
     storyPoints: 0,
     dueDate: '',
@@ -127,7 +128,7 @@ function NewIssueForm() {
         priority: formData.priority,
       };
 
-      if (formData.assignee) issueData.assignee = formData.assignee;
+      if (formData.assignees && formData.assignees.length > 0) issueData.assignees = formData.assignees;
       if (formData.sprintId) issueData.sprintId = formData.sprintId;
       if (formData.storyPoints > 0) issueData.storyPoints = Number(formData.storyPoints);
       if (formData.dueDate) issueData.dueDate = new Date(formData.dueDate);
@@ -313,20 +314,14 @@ function NewIssueForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1.5">
-                  Assignee
+                  Assignees
                 </label>
-                <Select
-                  name="assignee"
-                  value={formData.assignee}
-                  onChange={handleChange}
-                >
-                  <option value="">Unassigned</option>
-                  {users.map(u => (
-                    <option key={u._id} value={u._id}>
-                      {u.firstName} {u.lastName}
-                    </option>
-                  ))}
-                </Select>
+                <MultiUserSelect
+                  users={users}
+                  selectedUserIds={formData.assignees}
+                  onChange={(userIds) => setFormData(prev => ({ ...prev, assignees: userIds }))}
+                  placeholder="Select assignees..."
+                />
               </div>
 
               <div>

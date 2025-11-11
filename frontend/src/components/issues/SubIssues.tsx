@@ -92,12 +92,12 @@ export const SubIssues: React.FC<SubIssuesProps> = ({
                   <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
                     {subIssue.title}
                   </h4>
-                  {subIssue.assignee && (
+                  {subIssue.assignees && subIssue.assignees.length > 0 && (
                     <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                       <span>
-                        Assigned to: {typeof subIssue.assignee === 'object'
-                          ? `${subIssue.assignee.firstName} ${subIssue.assignee.lastName}`
-                          : 'Unknown'}
+                        Assigned to: {subIssue.assignees.map((a: any) =>
+                          typeof a === 'object' ? `${a.firstName} ${a.lastName}` : 'Unknown'
+                        ).join(', ')}
                       </span>
                     </div>
                   )}

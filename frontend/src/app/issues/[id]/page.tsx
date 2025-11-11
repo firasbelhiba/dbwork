@@ -55,8 +55,10 @@ export default function IssueDetailPage() {
       // Check authorization: Admin can see all issues, non-admin must be assigned or be a project member
       if (user?.role !== UserRole.ADMIN) {
         // Check if user is assigned to this issue
-        const assigneeId = typeof issueData.assignee === 'object' ? issueData.assignee._id : issueData.assignee;
-        const isAssignee = assigneeId === user?._id;
+        const assigneeIds = issueData.assignees?.map((a: any) =>
+          typeof a === 'object' ? a._id : a
+        ) || [];
+        const isAssignee = assigneeIds.includes(user?._id);
 
         // Check if user is a member of the project
         const projectData = typeof issueData.projectId === 'object' ? issueData.projectId : null;
@@ -210,7 +212,9 @@ export default function IssueDetailPage() {
   }
 
   const projectKey = typeof issue.projectId === 'object' ? issue.projectId.key : '';
-  const assignee = typeof issue.assignee === 'object' ? issue.assignee : null;
+  const assignees = issue.assignees
+    ?.filter(a => typeof a === 'object')
+    .map(a => a as any) || [];
   const reporter = typeof issue.reporter === 'object' ? issue.reporter : null;
 
   return (
@@ -442,15 +446,19 @@ export default function IssueDetailPage() {
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Details</h3>
                 <div className="space-y-3">
                   <div>
-                    <span className="text-xs text-gray-600 dark:text-gray-400 block mb-1">Assignee</span>
-                    {assignee ? (
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-medium">
-                          {getInitials(assignee.firstName, assignee.lastName)}
-                        </div>
-                        <span className="text-sm text-gray-900 dark:text-white">
-                          {assignee.firstName} {assignee.lastName}
-                        </span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400 block mb-1">Assignees</span>
+                    {assignees.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {assignees.map((assignee: any) => (
+                          <div key={assignee._id} className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md">
+                            <div className="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center text-xs font-medium">
+                              {getInitials(assignee.firstName, assignee.lastName)}
+                            </div>
+                            <span className="text-xs text-gray-900 dark:text-white">
+                              {assignee.firstName} {assignee.lastName}
+                            </span>
+                          </div>
+                        ))}
                       </div>
                     ) : (
                       <span className="text-sm text-gray-500 dark:text-gray-400">Unassigned</span>

@@ -29,10 +29,11 @@ export class FilterIssuesDto {
   @IsEnum(IssuePriority)
   priority?: IssuePriority;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, type: [String], description: 'Filter by assignee user IDs (supports multiple)' })
   @IsOptional()
-  @IsMongoId()
-  assignee?: string;
+  @IsArray()
+  @IsMongoId({ each: true })
+  assignees?: string[];
 
   @ApiProperty({ required: false })
   @IsOptional()

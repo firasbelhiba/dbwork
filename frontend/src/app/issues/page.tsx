@@ -48,10 +48,9 @@ export default function IssuesPage() {
       if (selectedStatus) params.status = selectedStatus;
       if (selectedPriority) params.priority = selectedPriority;
 
-      // Handle multiple assignees - if multiple are selected, we need to filter on frontend
-      // Backend only supports single assignee filter, so we'll fetch all and filter client-side
-      if (selectedAssignees.length === 1) {
-        params.assignee = selectedAssignees[0];
+      // Handle multiple assignees filter
+      if (selectedAssignees.length > 0) {
+        params.assignees = selectedAssignees;
       }
 
       const [issuesRes, projectsRes, usersRes] = await Promise.all([
@@ -63,15 +62,7 @@ export default function IssuesPage() {
 
       // Handle different response formats - backend returns {items: [...], total, page, limit, pages}
       const issuesData = issuesRes.data.items || issuesRes.data.issues || issuesRes.data;
-      let filteredIssues = Array.isArray(issuesData) ? issuesData : [];
-
-      // Client-side filtering for multiple assignees
-      if (selectedAssignees.length > 1) {
-        filteredIssues = filteredIssues.filter(issue => {
-          const assigneeId = typeof issue.assignee === 'object' ? issue.assignee?._id : issue.assignee;
-          return selectedAssignees.includes(assigneeId);
-        });
-      }
+      const filteredIssues = Array.isArray(issuesData) ? issuesData : [];
 
       setIssues(filteredIssues);
       setProjects(Array.isArray(projectsRes.data) ? projectsRes.data : []);
@@ -128,13 +119,16 @@ export default function IssuesPage() {
     return `${selectedAssignees.length} Members Selected`;
   };
 
-  const getAssigneeName = (assignee: any) => {
-    if (!assignee) return 'Unassigned';
-    if (typeof assignee === 'string') {
-      const user = users.find((u: User) => u._id === assignee);
-      return user ? `${user.firstName} ${user.lastName}` : 'Unknown';
-    }
-    return `${assignee.firstName} ${assignee.lastName}`;
+  const getAssigneesNames = (assignees: any[]) => {
+    if (!assignees || assignees.length === 0) return 'Unassigned';
+    const names = assignees.map(a => {
+      if (typeof a === 'string') {
+        const user = users.find((u: User) => u._id === a);
+        return user ? `${user.firstName} ${user.lastName}` : 'Unknown';
+      }
+      return `${a.firstName} ${a.lastName}`;
+    });
+    return names.join(', ');
   };
 
   const getProjectName = (projectId: any) => {
@@ -464,7 +458,7 @@ export default function IssuesPage() {
                         <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                           <span>{getProjectName(issue.projectId)}</span>
                           <span>•</span>
-                          <span>{getAssigneeName(issue.assignee)}</span>
+                          <span>{getAssigneesNames(issue.assignees)}</span>
                         </div>
                       </div>
                       <Badge variant={issue.status as any} dot>
