@@ -357,9 +357,9 @@ export class FeedbackService {
     const savedComment = await comment.save();
 
     // Notify feedback author if someone else commented
-    const feedbackAuthorId = typeof feedback.userId === 'object'
+    const feedbackAuthorId = typeof feedback.userId === 'object' && feedback.userId !== null
       ? (feedback.userId as any)._id.toString()
-      : feedback.userId.toString();
+      : String(feedback.userId);
 
     if (feedbackAuthorId !== userId) {
       await this.notificationsService.create({

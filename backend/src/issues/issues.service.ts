@@ -296,7 +296,9 @@ export class IssuesService {
       // Send notification for status change
       if (changes.status && issue.assignees && Array.isArray(issue.assignees)) {
         for (const assignee of issue.assignees) {
-          const assigneeId = typeof assignee === 'object' ? (assignee as any)._id.toString() : assignee.toString();
+          const assigneeId = typeof assignee === 'object' && assignee !== null
+            ? (assignee as any)._id.toString()
+            : String(assignee);
           // Don't notify the user who made the change
           if (assigneeId !== userId) {
             await this.notificationsService.create({
