@@ -38,8 +38,12 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
     sample: issue.assignees?.[0]
   });
 
-  const assignees = issue.assignees?.filter(a => typeof a === 'object').map(a => a as any) || [];
+  const assignees = issue.assignees?.filter(a => typeof a === 'object' && a !== null).map(a => a as any) || [];
   console.log(`[IssueCard] ${issue.key} filtered assignees:`, assignees.length);
+
+  if (assignees.length === 0 && issue.assignees && issue.assignees.length > 0) {
+    console.error(`[IssueCard] ${issue.key} has ${issue.assignees.length} assignees but they're not populated (still IDs)!`);
+  }
 
   const projectKey = typeof issue.projectId === 'object' ? issue.projectId.key : '';
   const sprint = typeof issue.sprintId === 'object' ? issue.sprintId : null;
