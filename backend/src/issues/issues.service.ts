@@ -425,6 +425,18 @@ export class IssuesService {
     console.log('[getIssuesByProject] Results returned:', results.length);
     console.log('[getIssuesByProject] First 3 keys:', results.slice(0, 3).map(i => i.key));
 
+    // DEBUG: Check if assignees are populated
+    const sampleIssue = results[0];
+    if (sampleIssue) {
+      console.log('[getIssuesByProject] Sample issue assignees:', {
+        key: sampleIssue.key,
+        assignees: sampleIssue.assignees,
+        assigneesType: typeof sampleIssue.assignees,
+        firstAssignee: sampleIssue.assignees?.[0],
+        firstAssigneeType: typeof sampleIssue.assignees?.[0]
+      });
+    }
+
     return results;
   }
 
