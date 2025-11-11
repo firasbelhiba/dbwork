@@ -247,6 +247,11 @@ export const feedbackAPI = {
   reopen: (id: string) => api.patch(`/feedback/${id}/reopen`),
   toTest: (id: string) => api.patch(`/feedback/${id}/to-test`),
   getStats: () => api.get('/feedback/stats'),
+  // Comments
+  getComments: (feedbackId: string) => api.get(`/feedback/${feedbackId}/comments`),
+  createComment: (feedbackId: string, data: { content: string }) => api.post(`/feedback/${feedbackId}/comments`, data),
+  updateComment: (commentId: string, data: { content: string }) => api.patch(`/feedback/comments/${commentId}`, data),
+  deleteComment: (commentId: string) => api.delete(`/feedback/comments/${commentId}`),
 };
 
 // Changelogs API

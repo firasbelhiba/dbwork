@@ -2,7 +2,10 @@ import { Injectable, NotFoundException, ForbiddenException, BadRequestException 
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Feedback, FeedbackDocument } from './schemas/feedback.schema';
+import { FeedbackComment, FeedbackCommentDocument } from './schemas/feedback-comment.schema';
 import { CreateFeedbackDto, UpdateFeedbackDto, QueryFeedbackDto } from './dto';
+import { CreateFeedbackCommentDto } from './dto/create-feedback-comment.dto';
+import { UpdateFeedbackCommentDto } from './dto/update-feedback-comment.dto';
 import { FeedbackStatus } from './enums/feedback.enum';
 import { ActivitiesService } from '../activities/activities.service';
 import { ActionType, EntityType } from '../activities/schemas/activity.schema';
@@ -12,6 +15,8 @@ export class FeedbackService {
   constructor(
     @InjectModel(Feedback.name)
     private feedbackModel: Model<FeedbackDocument>,
+    @InjectModel(FeedbackComment.name)
+    private feedbackCommentModel: Model<FeedbackCommentDocument>,
     private activitiesService: ActivitiesService,
   ) {}
 
@@ -325,5 +330,89 @@ export class FeedbackService {
       resolvedFeedback: resolved,
       byType: byTypeObj,
     };
+  }
+
+  // Comment methods
+  async createComment(
+    feedbackId: string,
+    userId: string,
+    createCommentDto: CreateFeedbackCommentDto,
+  ): Promise<FeedbackCommentDocument> {
+    // Verify feedback exists
+    const feedback = await this.feedbackModel.findById(feedbackId).exec();
+    if (!feedback) {
+      throw new NotFoundException('Feedback not found');
+    }
+
+    const comment = new this.feedbackCommentModel({
+      feedbackId: new Types.ObjectId(feedbackId),
+      userId: new Types.ObjectId(userId),
+      content: createCommentDto.content,
+    });
+
+    const savedComment = await comment.save();
+
+    // Populate user data before returning
+    return this.feedbackCommentModel
+      .findById(savedComment._id)
+      .populate({ path: 'userId', select: 'firstName lastName email avatar', model: 'User' })
+      .exec();
+  }
+
+  async getCommentsByFeedback(feedbackId: string): Promise<FeedbackCommentDocument[]> {
+    return this.feedbackCommentModel
+      .find({ feedbackId: new Types.ObjectId(feedbackId) })
+      .populate({ path: 'userId', select: 'firstName lastName email avatar', model: 'User' })
+      .sort({ createdAt: 1 }) // Oldest first
+      .exec();
+  }
+
+  async updateComment(
+    commentId: string,
+    userId: string,
+    updateCommentDto: UpdateFeedbackCommentDto,
+  ): Promise<FeedbackCommentDocument> {
+    const comment = await this.feedbackCommentModel.findById(commentId).exec();
+
+    if (!comment) {
+      throw new NotFoundException('Comment not found');
+    }
+
+    // Check ownership
+    if (comment.userId.toString() !== userId) {
+      throw new ForbiddenException('You can only edit your own comments');
+    }
+
+    comment.content = updateCommentDto.content;
+    comment.isEdited = true;
+    comment.editedAt = new Date();
+
+    await comment.save();
+
+    return this.feedbackCommentModel
+      .findById(commentId)
+      .populate({ path: 'userId', select: 'firstName lastName email avatar', model: 'User' })
+      .exec();
+  }
+
+  async deleteComment(commentId: string, userId: string, isAdmin: boolean): Promise<void> {
+    const comment = await this.feedbackCommentModel.findById(commentId).exec();
+
+    if (!comment) {
+      throw new NotFoundException('Comment not found');
+    }
+
+    // Allow deletion if owner or admin
+    if (comment.userId.toString() !== userId && !isAdmin) {
+      throw new ForbiddenException('You can only delete your own comments');
+    }
+
+    await this.feedbackCommentModel.findByIdAndDelete(commentId).exec();
+  }
+
+  async getCommentsCount(feedbackId: string): Promise<number> {
+    return this.feedbackCommentModel
+      .countDocuments({ feedbackId: new Types.ObjectId(feedbackId) })
+      .exec();
   }
 }

@@ -12,6 +12,8 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { FeedbackService } from './feedback.service';
 import { CreateFeedbackDto, UpdateFeedbackDto, QueryFeedbackDto } from './dto';
+import { CreateFeedbackCommentDto } from './dto/create-feedback-comment.dto';
+import { UpdateFeedbackCommentDto } from './dto/update-feedback-comment.dto';
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@auth/guards/roles.guard';
 import { Roles, CurrentUser } from '@common/decorators';
@@ -113,5 +115,48 @@ export class FeedbackController {
   @ApiResponse({ status: 404, description: 'Feedback not found' })
   toTest(@Param('id') id: string, @CurrentUser() user) {
     return this.feedbackService.toTest(id, user._id);
+  }
+
+  // Comment routes
+  @Post(':id/comments')
+  @ApiOperation({ summary: 'Add a comment to feedback' })
+  @ApiResponse({ status: 201, description: 'Comment successfully created' })
+  @ApiResponse({ status: 404, description: 'Feedback not found' })
+  createComment(
+    @Param('id') feedbackId: string,
+    @CurrentUser() user,
+    @Body() createCommentDto: CreateFeedbackCommentDto,
+  ) {
+    return this.feedbackService.createComment(feedbackId, user._id, createCommentDto);
+  }
+
+  @Get(':id/comments')
+  @ApiOperation({ summary: 'Get all comments for a feedback' })
+  @ApiResponse({ status: 200, description: 'Returns all comments' })
+  getComments(@Param('id') feedbackId: string) {
+    return this.feedbackService.getCommentsByFeedback(feedbackId);
+  }
+
+  @Patch('comments/:commentId')
+  @ApiOperation({ summary: 'Update a comment' })
+  @ApiResponse({ status: 200, description: 'Comment successfully updated' })
+  @ApiResponse({ status: 403, description: 'Forbidden - can only edit own comments' })
+  @ApiResponse({ status: 404, description: 'Comment not found' })
+  updateComment(
+    @Param('commentId') commentId: string,
+    @CurrentUser() user,
+    @Body() updateCommentDto: UpdateFeedbackCommentDto,
+  ) {
+    return this.feedbackService.updateComment(commentId, user._id, updateCommentDto);
+  }
+
+  @Delete('comments/:commentId')
+  @ApiOperation({ summary: 'Delete a comment' })
+  @ApiResponse({ status: 200, description: 'Comment successfully deleted' })
+  @ApiResponse({ status: 403, description: 'Forbidden - can only delete own comments or admin' })
+  @ApiResponse({ status: 404, description: 'Comment not found' })
+  deleteComment(@Param('commentId') commentId: string, @CurrentUser() user) {
+    const isAdmin = user.role === UserRole.ADMIN;
+    return this.feedbackService.deleteComment(commentId, user._id, isAdmin);
   }
 }

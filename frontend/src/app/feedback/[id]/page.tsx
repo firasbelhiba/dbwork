@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button, Breadcrumb, LogoLoader } from '@/components/common';
+import { CommentSection } from '@/components/feedback/CommentSection';
 import { feedbackAPI } from '@/lib/api';
 import { Feedback, FeedbackType, FeedbackStatus } from '@/types/feedback';
 import { useAuth } from '@/contexts/AuthContext';
@@ -411,6 +412,11 @@ export default function FeedbackDetailPage() {
               </>
             )}
           </div>
+        </div>
+
+        {/* Comments Section */}
+        <div className="bg-white dark:bg-dark-400 rounded-lg shadow p-6 border border-gray-200 dark:border-dark-300">
+          <CommentSection feedbackId={params.id as string} />
         </div>
       </div>
     </DashboardLayout>
