@@ -8,6 +8,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Issue, IssueDocument } from './schemas/issue.schema';
+import { User, UserDocument } from '../users/schemas/user.schema';
 import { CreateIssueDto, UpdateIssueDto, FilterIssuesDto, AddTimeLogDto } from './dto';
 import { ActivitiesService } from '../activities/activities.service';
 import { ActionType, EntityType } from '../activities/schemas/activity.schema';
@@ -17,6 +18,7 @@ import { ProjectsService } from '../projects/projects.service';
 export class IssuesService {
   constructor(
     @InjectModel(Issue.name) private issueModel: Model<IssueDocument>,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
     private activitiesService: ActivitiesService,
     @Inject(forwardRef(() => ProjectsService))
     private projectsService: ProjectsService,
