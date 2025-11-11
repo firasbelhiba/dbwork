@@ -71,7 +71,7 @@ export default function DashboardPage() {
         // Non-admin: Get user's projects and assigned issues (fetch more for accurate stats)
         const [projectsRes, issuesRes] = await Promise.all([
           projectsAPI.getMyProjects(),
-          issuesAPI.getAll({ assignee: user?._id, limit: 100 }),
+          issuesAPI.getAll({ assignees: [user?._id], limit: 100 }),
         ]);
 
         setProjects(projectsRes.data || []);
