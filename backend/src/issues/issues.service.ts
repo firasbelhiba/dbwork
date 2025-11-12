@@ -95,6 +95,23 @@ export class IssuesService {
       createIssueDto.projectId,
     );
 
+    // Send notifications to assigned users
+    if (createIssueDto.assignees && createIssueDto.assignees.length > 0) {
+      for (const assigneeId of createIssueDto.assignees) {
+        // Don't notify if the reporter assigned themselves
+        if (assigneeId !== reporterId) {
+          await this.notificationsService.create({
+            userId: assigneeId,
+            type: 'issue_assigned' as any,
+            title: 'Issue Assigned',
+            message: `You have been assigned to ${savedIssue.key}: ${savedIssue.title}`,
+            link: `/issues/${savedIssue._id}`,
+            metadata: { issueKey: savedIssue.key, assignedBy: reporterId },
+          });
+        }
+      }
+    }
+
     return savedIssue;
   }
 
