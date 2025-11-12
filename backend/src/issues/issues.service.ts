@@ -97,19 +97,30 @@ export class IssuesService {
 
     // Send notifications to assigned users
     if (createIssueDto.assignees && createIssueDto.assignees.length > 0) {
+      console.log(`[NOTIFICATION] Creating notifications for ${createIssueDto.assignees.length} assignees`);
       for (const assigneeId of createIssueDto.assignees) {
         // Don't notify if the reporter assigned themselves
         if (assigneeId !== reporterId) {
-          await this.notificationsService.create({
-            userId: assigneeId,
-            type: 'issue_assigned' as any,
-            title: 'Issue Assigned',
-            message: `You have been assigned to ${savedIssue.key}: ${savedIssue.title}`,
-            link: `/issues/${savedIssue._id}`,
-            metadata: { issueKey: savedIssue.key, assignedBy: reporterId },
-          });
+          console.log(`[NOTIFICATION] Sending notification to user ${assigneeId} for issue ${savedIssue.key}`);
+          try {
+            await this.notificationsService.create({
+              userId: assigneeId,
+              type: 'issue_assigned' as any,
+              title: 'Issue Assigned',
+              message: `You have been assigned to ${savedIssue.key}: ${savedIssue.title}`,
+              link: `/issues/${savedIssue._id}`,
+              metadata: { issueKey: savedIssue.key, assignedBy: reporterId },
+            });
+            console.log(`[NOTIFICATION] Successfully created notification for user ${assigneeId}`);
+          } catch (error) {
+            console.error(`[NOTIFICATION] Error creating notification for user ${assigneeId}:`, error);
+          }
+        } else {
+          console.log(`[NOTIFICATION] Skipping self-notification for user ${assigneeId}`);
         }
       }
+    } else {
+      console.log('[NOTIFICATION] No assignees found or assignees array is empty');
     }
 
     return savedIssue;
