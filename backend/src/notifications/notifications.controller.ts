@@ -33,6 +33,12 @@ export class NotificationsController {
   @ApiOperation({ summary: 'Get user notifications' })
   @ApiResponse({ status: 200, description: 'List of notifications' })
   findByUser(@CurrentUser() user, @Query('unreadOnly') unreadOnly?: string) {
+    console.log('[NotificationsController] User object:', {
+      _id: user._id,
+      _id_type: typeof user._id,
+      _id_constructor: user._id?.constructor?.name,
+      email: user.email,
+    });
     return this.notificationsService.findByUser(
       user._id,
       unreadOnly === 'true',
