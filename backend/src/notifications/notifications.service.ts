@@ -19,16 +19,14 @@ export class NotificationsService {
   async findByUser(userId: string | Types.ObjectId, unreadOnly: boolean = false): Promise<NotificationDocument[]> {
     console.log(`[NotificationsService] Finding notifications for userId: ${userId}, type: ${typeof userId}, unreadOnly: ${unreadOnly}`);
 
-    // Convert to ObjectId if it's a string, otherwise use as-is
-    const userObjectId = typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
-    console.log(`[NotificationsService] Converted userId to:`, userObjectId);
-
-    const query: any = { userId: userObjectId };
+    // Just pass userId as-is to Mongoose - it handles ObjectId conversion automatically
+    const query: any = { userId };
     if (unreadOnly) {
       query.read = false;
     }
 
-    console.log(`[NotificationsService] Query:`, JSON.stringify(query));
+    console.log(`[NotificationsService] Query userId:`, userId);
+    console.log(`[NotificationsService] Query userId type:`, typeof userId);
 
     const notifications = await this.notificationModel
       .find(query)
@@ -42,11 +40,10 @@ export class NotificationsService {
     const allNotifications = await this.notificationModel.find({}).limit(10).exec();
     console.log(`[NotificationsService] Total notifications in DB: ${allNotifications.length}`);
     if (allNotifications.length > 0) {
-      console.log(`[NotificationsService] Sample notification:`, {
-        userId: allNotifications[0].userId.toString(),
-        type: allNotifications[0].type,
-        title: allNotifications[0].title,
-      });
+      const sample = allNotifications[0];
+      console.log(`[NotificationsService] Sample notification userId:`, sample.userId);
+      console.log(`[NotificationsService] Sample userId type:`, typeof sample.userId);
+      console.log(`[NotificationsService] Sample userId === query userId:`, sample.userId.equals(userId));
     }
 
     return notifications;
