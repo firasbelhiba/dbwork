@@ -19,14 +19,14 @@ export class NotificationsService {
   async findByUser(userId: string | Types.ObjectId, unreadOnly: boolean = false): Promise<NotificationDocument[]> {
     console.log(`[NotificationsService] Finding notifications for userId: ${userId}, type: ${typeof userId}, unreadOnly: ${unreadOnly}`);
 
-    // Just pass userId as-is to Mongoose - it handles ObjectId conversion automatically
-    const query: any = { userId };
+    // Convert ObjectId to string since notifications are stored with userId as string
+    const userIdString = userId.toString();
+    console.log(`[NotificationsService] Converted to string:`, userIdString);
+
+    const query: any = { userId: userIdString };
     if (unreadOnly) {
       query.read = false;
     }
-
-    console.log(`[NotificationsService] Query userId:`, userId);
-    console.log(`[NotificationsService] Query userId type:`, typeof userId);
 
     const notifications = await this.notificationModel
       .find(query)
@@ -35,16 +35,6 @@ export class NotificationsService {
       .exec();
 
     console.log(`[NotificationsService] Found ${notifications.length} notifications`);
-
-    // Also try to find ALL notifications to see if there are any in the database
-    const allNotifications = await this.notificationModel.find({}).limit(10).exec();
-    console.log(`[NotificationsService] Total notifications in DB: ${allNotifications.length}`);
-    if (allNotifications.length > 0) {
-      const sample = allNotifications[0];
-      console.log(`[NotificationsService] Sample notification userId:`, sample.userId);
-      console.log(`[NotificationsService] Sample userId type:`, typeof sample.userId);
-      console.log(`[NotificationsService] Sample userId === query userId:`, sample.userId.equals(userId));
-    }
 
     return notifications;
   }
@@ -73,10 +63,10 @@ export class NotificationsService {
   }
 
   async markAllAsRead(userId: string | Types.ObjectId): Promise<any> {
-    const userObjectId = typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
+    const userIdString = userId.toString();
     return this.notificationModel
       .updateMany(
-        { userId: userObjectId, read: false },
+        { userId: userIdString, read: false },
         { read: true, readAt: new Date() },
       )
       .exec();
@@ -93,16 +83,16 @@ export class NotificationsService {
   }
 
   async getUnreadCount(userId: string | Types.ObjectId): Promise<number> {
-    const userObjectId = typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
+    const userIdString = userId.toString();
     return this.notificationModel
-      .countDocuments({ userId: userObjectId, read: false })
+      .countDocuments({ userId: userIdString, read: false })
       .exec();
   }
 
   async clearAll(userId: string | Types.ObjectId): Promise<any> {
-    const userObjectId = typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
+    const userIdString = userId.toString();
     return this.notificationModel
-      .deleteMany({ userId: userObjectId, read: true })
+      .deleteMany({ userId: userIdString, read: true })
       .exec();
   }
 
