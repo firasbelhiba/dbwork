@@ -16,10 +16,14 @@ export class NotificationsService {
     return notification.save();
   }
 
-  async findByUser(userId: string, unreadOnly: boolean = false): Promise<NotificationDocument[]> {
-    console.log(`[NotificationsService] Finding notifications for userId: ${userId}, unreadOnly: ${unreadOnly}`);
+  async findByUser(userId: string | Types.ObjectId, unreadOnly: boolean = false): Promise<NotificationDocument[]> {
+    console.log(`[NotificationsService] Finding notifications for userId: ${userId}, type: ${typeof userId}, unreadOnly: ${unreadOnly}`);
 
-    const query: any = { userId: new Types.ObjectId(userId) };
+    // Convert to ObjectId if it's a string, otherwise use as-is
+    const userObjectId = typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
+    console.log(`[NotificationsService] Converted userId to:`, userObjectId);
+
+    const query: any = { userId: userObjectId };
     if (unreadOnly) {
       query.read = false;
     }
@@ -71,10 +75,11 @@ export class NotificationsService {
     return notification.save();
   }
 
-  async markAllAsRead(userId: string): Promise<any> {
+  async markAllAsRead(userId: string | Types.ObjectId): Promise<any> {
+    const userObjectId = typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
     return this.notificationModel
       .updateMany(
-        { userId: new Types.ObjectId(userId), read: false },
+        { userId: userObjectId, read: false },
         { read: true, readAt: new Date() },
       )
       .exec();
@@ -90,15 +95,17 @@ export class NotificationsService {
     await this.notificationModel.findByIdAndDelete(id).exec();
   }
 
-  async getUnreadCount(userId: string): Promise<number> {
+  async getUnreadCount(userId: string | Types.ObjectId): Promise<number> {
+    const userObjectId = typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
     return this.notificationModel
-      .countDocuments({ userId: new Types.ObjectId(userId), read: false })
+      .countDocuments({ userId: userObjectId, read: false })
       .exec();
   }
 
-  async clearAll(userId: string): Promise<any> {
+  async clearAll(userId: string | Types.ObjectId): Promise<any> {
+    const userObjectId = typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
     return this.notificationModel
-      .deleteMany({ userId: new Types.ObjectId(userId), read: true })
+      .deleteMany({ userId: userObjectId, read: true })
       .exec();
   }
 
