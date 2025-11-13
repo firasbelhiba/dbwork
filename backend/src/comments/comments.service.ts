@@ -1,16 +1,23 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Comment, CommentDocument } from './schemas/comment.schema';
 import { CreateCommentDto, UpdateCommentDto } from './dto';
 import { ActivitiesService } from '../activities/activities.service';
 import { ActionType, EntityType } from '../activities/schemas/activity.schema';
+import { NotificationsService } from '../notifications/notifications.service';
+import { IssuesService } from '../issues/issues.service';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class CommentsService {
   constructor(
     @InjectModel(Comment.name) private commentModel: Model<CommentDocument>,
     private activitiesService: ActivitiesService,
+    private notificationsService: NotificationsService,
+    @Inject(forwardRef(() => IssuesService))
+    private issuesService: IssuesService,
+    private usersService: UsersService,
   ) {}
 
   async create(
@@ -18,10 +25,14 @@ export class CommentsService {
     userId: string,
     createCommentDto: CreateCommentDto,
   ): Promise<CommentDocument> {
+    // Extract @mentions from comment content
+    const mentions = this.notificationsService.extractMentions(createCommentDto.content);
+
     const comment = new this.commentModel({
       ...createCommentDto,
       issueId,
       userId,
+      mentions, // Store mentions in the comment
     });
 
     const savedComment = await (await comment.save()).populate('userId', 'firstName lastName email avatar');
@@ -36,6 +47,103 @@ export class CommentsService {
       undefined,
       { issueId },
     );
+
+    // Get issue details for notifications
+    try {
+      const issue = await this.issuesService.findOne(issueId);
+      const recipientIds = new Set<string>();
+
+      // 1. Notify mentioned users
+      if (mentions.length > 0) {
+        for (const username of mentions) {
+          try {
+            // Find user by firstName or lastName matching the mention
+            const users = await this.usersService.findAll();
+            const mentionedUser = users.find(u =>
+              u.firstName.toLowerCase() === username.toLowerCase() ||
+              u.lastName.toLowerCase() === username.toLowerCase() ||
+              `${u.firstName}${u.lastName}`.toLowerCase() === username.toLowerCase()
+            );
+
+            if (mentionedUser && mentionedUser._id.toString() !== userId) {
+              recipientIds.add(mentionedUser._id.toString());
+              await this.notificationsService.notifyCommentMention(
+                mentionedUser._id.toString(),
+                issue.key,
+                issue.title,
+                userId,
+                createCommentDto.content,
+              );
+            }
+          } catch (error) {
+            console.error(`[NOTIFICATION] Error notifying mentioned user @${username}:`, error);
+          }
+        }
+      }
+
+      // 2. Notify issue reporter (if comment is on their issue)
+      if (issue.reporter) {
+        const reporterId = typeof issue.reporter === 'object' && issue.reporter !== null
+          ? (issue.reporter as any)._id.toString()
+          : String(issue.reporter);
+
+        if (reporterId !== userId && !recipientIds.has(reporterId)) {
+          recipientIds.add(reporterId);
+          await this.notificationsService.notifyCommentOnIssue(
+            reporterId,
+            issue.key,
+            issue.title,
+            userId,
+            createCommentDto.content,
+          );
+        }
+      }
+
+      // 3. Notify issue assignees (if comment is on an issue assigned to them)
+      if (issue.assignees && Array.isArray(issue.assignees)) {
+        for (const assignee of issue.assignees) {
+          const assigneeId = typeof assignee === 'object' && assignee !== null
+            ? (assignee as any)._id.toString()
+            : String(assignee);
+
+          if (assigneeId !== userId && !recipientIds.has(assigneeId)) {
+            recipientIds.add(assigneeId);
+            await this.notificationsService.notifyCommentOnIssue(
+              assigneeId,
+              issue.key,
+              issue.title,
+              userId,
+              createCommentDto.content,
+            );
+          }
+        }
+      }
+
+      // 4. Notify parent comment author (if this is a reply)
+      if (createCommentDto.parentCommentId) {
+        try {
+          const parentComment = await this.commentModel.findById(createCommentDto.parentCommentId).exec();
+          if (parentComment) {
+            const parentAuthorId = parentComment.userId.toString();
+
+            if (parentAuthorId !== userId && !recipientIds.has(parentAuthorId)) {
+              recipientIds.add(parentAuthorId);
+              await this.notificationsService.notifyCommentReply(
+                parentAuthorId,
+                issue.key,
+                issue.title,
+                userId,
+                createCommentDto.content,
+              );
+            }
+          }
+        } catch (error) {
+          console.error('[NOTIFICATION] Error notifying parent comment author:', error);
+        }
+      }
+    } catch (error) {
+      console.error('[NOTIFICATION] Error sending comment notifications:', error);
+    }
 
     return savedComment;
   }

@@ -207,4 +207,80 @@ export class NotificationsService {
       metadata: { issueKey, oldDueDate, newDueDate, changedBy },
     });
   }
+
+  async notifyCommentOnIssue(
+    userId: string,
+    issueKey: string,
+    issueTitle: string,
+    commentedBy: string,
+    commentPreview: string,
+  ): Promise<NotificationDocument> {
+    const preview = commentPreview.length > 100
+      ? commentPreview.substring(0, 100) + '...'
+      : commentPreview;
+
+    return this.create({
+      userId,
+      type: 'comment_on_issue' as any,
+      title: 'New Comment on Issue',
+      message: `New comment on ${issueKey}: ${issueTitle} - "${preview}"`,
+      link: `/issues/${issueKey}`,
+      metadata: { issueKey, commentedBy, commentPreview },
+    });
+  }
+
+  async notifyCommentMention(
+    userId: string,
+    issueKey: string,
+    issueTitle: string,
+    mentionedBy: string,
+    commentPreview: string,
+  ): Promise<NotificationDocument> {
+    const preview = commentPreview.length > 100
+      ? commentPreview.substring(0, 100) + '...'
+      : commentPreview;
+
+    return this.create({
+      userId,
+      type: 'comment_mention' as any,
+      title: 'You were mentioned',
+      message: `You were mentioned in a comment on ${issueKey}: "${preview}"`,
+      link: `/issues/${issueKey}`,
+      metadata: { issueKey, mentionedBy, commentPreview },
+    });
+  }
+
+  async notifyCommentReply(
+    userId: string,
+    issueKey: string,
+    issueTitle: string,
+    repliedBy: string,
+    replyPreview: string,
+  ): Promise<NotificationDocument> {
+    const preview = replyPreview.length > 100
+      ? replyPreview.substring(0, 100) + '...'
+      : replyPreview;
+
+    return this.create({
+      userId,
+      type: 'comment_reply' as any,
+      title: 'Reply to Your Comment',
+      message: `New reply on ${issueKey}: "${preview}"`,
+      link: `/issues/${issueKey}`,
+      metadata: { issueKey, repliedBy, replyPreview },
+    });
+  }
+
+  // Helper function to extract @mentions from text
+  extractMentions(text: string): string[] {
+    const mentionRegex = /@(\w+)/g;
+    const mentions: string[] = [];
+    let match;
+
+    while ((match = mentionRegex.exec(text)) !== null) {
+      mentions.push(match[1]); // Extract username without @
+    }
+
+    return [...new Set(mentions)]; // Remove duplicates
+  }
 }
