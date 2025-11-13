@@ -7,6 +7,7 @@ import {
   Delete,
   UseGuards,
   Query,
+  Header,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -26,6 +27,9 @@ export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
   @Get()
+  @Header('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+  @Header('Pragma', 'no-cache')
+  @Header('Expires', '0')
   @ApiOperation({ summary: 'Get user notifications' })
   @ApiResponse({ status: 200, description: 'List of notifications' })
   findByUser(@CurrentUser() user, @Query('unreadOnly') unreadOnly?: string) {
@@ -36,6 +40,9 @@ export class NotificationsController {
   }
 
   @Get('unread-count')
+  @Header('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+  @Header('Pragma', 'no-cache')
+  @Header('Expires', '0')
   @ApiOperation({ summary: 'Get unread notification count' })
   @ApiResponse({ status: 200, description: 'Unread count' })
   getUnreadCount(@CurrentUser() user) {
