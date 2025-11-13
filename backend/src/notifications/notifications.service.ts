@@ -17,16 +17,35 @@ export class NotificationsService {
   }
 
   async findByUser(userId: string, unreadOnly: boolean = false): Promise<NotificationDocument[]> {
+    console.log(`[NotificationsService] Finding notifications for userId: ${userId}, unreadOnly: ${unreadOnly}`);
+
     const query: any = { userId };
     if (unreadOnly) {
       query.read = false;
     }
 
-    return this.notificationModel
+    console.log(`[NotificationsService] Query:`, JSON.stringify(query));
+
+    const notifications = await this.notificationModel
       .find(query)
       .sort({ createdAt: -1 })
       .limit(50)
       .exec();
+
+    console.log(`[NotificationsService] Found ${notifications.length} notifications`);
+
+    // Also try to find ALL notifications to see if there are any in the database
+    const allNotifications = await this.notificationModel.find({}).limit(10).exec();
+    console.log(`[NotificationsService] Total notifications in DB: ${allNotifications.length}`);
+    if (allNotifications.length > 0) {
+      console.log(`[NotificationsService] Sample notification:`, {
+        userId: allNotifications[0].userId.toString(),
+        type: allNotifications[0].type,
+        title: allNotifications[0].title,
+      });
+    }
+
+    return notifications;
   }
 
   async findOne(id: string): Promise<NotificationDocument> {
