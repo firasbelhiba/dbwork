@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Notification, NotificationDocument } from './schemas/notification.schema';
 import { CreateNotificationDto } from './dto';
 
@@ -19,7 +19,7 @@ export class NotificationsService {
   async findByUser(userId: string, unreadOnly: boolean = false): Promise<NotificationDocument[]> {
     console.log(`[NotificationsService] Finding notifications for userId: ${userId}, unreadOnly: ${unreadOnly}`);
 
-    const query: any = { userId };
+    const query: any = { userId: new Types.ObjectId(userId) };
     if (unreadOnly) {
       query.read = false;
     }
@@ -74,7 +74,7 @@ export class NotificationsService {
   async markAllAsRead(userId: string): Promise<any> {
     return this.notificationModel
       .updateMany(
-        { userId, read: false },
+        { userId: new Types.ObjectId(userId), read: false },
         { read: true, readAt: new Date() },
       )
       .exec();
@@ -92,13 +92,13 @@ export class NotificationsService {
 
   async getUnreadCount(userId: string): Promise<number> {
     return this.notificationModel
-      .countDocuments({ userId, read: false })
+      .countDocuments({ userId: new Types.ObjectId(userId), read: false })
       .exec();
   }
 
   async clearAll(userId: string): Promise<any> {
     return this.notificationModel
-      .deleteMany({ userId, read: true })
+      .deleteMany({ userId: new Types.ObjectId(userId), read: true })
       .exec();
   }
 
