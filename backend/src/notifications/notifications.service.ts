@@ -144,4 +144,67 @@ export class NotificationsService {
       metadata: { mentionedBy },
     });
   }
+
+  async notifyIssueStatusChanged(
+    userId: string,
+    issueKey: string,
+    issueTitle: string,
+    oldStatus: string,
+    newStatus: string,
+    changedBy: string,
+  ): Promise<NotificationDocument> {
+    return this.create({
+      userId,
+      type: 'issue_status_changed' as any,
+      title: 'Issue Status Changed',
+      message: `${issueKey}: ${issueTitle} status changed from ${oldStatus} to ${newStatus}`,
+      link: `/issues/${issueKey}`,
+      metadata: { issueKey, oldStatus, newStatus, changedBy },
+    });
+  }
+
+  async notifyIssuePriorityChanged(
+    userId: string,
+    issueKey: string,
+    issueTitle: string,
+    oldPriority: string,
+    newPriority: string,
+    changedBy: string,
+  ): Promise<NotificationDocument> {
+    return this.create({
+      userId,
+      type: 'issue_priority_changed' as any,
+      title: 'Issue Priority Changed',
+      message: `${issueKey}: ${issueTitle} priority changed from ${oldPriority} to ${newPriority}`,
+      link: `/issues/${issueKey}`,
+      metadata: { issueKey, oldPriority, newPriority, changedBy },
+    });
+  }
+
+  async notifyIssueDueDateChanged(
+    userId: string,
+    issueKey: string,
+    issueTitle: string,
+    oldDueDate: Date | null,
+    newDueDate: Date | null,
+    changedBy: string,
+  ): Promise<NotificationDocument> {
+    let message: string;
+    if (!oldDueDate && newDueDate) {
+      message = `${issueKey}: ${issueTitle} due date set to ${new Date(newDueDate).toLocaleDateString()}`;
+    } else if (oldDueDate && !newDueDate) {
+      message = `${issueKey}: ${issueTitle} due date removed`;
+    } else {
+      message = `${issueKey}: ${issueTitle} due date changed to ${new Date(newDueDate).toLocaleDateString()}`;
+    }
+
+    return this.create({
+      userId,
+      type: 'issue_due_date_changed' as any,
+      title: 'Issue Due Date Changed',
+      message,
+      link: `/issues/${issueKey}`,
+      metadata: { issueKey, oldDueDate, newDueDate, changedBy },
+    });
+  }
 }

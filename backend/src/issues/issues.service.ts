@@ -324,21 +324,116 @@ export class IssuesService {
       }
 
       // Send notification for status change
-      if (changes.status && issue.assignees && Array.isArray(issue.assignees)) {
-        for (const assignee of issue.assignees) {
-          const assigneeId = typeof assignee === 'object' && assignee !== null
-            ? (assignee as any)._id.toString()
-            : String(assignee);
-          // Don't notify the user who made the change
-          if (assigneeId !== userId) {
-            await this.notificationsService.create({
-              userId: assigneeId,
-              type: 'issue_updated' as any,
-              title: 'Issue Status Changed',
-              message: `${issue.key}: ${issue.title} status changed to ${changes.status.to}`,
-              link: `/issues/${issue._id}`,
-              metadata: { issueKey: issue.key, statusChange: changes.status, updatedBy: userId },
-            });
+      if (changes.status) {
+        const recipientIds = new Set<string>();
+
+        // Add assignees
+        if (issue.assignees && Array.isArray(issue.assignees)) {
+          for (const assignee of issue.assignees) {
+            const assigneeId = typeof assignee === 'object' && assignee !== null
+              ? (assignee as any)._id.toString()
+              : String(assignee);
+            recipientIds.add(assigneeId);
+          }
+        }
+
+        // Add reporter
+        if (issue.reporter) {
+          const reporterId = typeof issue.reporter === 'object' && issue.reporter !== null
+            ? (issue.reporter as any)._id.toString()
+            : String(issue.reporter);
+          recipientIds.add(reporterId);
+        }
+
+        // Send notifications to all recipients except the user who made the change
+        for (const recipientId of recipientIds) {
+          if (recipientId !== userId) {
+            await this.notificationsService.notifyIssueStatusChanged(
+              recipientId,
+              issue.key,
+              issue.title,
+              changes.status.from,
+              changes.status.to,
+              userId,
+            );
+          }
+        }
+      }
+
+      // Send notification for priority change
+      if (changes.priority) {
+        const recipientIds = new Set<string>();
+
+        // Add assignees
+        if (issue.assignees && Array.isArray(issue.assignees)) {
+          for (const assignee of issue.assignees) {
+            const assigneeId = typeof assignee === 'object' && assignee !== null
+              ? (assignee as any)._id.toString()
+              : String(assignee);
+            recipientIds.add(assigneeId);
+          }
+        }
+
+        // Add reporter
+        if (issue.reporter) {
+          const reporterId = typeof issue.reporter === 'object' && issue.reporter !== null
+            ? (issue.reporter as any)._id.toString()
+            : String(issue.reporter);
+          recipientIds.add(reporterId);
+        }
+
+        // Add project lead (admin)
+        if (issue.projectId) {
+          try {
+            const projectData = typeof issue.projectId === 'object' && '_id' in issue.projectId
+              ? issue.projectId
+              : await this.issueModel.findById(id).populate('projectId').exec().then(i => i.projectId);
+
+            if (projectData && (projectData as any).lead) {
+              const leadId = (projectData as any).lead.toString();
+              recipientIds.add(leadId);
+            }
+          } catch (error) {
+            console.error('[NOTIFICATION] Error getting project lead:', error);
+          }
+        }
+
+        // Send notifications to all recipients except the user who made the change
+        for (const recipientId of recipientIds) {
+          if (recipientId !== userId) {
+            await this.notificationsService.notifyIssuePriorityChanged(
+              recipientId,
+              issue.key,
+              issue.title,
+              changes.priority.from,
+              changes.priority.to,
+              userId,
+            );
+          }
+        }
+      }
+
+      // Send notification for due date change
+      if (updateIssueDto.dueDate !== undefined &&
+          originalIssue?.dueDate?.toString() !== updateIssueDto.dueDate?.toString()) {
+        // Notify only assignees for due date changes
+        if (issue.assignees && Array.isArray(issue.assignees)) {
+          for (const assignee of issue.assignees) {
+            const assigneeId = typeof assignee === 'object' && assignee !== null
+              ? (assignee as any)._id.toString()
+              : String(assignee);
+
+            // Don't notify the user who made the change
+            if (assigneeId !== userId) {
+              await this.notificationsService.notifyIssueDueDateChanged(
+                assigneeId,
+                issue.key,
+                issue.title,
+                originalIssue.dueDate,
+                updateIssueDto.dueDate,
+                userId,
+              );
+            }
           }
         }
       }
