@@ -7,7 +7,8 @@ import { issuesAPI, commentsAPI } from '@/lib/api';
 import { Issue } from '@/types/issue';
 import { Comment } from '@/types/comment';
 import { UserRole } from '@/types/user';
-import { Button, Badge, Select, Textarea, Breadcrumb, LogoLoader } from '@/components/common';
+import { Button, Badge, Select, Breadcrumb, LogoLoader } from '@/components/common';
+import { MentionTextarea } from '@/components/common/MentionTextarea';
 import { SubIssues, SubIssueModal, EditIssueModal } from '@/components/issues';
 import { useAuth } from '@/contexts/AuthContext';
 import { getInitials, formatDateTime, getRelativeTime } from '@/lib/utils';
@@ -354,10 +355,10 @@ export default function IssueDetailPage() {
                       {user && getInitials(user.firstName, user.lastName)}
                     </div>
                     <div className="flex-1">
-                      <Textarea
+                      <MentionTextarea
                         value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                        placeholder="Add a comment..."
+                        onChange={setNewComment}
+                        placeholder="Add a comment... Use @ to mention someone"
                         rows={3}
                       />
                       <div className="flex justify-end mt-2">
