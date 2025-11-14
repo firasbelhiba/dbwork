@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, KeyboardEvent } from 'react';
-import { api } from '@/lib/api';
+import api from '@/lib/api';
 
 interface User {
   _id: string;
