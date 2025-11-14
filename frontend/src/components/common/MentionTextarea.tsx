@@ -39,12 +39,14 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
   // Search users when mention search changes
   useEffect(() => {
     if (mentionSearch) {
+      console.log('[MentionTextarea] Searching for:', mentionSearch);
       const searchUsers = async () => {
         try {
           const response = await api.get(`/users/search?q=${mentionSearch}`);
+          console.log('[MentionTextarea] Search results:', response.data);
           setSuggestions(response.data.slice(0, 5)); // Limit to 5 suggestions
         } catch (error) {
-          console.error('Error searching users:', error);
+          console.error('[MentionTextarea] Error searching users:', error);
           setSuggestions([]);
         }
       };
@@ -65,18 +67,24 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
     const textBeforeCursor = newValue.slice(0, cursorPosition);
     const lastAtSymbol = textBeforeCursor.lastIndexOf('@');
 
+    console.log('[MentionTextarea] Text changed:', { newValue, cursorPosition, lastAtSymbol });
+
     if (lastAtSymbol !== -1) {
       const textAfterAt = textBeforeCursor.slice(lastAtSymbol + 1);
+      console.log('[MentionTextarea] Text after @:', textAfterAt);
       // Check if there's no space after @ (still typing the mention)
       if (!textAfterAt.includes(' ') && !textAfterAt.includes('\n')) {
+        console.log('[MentionTextarea] Showing mentions, search term:', textAfterAt);
         setMentionStart(lastAtSymbol);
         setMentionSearch(textAfterAt);
         setShowMentions(true);
         setSelectedIndex(0);
       } else {
+        console.log('[MentionTextarea] Hiding mentions - space or newline found');
         setShowMentions(false);
       }
     } else {
+      console.log('[MentionTextarea] Hiding mentions - no @ found');
       setShowMentions(false);
     }
   };
@@ -161,11 +169,18 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
         className={`w-full px-4 py-3 border border-gray-300 dark:border-dark-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-dark-500 dark:text-gray-200 resize-none ${className}`}
       />
 
+      {/* Debug info */}
+      {process.env.NODE_ENV === 'development' && showMentions && (
+        <div className="absolute top-0 right-0 text-xs bg-yellow-200 p-1 rounded">
+          Searching: {mentionSearch} | Results: {suggestions.length}
+        </div>
+      )}
+
       {/* Mention Suggestions Dropdown */}
       {showMentions && suggestions.length > 0 && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-64 mt-1 bg-white dark:bg-dark-500 border border-gray-200 dark:border-dark-400 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+          className="absolute z-[9999] w-64 mt-1 bg-white dark:bg-dark-500 border border-gray-200 dark:border-dark-400 rounded-lg shadow-lg max-h-60 overflow-y-auto"
           style={{
             bottom: '100%',
             marginBottom: '0.25rem',
