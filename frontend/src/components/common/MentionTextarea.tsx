@@ -39,14 +39,12 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
   // Search users when mention search changes
   useEffect(() => {
     if (mentionSearch) {
-      console.log('[MentionTextarea] Searching for:', mentionSearch);
       const searchUsers = async () => {
         try {
           const response = await api.get(`/users/search?q=${mentionSearch}`);
-          console.log('[MentionTextarea] Search results:', response.data);
           setSuggestions(response.data.slice(0, 5)); // Limit to 5 suggestions
         } catch (error) {
-          console.error('[MentionTextarea] Error searching users:', error);
+          console.error('Error searching users:', error);
           setSuggestions([]);
         }
       };
@@ -67,24 +65,18 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
     const textBeforeCursor = newValue.slice(0, cursorPosition);
     const lastAtSymbol = textBeforeCursor.lastIndexOf('@');
 
-    console.log('[MentionTextarea] Text changed:', { newValue, cursorPosition, lastAtSymbol });
-
     if (lastAtSymbol !== -1) {
       const textAfterAt = textBeforeCursor.slice(lastAtSymbol + 1);
-      console.log('[MentionTextarea] Text after @:', textAfterAt);
       // Check if there's no space after @ (still typing the mention)
       if (!textAfterAt.includes(' ') && !textAfterAt.includes('\n')) {
-        console.log('[MentionTextarea] Showing mentions, search term:', textAfterAt);
         setMentionStart(lastAtSymbol);
         setMentionSearch(textAfterAt);
         setShowMentions(true);
         setSelectedIndex(0);
       } else {
-        console.log('[MentionTextarea] Hiding mentions - space or newline found');
         setShowMentions(false);
       }
     } else {
-      console.log('[MentionTextarea] Hiding mentions - no @ found');
       setShowMentions(false);
     }
   };
