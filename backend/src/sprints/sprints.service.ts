@@ -3,6 +3,8 @@ import {
   NotFoundException,
   BadRequestException,
   ConflictException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -11,12 +13,17 @@ import { CreateSprintDto, UpdateSprintDto } from './dto';
 import { SprintStatus } from '@common/enums';
 import { ActivitiesService } from '../activities/activities.service';
 import { ActionType, EntityType } from '../activities/schemas/activity.schema';
+import { NotificationsService } from '../notifications/notifications.service';
+import { IssuesService } from '../issues/issues.service';
 
 @Injectable()
 export class SprintsService {
   constructor(
     @InjectModel(Sprint.name) private sprintModel: Model<SprintDocument>,
     private activitiesService: ActivitiesService,
+    private notificationsService: NotificationsService,
+    @Inject(forwardRef(() => IssuesService))
+    private issuesService: IssuesService,
   ) {}
 
   async create(createSprintDto: CreateSprintDto, userId?: string): Promise<SprintDocument> {
@@ -224,7 +231,32 @@ export class SprintsService {
     }
 
     sprint.issues.push(issueId as any);
-    return sprint.save();
+    const savedSprint = await sprint.save();
+
+    // Notify assignees that their issue was added to a sprint
+    try {
+      const issue = await this.issuesService.findOne(issueId);
+
+      if (issue.assignees && Array.isArray(issue.assignees)) {
+        for (const assignee of issue.assignees) {
+          const assigneeId = typeof assignee === 'object' && assignee !== null
+            ? (assignee as any)._id?.toString() || assignee.toString()
+            : String(assignee);
+
+          await this.notificationsService.notifySprintIssueAdded(
+            assigneeId,
+            issue.key,
+            issue.title,
+            sprint.name,
+            sprint._id.toString(),
+          );
+        }
+      }
+    } catch (error) {
+      console.error('[NOTIFICATION] Error notifying sprint issue added:', error);
+    }
+
+    return savedSprint;
   }
 
   async removeIssue(sprintId: string, issueId: string): Promise<SprintDocument> {
@@ -344,5 +376,129 @@ export class SprintsService {
       averageVelocity: Math.round(averageVelocity),
       sprintsAnalyzed: completedSprints.length,
     };
+  }
+
+  /**
+   * Check and send notifications for sprints starting or ending soon
+   * This method should be called by a cron job/scheduler
+   */
+  async sendSprintReminders(): Promise<void> {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const threeDaysFromNow = new Date(now);
+    threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
+
+    try {
+      // Find sprints starting in 1-3 days
+      const upcomingSprints = await this.sprintModel
+        .find({
+          status: SprintStatus.PLANNED,
+          startDate: {
+            $gte: tomorrow,
+            $lte: threeDaysFromNow,
+          },
+        })
+        .populate({
+          path: 'issues',
+          select: 'assignees key',
+          populate: {
+            path: 'assignees',
+            select: '_id',
+          },
+        })
+        .exec();
+
+      // Notify about sprints starting soon
+      for (const sprint of upcomingSprints) {
+        const daysUntilStart = Math.ceil(
+          (new Date(sprint.startDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+        );
+
+        // Get all unique assignees from sprint issues
+        const assigneeIds = new Set<string>();
+        for (const issue of sprint.issues as any[]) {
+          if (issue.assignees && Array.isArray(issue.assignees)) {
+            for (const assignee of issue.assignees) {
+              const assigneeId = typeof assignee === 'object' && assignee !== null
+                ? (assignee as any)._id?.toString() || assignee.toString()
+                : String(assignee);
+              assigneeIds.add(assigneeId);
+            }
+          }
+        }
+
+        // Send notifications to all assignees
+        for (const assigneeId of assigneeIds) {
+          try {
+            await this.notificationsService.notifySprintStartingSoon(
+              assigneeId,
+              sprint.name,
+              sprint._id.toString(),
+              sprint.startDate,
+              daysUntilStart,
+            );
+          } catch (error) {
+            console.error(`[NOTIFICATION] Error notifying sprint starting soon for user ${assigneeId}:`, error);
+          }
+        }
+      }
+
+      // Find active sprints ending in 1-3 days
+      const endingSprints = await this.sprintModel
+        .find({
+          status: SprintStatus.ACTIVE,
+          endDate: {
+            $gte: tomorrow,
+            $lte: threeDaysFromNow,
+          },
+        })
+        .populate({
+          path: 'issues',
+          select: 'assignees key',
+          populate: {
+            path: 'assignees',
+            select: '_id',
+          },
+        })
+        .exec();
+
+      // Notify about sprints ending soon
+      for (const sprint of endingSprints) {
+        const daysUntilEnd = Math.ceil(
+          (new Date(sprint.endDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+        );
+
+        // Get all unique assignees from sprint issues
+        const assigneeIds = new Set<string>();
+        for (const issue of sprint.issues as any[]) {
+          if (issue.assignees && Array.isArray(issue.assignees)) {
+            for (const assignee of issue.assignees) {
+              const assigneeId = typeof assignee === 'object' && assignee !== null
+                ? (assignee as any)._id?.toString() || assignee.toString()
+                : String(assignee);
+              assigneeIds.add(assigneeId);
+            }
+          }
+        }
+
+        // Send notifications to all assignees
+        for (const assigneeId of assigneeIds) {
+          try {
+            await this.notificationsService.notifySprintEndingSoon(
+              assigneeId,
+              sprint.name,
+              sprint._id.toString(),
+              sprint.endDate,
+              daysUntilEnd,
+            );
+          } catch (error) {
+            console.error(`[NOTIFICATION] Error notifying sprint ending soon for user ${assigneeId}:`, error);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[NOTIFICATION] Error sending sprint reminders:', error);
+    }
   }
 }

@@ -366,4 +366,56 @@ export class NotificationsService {
       metadata: { projectKey, deletedBy },
     });
   }
+
+  // Sprint-level notification methods
+  async notifySprintIssueAdded(
+    userId: string,
+    issueKey: string,
+    issueTitle: string,
+    sprintName: string,
+    sprintId: string,
+  ): Promise<NotificationDocument> {
+    return this.create({
+      userId,
+      type: 'sprint_issue_added' as any,
+      title: 'Issue Added to Sprint',
+      message: `Your issue ${issueKey}: ${issueTitle} was added to sprint "${sprintName}"`,
+      link: `/sprints/${sprintId}`,
+      metadata: { issueKey, sprintName, sprintId },
+    });
+  }
+
+  async notifySprintStartingSoon(
+    userId: string,
+    sprintName: string,
+    sprintId: string,
+    startDate: Date,
+    daysUntilStart: number,
+  ): Promise<NotificationDocument> {
+    return this.create({
+      userId,
+      type: 'sprint_starting_soon' as any,
+      title: 'Sprint Starting Soon',
+      message: `Sprint "${sprintName}" starts in ${daysUntilStart} day${daysUntilStart !== 1 ? 's' : ''} on ${new Date(startDate).toLocaleDateString()}`,
+      link: `/sprints/${sprintId}`,
+      metadata: { sprintName, sprintId, startDate, daysUntilStart },
+    });
+  }
+
+  async notifySprintEndingSoon(
+    userId: string,
+    sprintName: string,
+    sprintId: string,
+    endDate: Date,
+    daysUntilEnd: number,
+  ): Promise<NotificationDocument> {
+    return this.create({
+      userId,
+      type: 'sprint_ending_soon' as any,
+      title: 'Sprint Ending Soon',
+      message: `Sprint "${sprintName}" ends in ${daysUntilEnd} day${daysUntilEnd !== 1 ? 's' : ''} on ${new Date(endDate).toLocaleDateString()}`,
+      link: `/sprints/${sprintId}`,
+      metadata: { sprintName, sprintId, endDate, daysUntilEnd },
+    });
+  }
 }
