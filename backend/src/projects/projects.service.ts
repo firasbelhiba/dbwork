@@ -11,12 +11,14 @@ import { Project, ProjectDocument } from './schemas/project.schema';
 import { CreateProjectDto, UpdateProjectDto, AddMemberDto, CreateCustomStatusDto, UpdateCustomStatusDto, ReorderCustomStatusesDto, CreateDemoEventDto, UpdateDemoEventDto } from './dto';
 import { ActivitiesService } from '../activities/activities.service';
 import { ActionType, EntityType } from '../activities/schemas/activity.schema';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class ProjectsService {
   constructor(
     @InjectModel(Project.name) private projectModel: Model<ProjectDocument>,
     private activitiesService: ActivitiesService,
+    private notificationsService: NotificationsService,
   ) {}
 
   async create(createProjectDto: CreateProjectDto, userId: string): Promise<ProjectDocument> {
@@ -146,10 +148,40 @@ export class ProjectsService {
   }
 
   async remove(id: string, userId?: string): Promise<void> {
-    const project = await this.projectModel.findById(id);
+    const project = await this.projectModel
+      .findById(id)
+      .populate('members.userId', '_id')
+      .exec();
 
     if (!project) {
       throw new NotFoundException('Project not found');
+    }
+
+    // Notify all project members before deleting
+    try {
+      if (userId && project.members) {
+        for (const member of project.members) {
+          if (!member.userId) continue;
+
+          let memberId: string;
+          if (typeof member.userId === 'object') {
+            memberId = (member.userId as any)._id?.toString() || member.userId!.toString();
+          } else {
+            memberId = String(member.userId);
+          }
+
+          if (memberId !== userId) {
+            await this.notificationsService.notifyProjectDeleted(
+              memberId,
+              project.key,
+              project.name,
+              userId,
+            );
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[NOTIFICATION] Error notifying project deleted:', error);
     }
 
     const result = await this.projectModel.findByIdAndDelete(id).exec();
@@ -174,6 +206,7 @@ export class ProjectsService {
         { isArchived: true, archivedAt: new Date() },
         { new: true },
       )
+      .populate('members.userId', '_id')
       .exec();
 
     if (!project) {
@@ -190,6 +223,33 @@ export class ProjectsService {
         project.name,
         project._id.toString(),
       );
+    }
+
+    // Notify all project members
+    try {
+      if (userId && project.members) {
+        for (const member of project.members) {
+          if (!member.userId) continue;
+
+          let memberId: string;
+          if (typeof member.userId === 'object') {
+            memberId = (member.userId as any)._id?.toString() || member.userId!.toString();
+          } else {
+            memberId = String(member.userId);
+          }
+
+          if (memberId !== userId) {
+            await this.notificationsService.notifyProjectArchived(
+              memberId,
+              project.key,
+              project.name,
+              userId,
+            );
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[NOTIFICATION] Error notifying project archived:', error);
     }
 
     return project;
@@ -259,6 +319,20 @@ export class ProjectsService {
       );
     }
 
+    // Notify the added user
+    try {
+      if (actionUserId && addMemberDto.userId !== actionUserId) {
+        await this.notificationsService.notifyProjectMemberAdded(
+          addMemberDto.userId,
+          savedProject.key,
+          savedProject.name,
+          actionUserId,
+        );
+      }
+    } catch (error) {
+      console.error('[NOTIFICATION] Error notifying project member added:', error);
+    }
+
     return savedProject;
   }
 
@@ -287,6 +361,20 @@ export class ProjectsService {
         savedProject._id.toString(),
         { removedUserId: userId },
       );
+    }
+
+    // Notify the removed user
+    try {
+      if (actionUserId && userId !== actionUserId) {
+        await this.notificationsService.notifyProjectMemberRemoved(
+          userId,
+          savedProject.key,
+          savedProject.name,
+          actionUserId,
+        );
+      }
+    } catch (error) {
+      console.error('[NOTIFICATION] Error notifying project member removed:', error);
     }
 
     return savedProject;

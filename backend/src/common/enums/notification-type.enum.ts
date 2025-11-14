@@ -12,4 +12,9 @@ export enum NotificationType {
   SPRINT_STARTED = 'sprint_started',
   SPRINT_COMPLETED = 'sprint_completed',
   PROJECT_INVITATION = 'project_invitation',
+  PROJECT_MEMBER_ADDED = 'project_member_added',
+  PROJECT_MEMBER_REMOVED = 'project_member_removed',
+  PROJECT_ROLE_CHANGED = 'project_role_changed',
+  PROJECT_ARCHIVED = 'project_archived',
+  PROJECT_DELETED = 'project_deleted',
 }

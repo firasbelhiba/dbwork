@@ -283,4 +283,87 @@ export class NotificationsService {
 
     return [...new Set(mentions)]; // Remove duplicates
   }
+
+  // Project-level notification methods
+  async notifyProjectMemberAdded(
+    userId: string,
+    projectKey: string,
+    projectName: string,
+    addedBy: string,
+  ): Promise<NotificationDocument> {
+    return this.create({
+      userId,
+      type: 'project_member_added' as any,
+      title: 'Added to Project',
+      message: `You were added to project ${projectKey}: ${projectName}`,
+      link: `/projects/${projectKey}`,
+      metadata: { projectKey, addedBy },
+    });
+  }
+
+  async notifyProjectMemberRemoved(
+    userId: string,
+    projectKey: string,
+    projectName: string,
+    removedBy: string,
+  ): Promise<NotificationDocument> {
+    return this.create({
+      userId,
+      type: 'project_member_removed' as any,
+      title: 'Removed from Project',
+      message: `You were removed from project ${projectKey}: ${projectName}`,
+      link: `/projects`,
+      metadata: { projectKey, removedBy },
+    });
+  }
+
+  async notifyProjectRoleChanged(
+    userId: string,
+    projectKey: string,
+    projectName: string,
+    oldRole: string,
+    newRole: string,
+    changedBy: string,
+  ): Promise<NotificationDocument> {
+    return this.create({
+      userId,
+      type: 'project_role_changed' as any,
+      title: 'Project Role Changed',
+      message: `Your role in ${projectKey}: ${projectName} changed from ${oldRole} to ${newRole}`,
+      link: `/projects/${projectKey}`,
+      metadata: { projectKey, oldRole, newRole, changedBy },
+    });
+  }
+
+  async notifyProjectArchived(
+    userId: string,
+    projectKey: string,
+    projectName: string,
+    archivedBy: string,
+  ): Promise<NotificationDocument> {
+    return this.create({
+      userId,
+      type: 'project_archived' as any,
+      title: 'Project Archived',
+      message: `Project ${projectKey}: ${projectName} has been archived`,
+      link: `/projects/${projectKey}`,
+      metadata: { projectKey, archivedBy },
+    });
+  }
+
+  async notifyProjectDeleted(
+    userId: string,
+    projectKey: string,
+    projectName: string,
+    deletedBy: string,
+  ): Promise<NotificationDocument> {
+    return this.create({
+      userId,
+      type: 'project_deleted' as any,
+      title: 'Project Deleted',
+      message: `Project ${projectKey}: ${projectName} has been deleted`,
+      link: `/projects`,
+      metadata: { projectKey, deletedBy },
+    });
+  }
 }
