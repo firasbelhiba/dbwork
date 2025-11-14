@@ -418,4 +418,70 @@ export class NotificationsService {
       metadata: { sprintName, sprintId, endDate, daysUntilEnd },
     });
   }
+
+  // Feedback notification methods
+  async notifyFeedbackUpvoted(
+    userId: string,
+    feedbackId: string,
+    feedbackTitle: string,
+    upvotedBy: string,
+    totalUpvotes: number,
+  ): Promise<NotificationDocument> {
+    return this.create({
+      userId,
+      type: 'feedback_upvoted' as any,
+      title: 'Feedback Upvoted',
+      message: `Your feedback "${feedbackTitle}" received an upvote (${totalUpvotes} total)`,
+      link: `/feedback/${feedbackId}`,
+      metadata: { feedbackId, upvotedBy, totalUpvotes },
+    });
+  }
+
+  async notifyFeedbackStatusChanged(
+    userId: string,
+    feedbackId: string,
+    feedbackTitle: string,
+    oldStatus: string,
+    newStatus: string,
+    changedBy: string,
+  ): Promise<NotificationDocument> {
+    const statusMap: {[key: string]: string} = {
+      'open': 'Open',
+      'to_test': 'To Test',
+      'resolved': 'Resolved',
+    };
+
+    const formattedOldStatus = statusMap[oldStatus] || oldStatus;
+    const formattedNewStatus = statusMap[newStatus] || newStatus;
+
+    return this.create({
+      userId,
+      type: 'feedback_status_changed' as any,
+      title: 'Feedback Status Changed',
+      message: `Your feedback "${feedbackTitle}" status changed from ${formattedOldStatus} to ${formattedNewStatus}`,
+      link: `/feedback/${feedbackId}`,
+      metadata: { feedbackId, oldStatus, newStatus, changedBy },
+    });
+  }
+
+  async notifyFeedbackCommented(
+    userId: string,
+    feedbackId: string,
+    feedbackTitle: string,
+    commentedBy: string,
+    commentPreview: string,
+  ): Promise<NotificationDocument> {
+    const preview = commentPreview.length > 100
+      ? commentPreview.substring(0, 100) + '...'
+      : commentPreview;
+
+    return this.create({
+      userId,
+      type: 'feedback_commented' as any,
+      title: 'New Comment on Feedback',
+      message: `New comment on "${feedbackTitle}": "${preview}"`,
+      link: `/feedback/${feedbackId}`,
+      metadata: { feedbackId, commentedBy, commentPreview },
+    });
+  }
 }

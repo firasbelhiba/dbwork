@@ -209,6 +209,22 @@ export class FeedbackService {
       // Add upvote
       feedback.upvotedBy.push(userObjectId);
       feedback.upvotes += 1;
+
+      // Notify feedback author about the upvote (if not self-upvoting)
+      try {
+        const feedbackAuthorId = feedback.userId.toString();
+        if (feedbackAuthorId !== userId) {
+          await this.notificationsService.notifyFeedbackUpvoted(
+            feedbackAuthorId,
+            feedback._id.toString(),
+            feedback.title,
+            userId,
+            feedback.upvotes,
+          );
+        }
+      } catch (error) {
+        console.error('[NOTIFICATION] Error notifying feedback upvoted:', error);
+      }
     }
 
     await feedback.save();
@@ -227,6 +243,7 @@ export class FeedbackService {
       throw new BadRequestException('Feedback is already resolved');
     }
 
+    const oldStatus = feedback.status;
     feedback.status = FeedbackStatus.RESOLVED;
     feedback.resolvedAt = new Date();
     feedback.resolvedBy = new Types.ObjectId(adminUserId);
@@ -242,6 +259,23 @@ export class FeedbackService {
       feedback.title,
     );
 
+    // Notify feedback author about status change
+    try {
+      const feedbackAuthorId = feedback.userId.toString();
+      if (feedbackAuthorId !== adminUserId) {
+        await this.notificationsService.notifyFeedbackStatusChanged(
+          feedbackAuthorId,
+          feedback._id.toString(),
+          feedback.title,
+          oldStatus,
+          FeedbackStatus.RESOLVED,
+          adminUserId,
+        );
+      }
+    } catch (error) {
+      console.error('[NOTIFICATION] Error notifying feedback status changed:', error);
+    }
+
     return this.findOne(id);
   }
 
@@ -256,6 +290,7 @@ export class FeedbackService {
       throw new BadRequestException('Feedback is already open');
     }
 
+    const oldStatus = feedback.status;
     feedback.status = FeedbackStatus.OPEN;
     feedback.resolvedAt = null;
     feedback.resolvedBy = null;
@@ -271,6 +306,23 @@ export class FeedbackService {
       feedback.title,
     );
 
+    // Notify feedback author about status change
+    try {
+      const feedbackAuthorId = feedback.userId.toString();
+      if (feedbackAuthorId !== adminUserId) {
+        await this.notificationsService.notifyFeedbackStatusChanged(
+          feedbackAuthorId,
+          feedback._id.toString(),
+          feedback.title,
+          oldStatus,
+          FeedbackStatus.OPEN,
+          adminUserId,
+        );
+      }
+    } catch (error) {
+      console.error('[NOTIFICATION] Error notifying feedback status changed:', error);
+    }
+
     return this.findOne(id);
   }
 
@@ -285,6 +337,7 @@ export class FeedbackService {
       throw new BadRequestException('Feedback is already marked as to test');
     }
 
+    const oldStatus = feedback.status;
     feedback.status = FeedbackStatus.TO_TEST;
 
     await feedback.save();
@@ -297,6 +350,23 @@ export class FeedbackService {
       feedback._id.toString(),
       feedback.title,
     );
+
+    // Notify feedback author about status change
+    try {
+      const feedbackAuthorId = feedback.userId.toString();
+      if (feedbackAuthorId !== adminUserId) {
+        await this.notificationsService.notifyFeedbackStatusChanged(
+          feedbackAuthorId,
+          feedback._id.toString(),
+          feedback.title,
+          oldStatus,
+          FeedbackStatus.TO_TEST,
+          adminUserId,
+        );
+      }
+    } catch (error) {
+      console.error('[NOTIFICATION] Error notifying feedback status changed:', error);
+    }
 
     return this.findOne(id);
   }
@@ -357,19 +427,22 @@ export class FeedbackService {
     const savedComment = await comment.save();
 
     // Notify feedback author if someone else commented
-    const feedbackAuthorId = typeof feedback.userId === 'object' && feedback.userId !== null
-      ? (feedback.userId as any)._id.toString()
-      : String(feedback.userId);
+    try {
+      const feedbackAuthorId = typeof feedback.userId === 'object' && feedback.userId !== null
+        ? (feedback.userId as any)._id.toString()
+        : String(feedback.userId);
 
-    if (feedbackAuthorId !== userId) {
-      await this.notificationsService.create({
-        userId: feedbackAuthorId,
-        type: 'feedback_commented' as any,
-        title: 'New Comment on Your Feedback',
-        message: `Someone commented on your feedback: ${feedback.title}`,
-        link: `/feedback/${feedbackId}`,
-        metadata: { feedbackId, commentedBy: userId },
-      });
+      if (feedbackAuthorId !== userId) {
+        await this.notificationsService.notifyFeedbackCommented(
+          feedbackAuthorId,
+          feedbackId,
+          feedback.title,
+          userId,
+          createCommentDto.content,
+        );
+      }
+    } catch (error) {
+      console.error('[NOTIFICATION] Error notifying feedback commented:', error);
     }
 
     // Populate user data before returning

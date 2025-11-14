@@ -20,4 +20,7 @@ export enum NotificationType {
   PROJECT_ROLE_CHANGED = 'project_role_changed',
   PROJECT_ARCHIVED = 'project_archived',
   PROJECT_DELETED = 'project_deleted',
+  FEEDBACK_UPVOTED = 'feedback_upvoted',
+  FEEDBACK_STATUS_CHANGED = 'feedback_status_changed',
+  FEEDBACK_COMMENTED = 'feedback_commented',
 }
