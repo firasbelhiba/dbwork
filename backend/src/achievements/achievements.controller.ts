@@ -34,4 +34,23 @@ export class AchievementsController {
     await this.achievementsService.markAsViewed(req.user.userId, achievementId);
     return { success: true };
   }
+
+  @Get('debug/check-my-achievements')
+  async debugCheckAchievements(@Req() req: any) {
+    console.log('[DEBUG] Manually checking achievements for user:', req.user.userId);
+    const result = await this.achievementsService.checkIssueCompletionAchievements(
+      req.user.userId,
+      'task', // Generic issue type
+    );
+    return {
+      message: 'Achievement check completed',
+      newlyUnlocked: result,
+      userId: req.user.userId,
+    };
+  }
+
+  @Get('debug/my-stats')
+  async debugGetMyStats(@Req() req: any) {
+    return this.achievementsService.getUserStats(req.user.userId);
+  }
 }

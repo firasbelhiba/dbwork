@@ -258,4 +258,29 @@ export class AchievementsService {
       }
     }
   }
+
+  // Debug method to get user stats
+  async getUserStats(userId: string): Promise<any> {
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const userAchievements = await this.userAchievementModel
+      .find({ userId })
+      .populate('achievementId')
+      .exec();
+
+    return {
+      userId: user._id,
+      email: user.email,
+      stats: user.stats,
+      achievements: userAchievements.map(ua => ({
+        achievement: (ua.achievementId as any).name,
+        unlocked: ua.unlocked,
+        progress: ua.progress,
+        unlockedAt: ua.unlockedAt,
+      })),
+    };
+  }
 }
