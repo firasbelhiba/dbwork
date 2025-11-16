@@ -31,9 +31,10 @@ export class AchievementsService {
   }
 
   // Get user's achievements with progress
-  async getUserAchievements(userId: string): Promise<any[]> {
+  async getUserAchievements(userId: string | Types.ObjectId): Promise<any[]> {
+    const userIdObj = typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
     const userAchievements = await this.userAchievementModel
-      .find({ userId: new Types.ObjectId(userId) })
+      .find({ userId: userIdObj })
       .populate('achievementId')
       .sort({ unlockedAt: -1 })
       .exec();
@@ -49,11 +50,12 @@ export class AchievementsService {
 
   // Get newly unlocked achievements (not viewed yet)
   async getNewlyUnlockedAchievements(
-    userId: string,
+    userId: string | Types.ObjectId,
   ): Promise<UserAchievementDocument[]> {
+    const userIdObj = typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
     return this.userAchievementModel
       .find({
-        userId: new Types.ObjectId(userId),
+        userId: userIdObj,
         unlocked: true,
         viewed: false,
       })
@@ -62,11 +64,12 @@ export class AchievementsService {
   }
 
   // Mark achievement as viewed
-  async markAsViewed(userId: string, achievementId: string): Promise<void> {
+  async markAsViewed(userId: string | Types.ObjectId, achievementId: string): Promise<void> {
+    const userIdObj = typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
     await this.userAchievementModel
       .updateOne(
         {
-          userId: new Types.ObjectId(userId),
+          userId: userIdObj,
           achievementId: new Types.ObjectId(achievementId),
         },
         { $set: { viewed: true } },
@@ -260,14 +263,15 @@ export class AchievementsService {
   }
 
   // Debug method to get user stats
-  async getUserStats(userId: string): Promise<any> {
+  async getUserStats(userId: string | Types.ObjectId): Promise<any> {
     const user = await this.userModel.findById(userId).exec();
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
+    const userIdObj = typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
     const userAchievements = await this.userAchievementModel
-      .find({ userId })
+      .find({ userId: userIdObj })
       .populate('achievementId')
       .exec();
 
