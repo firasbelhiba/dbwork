@@ -17,6 +17,7 @@ export default function FeedbackPage() {
   const [loading, setLoading] = useState(true);
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
+  const [upvotingId, setUpvotingId] = useState<string | null>(null);
 
   // Filters
   const [typeFilter, setTypeFilter] = useState<string>('');
@@ -55,15 +56,21 @@ export default function FeedbackPage() {
   };
 
   const handleUpvote = async (id: string) => {
+    if (upvotingId) return; // Prevent multiple simultaneous upvotes
     try {
+      setUpvotingId(id);
       const response = await feedbackAPI.upvote(id);
       // Update the feedback in the list
       setFeedbacks((prev) =>
         prev.map((f) => (f._id === id ? response.data : f))
       );
+      const wasUpvoted = response.data.upvotedBy.some((userId: string) => userId === user?._id);
+      toast.success(wasUpvoted ? 'Upvoted!' : 'Upvote removed');
     } catch (error: any) {
       console.error('Error upvoting feedback:', error);
       toast.error(error.response?.data?.message || 'Failed to upvote');
+    } finally {
+      setUpvotingId(null);
     }
   };
 

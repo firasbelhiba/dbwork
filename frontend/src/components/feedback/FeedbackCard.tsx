@@ -16,7 +16,7 @@ export const FeedbackCard: React.FC<FeedbackCardProps> = ({
   onUpvote,
   currentUserId,
 }) => {
-  const hasUpvoted = currentUserId && feedback.upvotedBy.includes(currentUserId);
+  const hasUpvoted = currentUserId && feedback.upvotedBy.some((id: string) => id === currentUserId);
 
   const getTypeColor = (type: FeedbackType) => {
     switch (type) {

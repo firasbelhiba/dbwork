@@ -202,15 +202,25 @@ export class FeedbackService {
     );
 
     if (hasUpvoted) {
-      // Remove upvote
-      feedback.upvotedBy = feedback.upvotedBy.filter(
-        (id) => id.toString() !== userId,
-      );
-      feedback.upvotes = Math.max(0, feedback.upvotes - 1);
+      // Remove upvote atomically using $pull and $inc to prevent race conditions
+      await this.feedbackModel.findByIdAndUpdate(
+        id,
+        {
+          $pull: { upvotedBy: userObjectId },
+          $inc: { upvotes: -1 },
+        },
+        { new: true },
+      ).exec();
     } else {
-      // Add upvote
-      feedback.upvotedBy.push(userObjectId);
-      feedback.upvotes += 1;
+      // Add upvote atomically using $addToSet (prevents duplicates) and $inc
+      await this.feedbackModel.findByIdAndUpdate(
+        id,
+        {
+          $addToSet: { upvotedBy: userObjectId }, // $addToSet prevents duplicate entries
+          $inc: { upvotes: 1 },
+        },
+        { new: true },
+      ).exec();
 
       // Notify feedback author about the upvote (if not self-upvoting)
       try {
@@ -221,15 +231,13 @@ export class FeedbackService {
             feedback._id.toString(),
             feedback.title,
             userId,
-            feedback.upvotes,
+            feedback.upvotes + 1, // Use the new count
           );
         }
       } catch (error) {
         console.error('[NOTIFICATION] Error notifying feedback upvoted:', error);
       }
     }
-
-    await feedback.save();
 
     return this.findOne(id);
   }
