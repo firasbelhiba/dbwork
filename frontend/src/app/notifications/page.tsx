@@ -12,6 +12,7 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
+  const [typeFilter, setTypeFilter] = useState<NotificationType | 'all'>('all');
 
   useEffect(() => {
     loadNotifications();
@@ -138,7 +139,19 @@ export default function NotificationsPage() {
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
-  const filteredNotifications = notifications;
+
+  // Apply type filter
+  const filteredNotifications = typeFilter === 'all'
+    ? notifications
+    : typeFilter === NotificationType.SPRINT_STARTED
+    ? notifications.filter(n => n.type === NotificationType.SPRINT_STARTED || n.type === NotificationType.SPRINT_COMPLETED)
+    : notifications.filter(n => n.type === typeFilter);
+
+  // Get counts for each notification type
+  const getTypeCount = (type: NotificationType | 'all') => {
+    if (type === 'all') return notifications.length;
+    return notifications.filter(n => n.type === type).length;
+  };
 
   return (
     <DashboardLayout>
@@ -199,7 +212,7 @@ export default function NotificationsPage() {
           </div>
         </div>
 
-        {/* Filter Tabs */}
+        {/* Read/Unread Filter Tabs */}
         <div className="mb-6 border-b border-gray-200 dark:border-gray-700">
           <nav className="flex gap-8">
             <button
@@ -233,6 +246,92 @@ export default function NotificationsPage() {
               )}
             </button>
           </nav>
+        </div>
+
+        {/* Type Filter */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            Filter by Type
+          </label>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setTypeFilter('all')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                typeFilter === 'all'
+                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 border-2 border-primary-500'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}
+            >
+              All Types
+              <span className="ml-2 text-xs opacity-75">({getTypeCount('all')})</span>
+            </button>
+            <button
+              onClick={() => setTypeFilter(NotificationType.ISSUE_ASSIGNED)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                typeFilter === NotificationType.ISSUE_ASSIGNED
+                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 border-2 border-primary-500'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}
+            >
+              Assignments
+              <span className="ml-2 text-xs opacity-75">({getTypeCount(NotificationType.ISSUE_ASSIGNED)})</span>
+            </button>
+            <button
+              onClick={() => setTypeFilter(NotificationType.ISSUE_UPDATED)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                typeFilter === NotificationType.ISSUE_UPDATED
+                  ? 'bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-400 border-2 border-success-500'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}
+            >
+              Updates
+              <span className="ml-2 text-xs opacity-75">({getTypeCount(NotificationType.ISSUE_UPDATED)})</span>
+            </button>
+            <button
+              onClick={() => setTypeFilter(NotificationType.ISSUE_COMMENTED)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                typeFilter === NotificationType.ISSUE_COMMENTED
+                  ? 'bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-400 border-2 border-success-500'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}
+            >
+              Comments
+              <span className="ml-2 text-xs opacity-75">({getTypeCount(NotificationType.ISSUE_COMMENTED)})</span>
+            </button>
+            <button
+              onClick={() => setTypeFilter(NotificationType.MENTION)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                typeFilter === NotificationType.MENTION
+                  ? 'bg-warning-100 dark:bg-warning-900/30 text-warning-700 dark:text-warning-400 border-2 border-warning-500'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}
+            >
+              Mentions
+              <span className="ml-2 text-xs opacity-75">({getTypeCount(NotificationType.MENTION)})</span>
+            </button>
+            <button
+              onClick={() => setTypeFilter(NotificationType.SPRINT_STARTED)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                typeFilter === NotificationType.SPRINT_STARTED
+                  ? 'bg-info-100 dark:bg-info-900/30 text-info-700 dark:text-info-400 border-2 border-info-500'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}
+            >
+              Sprints
+              <span className="ml-2 text-xs opacity-75">({getTypeCount(NotificationType.SPRINT_STARTED) + getTypeCount(NotificationType.SPRINT_COMPLETED)})</span>
+            </button>
+            <button
+              onClick={() => setTypeFilter(NotificationType.PROJECT_INVITATION)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                typeFilter === NotificationType.PROJECT_INVITATION
+                  ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border-2 border-purple-500'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}
+            >
+              Invitations
+              <span className="ml-2 text-xs opacity-75">({getTypeCount(NotificationType.PROJECT_INVITATION)})</span>
+            </button>
+          </div>
         </div>
 
         {/* Notifications List */}
