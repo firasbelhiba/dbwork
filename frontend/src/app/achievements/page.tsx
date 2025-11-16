@@ -6,6 +6,7 @@ import { achievementsAPI } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { AdminAchievementsOverview } from '@/components/achievements/AdminAchievementsOverview';
+import { DeveloperLeaderboard } from '@/components/achievements/DeveloperLeaderboard';
 import { toast } from 'react-hot-toast';
 
 const rarityColors: Record<AchievementRarity, { bg: string; border: string; text: string }> = {
@@ -45,6 +46,7 @@ export default function AchievementsPage() {
   const [achievements, setAchievements] = useState<AchievementWithProgress[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<AchievementCategory | 'all'>('all');
+  const [activeTab, setActiveTab] = useState<'my-achievements' | 'leaderboard'>('my-achievements');
   const [totalPoints, setTotalPoints] = useState(0);
   const [unlockedCount, setUnlockedCount] = useState(0);
 
@@ -148,9 +150,36 @@ export default function AchievementsPage() {
       <div className="p-6">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">My Achievements</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Achievements</h1>
 
-          {/* Stats Cards */}
+          {/* Tabs */}
+          <div className="flex gap-2 mb-6">
+            <button
+              onClick={() => setActiveTab('my-achievements')}
+              className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                activeTab === 'my-achievements'
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'bg-white dark:bg-dark-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-500'
+              }`}
+            >
+              My Achievements
+            </button>
+            <button
+              onClick={() => setActiveTab('leaderboard')}
+              className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                activeTab === 'leaderboard'
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'bg-white dark:bg-dark-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-500'
+              }`}
+            >
+              Leaderboard
+            </button>
+          </div>
+
+          {/* Stats Cards - Only show in My Achievements tab */}
+          {activeTab === 'my-achievements' && (
+            <>
+              {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="bg-white dark:bg-dark-600 rounded-lg shadow p-6">
               <div className="flex items-center gap-3">
@@ -215,9 +244,14 @@ export default function AchievementsPage() {
               </button>
             ))}
           </div>
+            </>
+          )}
         </div>
 
-        {/* Achievements Grid */}
+        {/* Tab Content */}
+        {activeTab === 'my-achievements' ? (
+          <>
+            {/* Achievements Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredAchievements.map((achievement) => {
             const ua = achievement.userAchievement;
@@ -291,6 +325,10 @@ export default function AchievementsPage() {
           <div className="text-center py-12">
             <p className="text-gray-500 dark:text-gray-400">No achievements found in this category.</p>
           </div>
+        )}
+          </>
+        ) : (
+          <DeveloperLeaderboard />
         )}
       </div>
     </DashboardLayout>
