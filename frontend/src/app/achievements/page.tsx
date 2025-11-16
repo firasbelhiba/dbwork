@@ -4,8 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { Achievement, UserAchievement, AchievementCategory, AchievementRarity } from '@/types';
 import { achievementsAPI } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { toast } from 'react-hot-toast';
-import Link from 'next/link';
 
 const rarityColors: Record<AchievementRarity, { bg: string; border: string; text: string }> = {
   [AchievementRarity.COMMON]: {
@@ -119,29 +119,23 @@ export default function AchievementsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-dark-700 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading achievements...</p>
+      <DashboardLayout>
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400">Loading achievements...</p>
+          </div>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-dark-700">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+    <DashboardLayout>
+      <div className="p-6">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Achievements</h1>
-            <Link
-              href="/dashboard"
-              className="text-blue-600 dark:text-blue-400 hover:underline"
-            >
-              Back to Dashboard
-            </Link>
-          </div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Achievements</h1>
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -286,6 +280,6 @@ export default function AchievementsPage() {
           </div>
         )}
       </div>
-    </div>
+    </DashboardLayout>
   );
 }
