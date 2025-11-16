@@ -45,7 +45,6 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
     console.error(`[IssueCard] ${issue.key} has ${issue.assignees.length} assignees but they're not populated (still IDs)!`);
   }
 
-  const projectKey = typeof issue.projectId === 'object' ? issue.projectId.key : '';
   const sprint = typeof issue.sprintId === 'object' ? issue.sprintId : null;
 
   // Check if user can archive/delete (Admin or PM only)
@@ -118,7 +117,7 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
 
       {/* Issue Key */}
       <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-        {projectKey}-{issue._id.slice(-4)}
+        {issue.key}
       </p>
 
       {/* Sprint Badge */}
