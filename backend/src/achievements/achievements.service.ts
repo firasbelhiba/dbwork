@@ -305,7 +305,5 @@ export class AchievementsService {
         },
       })
       .exec();
-
-    console.log(`[ACHIEVEMENTS] Reset achievements and stats for user ${userIdObj}`);
   }
 }

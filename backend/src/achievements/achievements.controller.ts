@@ -37,7 +37,6 @@ export class AchievementsController {
 
   @Get('debug/check-my-achievements')
   async debugCheckAchievements(@Req() req: any) {
-    console.log('[DEBUG] Manually checking achievements for user:', req.user._id);
     const result = await this.achievementsService.checkIssueCompletionAchievements(
       req.user._id,
       'task', // Generic issue type
@@ -56,7 +55,6 @@ export class AchievementsController {
 
   @Post('debug/reset-my-achievements')
   async debugResetMyAchievements(@Req() req: any) {
-    console.log('[DEBUG] Resetting achievements for user:', req.user._id);
     await this.achievementsService.resetUserAchievements(req.user._id);
     return {
       message: 'Your achievements and stats have been reset',

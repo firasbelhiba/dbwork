@@ -49,8 +49,6 @@ export default function AchievementsPage() {
   const [activeTab, setActiveTab] = useState<'my-achievements' | 'leaderboard'>('my-achievements');
   const [totalPoints, setTotalPoints] = useState(0);
   const [unlockedCount, setUnlockedCount] = useState(0);
-  const [debugInfo, setDebugInfo] = useState<any>(null);
-  const [showDebug, setShowDebug] = useState(false);
 
   useEffect(() => {
     fetchAchievements();
@@ -72,7 +70,6 @@ export default function AchievementsPage() {
       userAchievements.forEach((ua) => {
         // Handle cases where achievementId might be null/undefined or not populated
         if (!ua.achievementId) {
-          console.warn('UserAchievement missing achievementId:', ua);
           return;
         }
         const achievementId = typeof ua.achievementId === 'string'
@@ -105,34 +102,9 @@ export default function AchievementsPage() {
       setUnlockedCount(unlocked);
       setTotalPoints(points);
     } catch (error: any) {
-      console.error('Error fetching achievements:', error);
       toast.error('Failed to load achievements');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleDebugStats = async () => {
-    try {
-      const response = await achievementsAPI.debugGetMyStats();
-      setDebugInfo(response.data);
-      setShowDebug(true);
-      toast.success('Debug info loaded');
-    } catch (error) {
-      console.error('Error fetching debug stats:', error);
-      toast.error('Failed to load debug stats');
-    }
-  };
-
-  const handleDebugCheck = async () => {
-    try {
-      const response = await achievementsAPI.debugCheckAchievements();
-      toast.success('Achievement check triggered! Check console for results.');
-      console.log('Achievement Check Result:', response.data);
-      await fetchAchievements(); // Refresh achievements
-    } catch (error) {
-      console.error('Error checking achievements:', error);
-      toast.error('Failed to check achievements');
     }
   };
 
@@ -141,12 +113,10 @@ export default function AchievementsPage() {
       return;
     }
     try {
-      const response = await achievementsAPI.debugResetAchievements();
+      await achievementsAPI.debugResetAchievements();
       toast.success('Achievements reset successfully!');
-      console.log('Reset Result:', response.data);
       await fetchAchievements(); // Refresh achievements
     } catch (error) {
-      console.error('Error resetting achievements:', error);
       toast.error('Failed to reset achievements');
     }
   };
@@ -201,54 +171,27 @@ export default function AchievementsPage() {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Achievements</h1>
 
           {/* Tabs */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex gap-2">
-              <button
-                onClick={() => setActiveTab('my-achievements')}
-                className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-                  activeTab === 'my-achievements'
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'bg-white dark:bg-dark-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-500'
-                }`}
-              >
-                My Achievements
-              </button>
-              <button
-                onClick={() => setActiveTab('leaderboard')}
-                className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-                  activeTab === 'leaderboard'
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'bg-white dark:bg-dark-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-500'
-                }`}
-              >
-                Leaderboard
-              </button>
-            </div>
-
-            {/* Debug Buttons */}
-            <div className="flex gap-2">
-              <button
-                onClick={handleDebugStats}
-                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 text-sm"
-                title="View your stats and achievement progress"
-              >
-                Debug Stats
-              </button>
-              <button
-                onClick={handleDebugCheck}
-                className="px-4 py-2 bg-green-200 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg hover:bg-green-300 dark:hover:bg-green-900/50 text-sm"
-                title="Manually trigger achievement check"
-              >
-                Check Now
-              </button>
-              <button
-                onClick={handleResetAchievements}
-                className="px-4 py-2 bg-red-200 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg hover:bg-red-300 dark:hover:bg-red-900/50 text-sm"
-                title="Reset all achievements and stats (cannot be undone)"
-              >
-                Reset
-              </button>
-            </div>
+          <div className="flex gap-2 mb-6">
+            <button
+              onClick={() => setActiveTab('my-achievements')}
+              className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                activeTab === 'my-achievements'
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'bg-white dark:bg-dark-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-500'
+              }`}
+            >
+              My Achievements
+            </button>
+            <button
+              onClick={() => setActiveTab('leaderboard')}
+              className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                activeTab === 'leaderboard'
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'bg-white dark:bg-dark-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-500'
+              }`}
+            >
+              Leaderboard
+            </button>
           </div>
 
           {/* Stats Cards - Only show in My Achievements tab */}
@@ -404,48 +347,6 @@ export default function AchievementsPage() {
           </>
         ) : (
           <DeveloperLeaderboard />
-        )}
-
-        {/* Debug Info Modal */}
-        {showDebug && debugInfo && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-dark-600 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Debug Info</h2>
-                <button
-                  onClick={() => setShowDebug(false)}
-                  className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">User Info</h3>
-                  <pre className="bg-gray-100 dark:bg-dark-500 p-4 rounded text-sm overflow-x-auto">
-                    {JSON.stringify({ userId: debugInfo.userId, email: debugInfo.email }, null, 2)}
-                  </pre>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Stats</h3>
-                  <pre className="bg-gray-100 dark:bg-dark-500 p-4 rounded text-sm overflow-x-auto">
-                    {JSON.stringify(debugInfo.stats, null, 2)}
-                  </pre>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Achievements Progress</h3>
-                  <pre className="bg-gray-100 dark:bg-dark-500 p-4 rounded text-sm overflow-x-auto">
-                    {JSON.stringify(debugInfo.achievements, null, 2)}
-                  </pre>
-                </div>
-              </div>
-            </div>
-          </div>
         )}
       </div>
     </DashboardLayout>
