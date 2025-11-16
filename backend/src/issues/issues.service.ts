@@ -350,6 +350,7 @@ export class IssuesService {
           if (recipientId !== userId) {
             await this.notificationsService.notifyIssueStatusChanged(
               recipientId,
+              issue._id.toString(),
               issue.key,
               issue.title,
               changes.status.from,
@@ -403,6 +404,7 @@ export class IssuesService {
           if (recipientId !== userId) {
             await this.notificationsService.notifyIssuePriorityChanged(
               recipientId,
+              issue._id.toString(),
               issue.key,
               issue.title,
               changes.priority.from,
@@ -427,6 +429,7 @@ export class IssuesService {
             if (assigneeId !== userId) {
               await this.notificationsService.notifyIssueDueDateChanged(
                 assigneeId,
+                issue._id.toString(),
                 issue.key,
                 issue.title,
                 originalIssue.dueDate,

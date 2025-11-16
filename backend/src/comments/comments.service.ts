@@ -69,6 +69,7 @@ export class CommentsService {
               recipientIds.add(mentionedUser._id.toString());
               await this.notificationsService.notifyCommentMention(
                 mentionedUser._id.toString(),
+                issue._id.toString(),
                 issue.key,
                 issue.title,
                 userId,
@@ -91,6 +92,7 @@ export class CommentsService {
           recipientIds.add(reporterId);
           await this.notificationsService.notifyCommentOnIssue(
             reporterId,
+            issue._id.toString(),
             issue.key,
             issue.title,
             userId,
@@ -110,6 +112,7 @@ export class CommentsService {
             recipientIds.add(assigneeId);
             await this.notificationsService.notifyCommentOnIssue(
               assigneeId,
+              issue._id.toString(),
               issue.key,
               issue.title,
               userId,
@@ -130,6 +133,7 @@ export class CommentsService {
               recipientIds.add(parentAuthorId);
               await this.notificationsService.notifyCommentReply(
                 parentAuthorId,
+                issue._id.toString(),
                 issue.key,
                 issue.title,
                 userId,

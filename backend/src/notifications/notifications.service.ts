@@ -99,6 +99,7 @@ export class NotificationsService {
   // Helper methods for creating specific notification types
   async notifyIssueAssigned(
     userId: string,
+    issueId: string,
     issueKey: string,
     issueTitle: string,
     assignedBy: string,
@@ -108,13 +109,14 @@ export class NotificationsService {
       type: 'issue_assigned' as any,
       title: 'Issue Assigned',
       message: `You have been assigned to ${issueKey}: ${issueTitle}`,
-      link: `/issues/${issueKey}`,
-      metadata: { issueKey, assignedBy },
+      link: `/issues/${issueId}`,
+      metadata: { issueId, issueKey, assignedBy },
     });
   }
 
   async notifyIssueUpdated(
     userId: string,
+    issueId: string,
     issueKey: string,
     issueTitle: string,
     updatedBy: string,
@@ -124,8 +126,8 @@ export class NotificationsService {
       type: 'issue_updated' as any,
       title: 'Issue Updated',
       message: `${issueKey}: ${issueTitle} has been updated`,
-      link: `/issues/${issueKey}`,
-      metadata: { issueKey, updatedBy },
+      link: `/issues/${issueId}`,
+      metadata: { issueId, issueKey, updatedBy },
     });
   }
 
@@ -147,6 +149,7 @@ export class NotificationsService {
 
   async notifyIssueStatusChanged(
     userId: string,
+    issueId: string,
     issueKey: string,
     issueTitle: string,
     oldStatus: string,
@@ -158,13 +161,14 @@ export class NotificationsService {
       type: 'issue_status_changed' as any,
       title: 'Issue Status Changed',
       message: `${issueKey}: ${issueTitle} status changed from ${oldStatus} to ${newStatus}`,
-      link: `/issues/${issueKey}`,
-      metadata: { issueKey, oldStatus, newStatus, changedBy },
+      link: `/issues/${issueId}`,
+      metadata: { issueId, issueKey, oldStatus, newStatus, changedBy },
     });
   }
 
   async notifyIssuePriorityChanged(
     userId: string,
+    issueId: string,
     issueKey: string,
     issueTitle: string,
     oldPriority: string,
@@ -176,13 +180,14 @@ export class NotificationsService {
       type: 'issue_priority_changed' as any,
       title: 'Issue Priority Changed',
       message: `${issueKey}: ${issueTitle} priority changed from ${oldPriority} to ${newPriority}`,
-      link: `/issues/${issueKey}`,
-      metadata: { issueKey, oldPriority, newPriority, changedBy },
+      link: `/issues/${issueId}`,
+      metadata: { issueId, issueKey, oldPriority, newPriority, changedBy },
     });
   }
 
   async notifyIssueDueDateChanged(
     userId: string,
+    issueId: string,
     issueKey: string,
     issueTitle: string,
     oldDueDate: Date | null,
@@ -203,13 +208,14 @@ export class NotificationsService {
       type: 'issue_due_date_changed' as any,
       title: 'Issue Due Date Changed',
       message,
-      link: `/issues/${issueKey}`,
-      metadata: { issueKey, oldDueDate, newDueDate, changedBy },
+      link: `/issues/${issueId}`,
+      metadata: { issueId, issueKey, oldDueDate, newDueDate, changedBy },
     });
   }
 
   async notifyCommentOnIssue(
     userId: string,
+    issueId: string,
     issueKey: string,
     issueTitle: string,
     commentedBy: string,
@@ -224,13 +230,14 @@ export class NotificationsService {
       type: 'comment_on_issue' as any,
       title: 'New Comment on Issue',
       message: `New comment on ${issueKey}: ${issueTitle} - "${preview}"`,
-      link: `/issues/${issueKey}`,
-      metadata: { issueKey, commentedBy, commentPreview },
+      link: `/issues/${issueId}`,
+      metadata: { issueId, issueKey, commentedBy, commentPreview },
     });
   }
 
   async notifyCommentMention(
     userId: string,
+    issueId: string,
     issueKey: string,
     issueTitle: string,
     mentionedBy: string,
@@ -245,13 +252,14 @@ export class NotificationsService {
       type: 'comment_mention' as any,
       title: 'You were mentioned',
       message: `You were mentioned in a comment on ${issueKey}: "${preview}"`,
-      link: `/issues/${issueKey}`,
-      metadata: { issueKey, mentionedBy, commentPreview },
+      link: `/issues/${issueId}`,
+      metadata: { issueId, issueKey, mentionedBy, commentPreview },
     });
   }
 
   async notifyCommentReply(
     userId: string,
+    issueId: string,
     issueKey: string,
     issueTitle: string,
     repliedBy: string,
@@ -266,8 +274,8 @@ export class NotificationsService {
       type: 'comment_reply' as any,
       title: 'Reply to Your Comment',
       message: `New reply on ${issueKey}: "${preview}"`,
-      link: `/issues/${issueKey}`,
-      metadata: { issueKey, repliedBy, replyPreview },
+      link: `/issues/${issueId}`,
+      metadata: { issueId, issueKey, repliedBy, replyPreview },
     });
   }
 
