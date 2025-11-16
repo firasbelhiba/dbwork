@@ -72,10 +72,13 @@ export class NotificationsService {
       .exec();
   }
 
-  async remove(id: string, userId: string): Promise<void> {
+  async remove(id: string, userId: string | Types.ObjectId): Promise<void> {
     const notification = await this.findOne(id);
 
-    if (notification.userId.toString() !== userId) {
+    // Convert ObjectId to string for comparison
+    const userIdString = userId.toString();
+
+    if (notification.userId.toString() !== userIdString) {
       throw new NotFoundException('Notification not found');
     }
 
