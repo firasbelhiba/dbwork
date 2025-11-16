@@ -40,7 +40,7 @@ export class AchievementsService {
       .exec();
 
     return userAchievements.map((ua) => ({
-      achievement: ua.achievementId,
+      achievementId: ua.achievementId,
       unlocked: ua.unlocked,
       unlockedAt: ua.unlockedAt,
       progress: ua.progress,

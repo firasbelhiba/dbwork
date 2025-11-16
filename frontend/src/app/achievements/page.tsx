@@ -70,10 +70,17 @@ export default function AchievementsPage() {
       // Create a map of user achievements by achievement ID
       const userAchievementMap = new Map<string, UserAchievement>();
       userAchievements.forEach((ua) => {
+        // Handle cases where achievementId might be null/undefined or not populated
+        if (!ua.achievementId) {
+          console.warn('UserAchievement missing achievementId:', ua);
+          return;
+        }
         const achievementId = typeof ua.achievementId === 'string'
           ? ua.achievementId
-          : (ua.achievementId as Achievement)._id;
-        userAchievementMap.set(achievementId, ua);
+          : (ua.achievementId as Achievement)?._id;
+        if (achievementId) {
+          userAchievementMap.set(achievementId, ua);
+        }
       });
 
       // Merge achievements with user progress
