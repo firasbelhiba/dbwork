@@ -281,6 +281,138 @@ export class AchievementsService {
     }
   }
 
+  // Check collaboration achievements when user comments on an issue
+  async checkCommentAchievements(
+    userId: string,
+    issueId: string,
+    commentContent: string,
+  ): Promise<UserAchievementDocument[]> {
+    const unlockedAchievements: UserAchievementDocument[] = [];
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) return unlockedAchievements;
+
+    // Increment total comments posted
+    user.stats.commentsPosted = (user.stats.commentsPosted || 0) + 1;
+
+    // Track unique issues commented on (for Social Butterfly)
+    const issueObjectId = new Types.ObjectId(issueId);
+    if (!user.commentedIssues) {
+      user.commentedIssues = [];
+    }
+
+    const alreadyCommented = user.commentedIssues.some(
+      (commentedIssue) => commentedIssue.toString() === issueObjectId.toString()
+    );
+
+    if (!alreadyCommented) {
+      user.commentedIssues.push(issueObjectId);
+      user.stats.uniqueIssuesCommented = user.commentedIssues.length;
+    }
+
+    await user.save();
+
+    // Check Communicator achievement (50 comments)
+    const communicatorAchievement = await this.achievementModel
+      .findOne({ key: 'communicator' })
+      .exec();
+    if (communicatorAchievement && user.stats.commentsPosted >= 50) {
+      const unlocked = await this.unlockAchievement(userId, communicatorAchievement._id.toString());
+      if (unlocked) unlockedAchievements.push(unlocked);
+    }
+
+    // Check Social Butterfly achievement (25 unique issues commented)
+    const socialButterflyAchievement = await this.achievementModel
+      .findOne({ key: 'social_butterfly' })
+      .exec();
+    if (socialButterflyAchievement && user.stats.uniqueIssuesCommented >= 25) {
+      const unlocked = await this.unlockAchievement(userId, socialButterflyAchievement._id.toString());
+      if (unlocked) unlockedAchievements.push(unlocked);
+    }
+
+    return unlockedAchievements;
+  }
+
+  // Check mention achievements when user is mentioned in a comment
+  async checkMentionAchievements(userId: string): Promise<UserAchievementDocument[]> {
+    const unlockedAchievements: UserAchievementDocument[] = [];
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) return unlockedAchievements;
+
+    // Increment mentions received
+    user.stats.mentionsReceived = (user.stats.mentionsReceived || 0) + 1;
+    await user.save();
+
+    // Check Mentor achievement (10 mentions)
+    const mentorAchievement = await this.achievementModel
+      .findOne({ key: 'mentor' })
+      .exec();
+    if (mentorAchievement && user.stats.mentionsReceived >= 10) {
+      const unlocked = await this.unlockAchievement(userId, mentorAchievement._id.toString());
+      if (unlocked) unlockedAchievements.push(unlocked);
+    }
+
+    return unlockedAchievements;
+  }
+
+  // Check project assignment achievement
+  async checkProjectAssignmentAchievements(userId: string): Promise<UserAchievementDocument[]> {
+    const unlockedAchievements: UserAchievementDocument[] = [];
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) return unlockedAchievements;
+
+    // Increment projects assigned
+    user.stats.projectsAssigned = (user.stats.projectsAssigned || 0) + 1;
+    await user.save();
+
+    // Check Team Player achievement (first project)
+    const teamPlayerAchievement = await this.achievementModel
+      .findOne({ key: 'team_player' })
+      .exec();
+    if (teamPlayerAchievement && user.stats.projectsAssigned >= 1) {
+      const unlocked = await this.unlockAchievement(userId, teamPlayerAchievement._id.toString());
+      if (unlocked) unlockedAchievements.push(unlocked);
+    }
+
+    return unlockedAchievements;
+  }
+
+  // Check helpful hand achievement when issue is completed with non-assignee contributors
+  async checkHelpfulHandAchievements(
+    userId: string,
+    issueId: string,
+  ): Promise<UserAchievementDocument[]> {
+    const unlockedAchievements: UserAchievementDocument[] = [];
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) return unlockedAchievements;
+
+    // Track issues where user helped (but wasn't assigned)
+    const issueObjectId = new Types.ObjectId(issueId);
+    if (!user.helpedIssues) {
+      user.helpedIssues = [];
+    }
+
+    const alreadyHelped = user.helpedIssues.some(
+      (helpedIssue) => helpedIssue.toString() === issueObjectId.toString()
+    );
+
+    if (!alreadyHelped) {
+      user.helpedIssues.push(issueObjectId);
+      user.stats.helpedOthersIssues = user.helpedIssues.length;
+      await user.save();
+    }
+
+    // Check Helpful Hand achievement (helped with 5 issues)
+    const helpfulHandAchievement = await this.achievementModel
+      .findOne({ key: 'helpful_hand' })
+      .exec();
+    if (helpfulHandAchievement && user.stats.helpedOthersIssues >= 5) {
+      const unlocked = await this.unlockAchievement(userId, helpfulHandAchievement._id.toString());
+      if (unlocked) unlockedAchievements.push(unlocked);
+    }
+
+    return unlockedAchievements;
+  }
+
   // Debug method to get user stats
   async getUserStats(userId: string | Types.ObjectId): Promise<any> {
     const user = await this.userModel.findById(userId).exec();
@@ -314,14 +446,21 @@ export class AchievementsService {
     // Delete all user achievements
     await this.userAchievementModel.deleteMany({ userId: userIdObj }).exec();
 
-    // Reset user stats and clear completed issues tracking
+    // Reset user stats and clear all tracking arrays
     await this.userModel
       .findByIdAndUpdate(userIdObj, {
         $set: {
           'stats.issuesCompleted': 0,
           'stats.bugsFixed': 0,
           'stats.totalPoints': 0,
-          completedIssuesForAchievements: [], // Clear the anti-cheat tracking
+          'stats.commentsPosted': 0,
+          'stats.uniqueIssuesCommented': 0,
+          'stats.helpedOthersIssues': 0,
+          'stats.mentionsReceived': 0,
+          'stats.projectsAssigned': 0,
+          completedIssuesForAchievements: [],
+          commentedIssues: [],
+          helpedIssues: [],
         },
       })
       .exec();

@@ -12,6 +12,7 @@ import { CreateProjectDto, UpdateProjectDto, AddMemberDto, CreateCustomStatusDto
 import { ActivitiesService } from '../activities/activities.service';
 import { ActionType, EntityType } from '../activities/schemas/activity.schema';
 import { NotificationsService } from '../notifications/notifications.service';
+import { AchievementsService } from '../achievements/achievements.service';
 
 @Injectable()
 export class ProjectsService {
@@ -19,6 +20,7 @@ export class ProjectsService {
     @InjectModel(Project.name) private projectModel: Model<ProjectDocument>,
     private activitiesService: ActivitiesService,
     private notificationsService: NotificationsService,
+    private achievementsService: AchievementsService,
   ) {}
 
   async create(createProjectDto: CreateProjectDto, userId: string): Promise<ProjectDocument> {
@@ -331,6 +333,13 @@ export class ProjectsService {
       }
     } catch (error) {
       console.error('[NOTIFICATION] Error notifying project member added:', error);
+    }
+
+    // Check project assignment achievement for the added user
+    try {
+      await this.achievementsService.checkProjectAssignmentAchievements(addMemberDto.userId);
+    } catch (error) {
+      console.error('[ACHIEVEMENTS] Error checking project assignment achievements:', error);
     }
 
     return savedProject;

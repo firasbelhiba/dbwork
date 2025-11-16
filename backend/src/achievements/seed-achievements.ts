@@ -108,6 +108,72 @@ const achievements = [
     },
     points: 150,
   },
+  // Collaboration & Teamwork
+  {
+    key: 'team_player',
+    name: 'Team Player',
+    description: 'Get assigned to your first project',
+    category: 'collaboration',
+    icon: '🤝',
+    rarity: 'common',
+    criteria: {
+      type: 'project_assignment',
+      count: 1,
+    },
+    points: 10,
+  },
+  {
+    key: 'social_butterfly',
+    name: 'Social Butterfly',
+    description: 'Comment on 25 different issues',
+    category: 'collaboration',
+    icon: '🦋',
+    rarity: 'uncommon',
+    criteria: {
+      type: 'unique_issues_commented',
+      count: 25,
+    },
+    points: 50,
+  },
+  {
+    key: 'helpful_hand',
+    name: 'Helpful Hand',
+    description: 'Help resolve 5 issues assigned to others',
+    category: 'collaboration',
+    icon: '🤲',
+    rarity: 'rare',
+    criteria: {
+      type: 'helped_others_issues',
+      count: 5,
+    },
+    points: 75,
+  },
+  {
+    key: 'mentor',
+    name: 'Mentor',
+    description: 'Be mentioned in 10 issue comments',
+    category: 'collaboration',
+    icon: '👨‍🏫',
+    rarity: 'rare',
+    criteria: {
+      type: 'mentions_received',
+      count: 10,
+    },
+    points: 100,
+  },
+  {
+    key: 'communicator',
+    name: 'Communicator',
+    description: 'Write 50 comments',
+    category: 'collaboration',
+    icon: '💬',
+    rarity: 'uncommon',
+    criteria: {
+      type: 'comments_written',
+      count: 50,
+    },
+    points: 75,
+  },
 ];
 
 async function seedAchievements() {

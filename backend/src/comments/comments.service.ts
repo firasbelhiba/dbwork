@@ -8,6 +8,7 @@ import { ActionType, EntityType } from '../activities/schemas/activity.schema';
 import { NotificationsService } from '../notifications/notifications.service';
 import { IssuesService } from '../issues/issues.service';
 import { UsersService } from '../users/users.service';
+import { AchievementsService } from '../achievements/achievements.service';
 
 @Injectable()
 export class CommentsService {
@@ -18,6 +19,7 @@ export class CommentsService {
     @Inject(forwardRef(() => IssuesService))
     private issuesService: IssuesService,
     private usersService: UsersService,
+    private achievementsService: AchievementsService,
   ) {}
 
   async create(
@@ -143,6 +145,37 @@ export class CommentsService {
           }
         } catch (error) {
           console.error('[NOTIFICATION] Error notifying parent comment author:', error);
+        }
+      }
+
+      // Check achievements for commenter
+      try {
+        await this.achievementsService.checkCommentAchievements(
+          userId,
+          issueId,
+          createCommentDto.content,
+        );
+      } catch (error) {
+        console.error('[ACHIEVEMENTS] Error checking comment achievements:', error);
+      }
+
+      // Check mention achievements for mentioned users
+      if (mentions.length > 0) {
+        for (const username of mentions) {
+          try {
+            const users = await this.usersService.findAll();
+            const mentionedUser = users.find(u =>
+              u.firstName.toLowerCase() === username.toLowerCase() ||
+              u.lastName.toLowerCase() === username.toLowerCase() ||
+              `${u.firstName}${u.lastName}`.toLowerCase() === username.toLowerCase()
+            );
+
+            if (mentionedUser && mentionedUser._id.toString() !== userId) {
+              await this.achievementsService.checkMentionAchievements(mentionedUser._id.toString());
+            }
+          } catch (error) {
+            console.error(`[ACHIEVEMENTS] Error checking mention achievements for @${username}:`, error);
+          }
         }
       }
     } catch (error) {

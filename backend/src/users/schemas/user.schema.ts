@@ -57,6 +57,10 @@ export class User {
     bugsFixed: 0,
     issuesCreated: 0,
     commentsPosted: 0,
+    uniqueIssuesCommented: 0,
+    helpedOthersIssues: 0,
+    mentionsReceived: 0,
+    projectsAssigned: 0,
   }})
   stats: {
     totalPoints: number;
@@ -64,11 +68,23 @@ export class User {
     bugsFixed: number;
     issuesCreated: number;
     commentsPosted: number;
+    uniqueIssuesCommented: number;
+    helpedOthersIssues: number;
+    mentionsReceived: number;
+    projectsAssigned: number;
   };
 
   // Track which issues have been counted for achievements to prevent cheating
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Issue' }], default: [] })
   completedIssuesForAchievements: Types.ObjectId[];
+
+  // Track which issues have been commented on (for unique count)
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Issue' }], default: [] })
+  commentedIssues: Types.ObjectId[];
+
+  // Track which issues user helped complete (not assigned to them)
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Issue' }], default: [] })
+  helpedIssues: Types.ObjectId[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
