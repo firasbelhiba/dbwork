@@ -19,38 +19,38 @@ export class AchievementsController {
 
   @Get('my-achievements')
   async getMyAchievements(@Req() req: any) {
-    return this.achievementsService.getUserAchievements(req.user.userId);
+    return this.achievementsService.getUserAchievements(req.user._id);
   }
 
   @Get('newly-unlocked')
   async getNewlyUnlockedAchievements(@Req() req: any) {
     return this.achievementsService.getNewlyUnlockedAchievements(
-      req.user.userId,
+      req.user._id,
     );
   }
 
   @Put('mark-viewed/:achievementId')
   async markAsViewed(@Req() req: any, @Param('achievementId') achievementId: string) {
-    await this.achievementsService.markAsViewed(req.user.userId, achievementId);
+    await this.achievementsService.markAsViewed(req.user._id, achievementId);
     return { success: true };
   }
 
   @Get('debug/check-my-achievements')
   async debugCheckAchievements(@Req() req: any) {
-    console.log('[DEBUG] Manually checking achievements for user:', req.user.userId);
+    console.log('[DEBUG] Manually checking achievements for user:', req.user._id);
     const result = await this.achievementsService.checkIssueCompletionAchievements(
-      req.user.userId,
+      req.user._id,
       'task', // Generic issue type
     );
     return {
       message: 'Achievement check completed',
       newlyUnlocked: result,
-      userId: req.user.userId,
+      userId: req.user._id,
     };
   }
 
   @Get('debug/my-stats')
   async debugGetMyStats(@Req() req: any) {
-    return this.achievementsService.getUserStats(req.user.userId);
+    return this.achievementsService.getUserStats(req.user._id);
   }
 }
