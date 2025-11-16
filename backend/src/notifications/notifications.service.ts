@@ -484,4 +484,21 @@ export class NotificationsService {
       metadata: { feedbackId, commentedBy, commentPreview },
     });
   }
+
+  // Changelog notification methods
+  async notifyNewChangelog(
+    userId: string,
+    changelogId: string,
+    version: string,
+    title: string,
+  ): Promise<NotificationDocument> {
+    return this.create({
+      userId,
+      type: 'new_changelog' as any,
+      title: 'New Version Released',
+      message: `Version ${version} has been released: ${title}`,
+      link: `/changelog/${changelogId}`,
+      metadata: { changelogId, version },
+    });
+  }
 }

@@ -94,4 +94,28 @@ export class ChangelogsController {
   remove(@Param('id') id: string, @CurrentUser() user) {
     return this.changelogsService.remove(id, user._id);
   }
+
+  @Post(':id/publish')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Publish changelog and notify all users (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Changelog successfully published' })
+  @ApiResponse({ status: 403, description: 'Forbidden - admin only' })
+  @ApiResponse({ status: 404, description: 'Changelog not found' })
+  publish(@Param('id') id: string, @CurrentUser() user) {
+    return this.changelogsService.publish(id, user._id);
+  }
+
+  @Post(':id/unpublish')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Unpublish changelog (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Changelog successfully unpublished' })
+  @ApiResponse({ status: 403, description: 'Forbidden - admin only' })
+  @ApiResponse({ status: 404, description: 'Changelog not found' })
+  unpublish(@Param('id') id: string, @CurrentUser() user) {
+    return this.changelogsService.unpublish(id, user._id);
+  }
 }

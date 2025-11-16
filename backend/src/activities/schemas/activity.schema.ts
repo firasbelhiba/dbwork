@@ -17,6 +17,7 @@ export enum ActionType {
   ASSIGNED = 'assigned',
   STATUS_CHANGED = 'status_changed',
   PRIORITY_CHANGED = 'priority_changed',
+  PUBLISHED = 'published',
 }
 
 export enum EntityType {

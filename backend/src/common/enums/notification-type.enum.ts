@@ -23,4 +23,5 @@ export enum NotificationType {
   FEEDBACK_UPVOTED = 'feedback_upvoted',
   FEEDBACK_STATUS_CHANGED = 'feedback_status_changed',
   FEEDBACK_COMMENTED = 'feedback_commented',
+  NEW_CHANGELOG = 'new_changelog',
 }

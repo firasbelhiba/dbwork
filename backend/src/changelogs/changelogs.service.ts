@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Changelog, ChangelogDocument } from './schemas/changelog.schema';
@@ -8,6 +8,7 @@ import {
   QueryChangelogDto,
 } from './dto';
 import { ActivitiesService } from '../activities/activities.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { ActionType, EntityType } from '../activities/schemas/activity.schema';
 
 @Injectable()
@@ -15,7 +16,10 @@ export class ChangelogsService {
   constructor(
     @InjectModel(Changelog.name)
     private changelogModel: Model<ChangelogDocument>,
+    @InjectModel('User')
+    private userModel: Model<any>,
     private activitiesService: ActivitiesService,
+    private notificationsService: NotificationsService,
   ) {}
 
   async create(
@@ -130,6 +134,11 @@ export class ChangelogsService {
       throw new NotFoundException('Changelog not found');
     }
 
+    // Don't allow deleting published changelogs
+    if (changelog.isPublished) {
+      throw new BadRequestException('Cannot delete published changelog');
+    }
+
     await this.changelogModel.findByIdAndDelete(id).exec();
 
     // Log activity if userId provided
@@ -142,5 +151,87 @@ export class ChangelogsService {
         `${changelog.version} - ${changelog.title}`,
       );
     }
+  }
+
+  async publish(id: string, userId: string): Promise<ChangelogDocument> {
+    const changelog = await this.changelogModel.findById(id).exec();
+
+    if (!changelog) {
+      throw new NotFoundException('Changelog not found');
+    }
+
+    if (changelog.isPublished) {
+      throw new BadRequestException('Changelog is already published');
+    }
+
+    changelog.isPublished = true;
+    changelog.publishedAt = new Date();
+
+    await changelog.save();
+
+    // Log activity
+    await this.activitiesService.logActivity(
+      userId,
+      ActionType.PUBLISHED,
+      EntityType.CHANGELOG,
+      changelog._id.toString(),
+      `${changelog.version} - ${changelog.title}`,
+    );
+
+    // Notify all active users about the new changelog
+    try {
+      const activeUsers = await this.userModel
+        .find({ isActive: true })
+        .select('_id')
+        .exec();
+
+      for (const user of activeUsers) {
+        // Skip the user who published
+        if (user._id.toString() === userId) continue;
+
+        try {
+          await this.notificationsService.notifyNewChangelog(
+            user._id.toString(),
+            changelog._id.toString(),
+            changelog.version,
+            changelog.title,
+          );
+        } catch (error) {
+          console.error(`[NOTIFICATION] Error notifying new changelog for user ${user._id}:`, error);
+        }
+      }
+    } catch (error) {
+      console.error('[NOTIFICATION] Error notifying new changelog:', error);
+    }
+
+    return this.findOne(id);
+  }
+
+  async unpublish(id: string, userId: string): Promise<ChangelogDocument> {
+    const changelog = await this.changelogModel.findById(id).exec();
+
+    if (!changelog) {
+      throw new NotFoundException('Changelog not found');
+    }
+
+    if (!changelog.isPublished) {
+      throw new BadRequestException('Changelog is not published');
+    }
+
+    changelog.isPublished = false;
+    changelog.publishedAt = null;
+
+    await changelog.save();
+
+    // Log activity
+    await this.activitiesService.logActivity(
+      userId,
+      ActionType.UPDATED,
+      EntityType.CHANGELOG,
+      changelog._id.toString(),
+      `${changelog.version} - ${changelog.title}`,
+    );
+
+    return this.findOne(id);
   }
 }

@@ -29,6 +29,12 @@ export class Changelog {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   createdBy: Types.ObjectId;
 
+  @Prop({ default: false })
+  isPublished: boolean;
+
+  @Prop({ default: null })
+  publishedAt: Date;
+
   createdAt: Date;
   updatedAt: Date;
 }
