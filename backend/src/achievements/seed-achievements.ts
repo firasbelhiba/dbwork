@@ -174,6 +174,74 @@ const achievements = [
     },
     points: 75,
   },
+  // Streak & Consistency
+  {
+    key: 'daily_driver',
+    name: 'Daily Driver',
+    description: 'Work on issues for 3 consecutive days',
+    category: 'communication',
+    icon: '📅',
+    rarity: 'uncommon',
+    criteria: {
+      type: 'consecutive_days',
+      count: 3,
+    },
+    points: 50,
+  },
+  {
+    key: 'week_warrior',
+    name: 'Week Warrior',
+    description: 'Work on issues for 7 consecutive days',
+    category: 'communication',
+    icon: '🗓️',
+    rarity: 'rare',
+    criteria: {
+      type: 'consecutive_days',
+      count: 7,
+    },
+    points: 100,
+  },
+  {
+    key: 'monthly_grind',
+    name: 'Monthly Grind',
+    description: 'Work on issues for 30 consecutive days',
+    category: 'communication',
+    icon: '📆',
+    rarity: 'legendary',
+    criteria: {
+      type: 'consecutive_days',
+      count: 30,
+    },
+    points: 500,
+  },
+  {
+    key: 'early_bird',
+    name: 'Early Bird',
+    description: 'Complete an issue before 9 AM',
+    category: 'communication',
+    icon: '🌅',
+    rarity: 'uncommon',
+    criteria: {
+      type: 'time_based',
+      timeCondition: 'before',
+      hour: 9,
+    },
+    points: 50,
+  },
+  {
+    key: 'night_owl',
+    name: 'Night Owl',
+    description: 'Complete an issue after 10 PM',
+    category: 'communication',
+    icon: '🦉',
+    rarity: 'uncommon',
+    criteria: {
+      type: 'time_based',
+      timeCondition: 'after',
+      hour: 22,
+    },
+    points: 50,
+  },
 ];
 
 async function seedAchievements() {

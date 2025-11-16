@@ -61,6 +61,9 @@ export class User {
     helpedOthersIssues: 0,
     mentionsReceived: 0,
     projectsAssigned: 0,
+    currentStreak: 0,
+    longestStreak: 0,
+    lastActivityDate: null,
   }})
   stats: {
     totalPoints: number;
@@ -72,6 +75,9 @@ export class User {
     helpedOthersIssues: number;
     mentionsReceived: number;
     projectsAssigned: number;
+    currentStreak: number;
+    longestStreak: number;
+    lastActivityDate: Date | null;
   };
 
   // Track which issues have been counted for achievements to prevent cheating

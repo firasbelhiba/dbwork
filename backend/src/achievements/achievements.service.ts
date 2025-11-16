@@ -112,6 +112,10 @@ export class AchievementsService {
     if (issueType === 'bug') {
       user.stats.bugsFixed = (user.stats.bugsFixed || 0) + 1;
     }
+
+    // Update streak tracking
+    await this.updateStreak(user);
+
     await user.save();
 
     const issuesCompleted = user.stats.issuesCompleted;
@@ -152,6 +156,115 @@ export class AchievementsService {
 
     // Check Marathon Runner (5 issues in one day)
     await this.checkMarathonRunner(userId);
+
+    // Check streak achievements
+    const streakAchievements = await this.checkStreakAchievements(userId);
+    unlockedAchievements.push(...streakAchievements);
+
+    // Check time-based achievements (Early Bird / Night Owl)
+    const timeAchievements = await this.checkTimeBasedAchievements(userId);
+    unlockedAchievements.push(...timeAchievements);
+
+    return unlockedAchievements;
+  }
+
+  // Update user's streak based on activity
+  private updateStreak(user: any): void {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (!user.stats.lastActivityDate) {
+      // First activity ever
+      user.stats.currentStreak = 1;
+      user.stats.longestStreak = 1;
+      user.stats.lastActivityDate = today;
+      return;
+    }
+
+    const lastActivity = new Date(user.stats.lastActivityDate);
+    lastActivity.setHours(0, 0, 0, 0);
+
+    const daysDiff = Math.floor((today.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (daysDiff === 0) {
+      // Same day, no change to streak
+      return;
+    } else if (daysDiff === 1) {
+      // Consecutive day
+      user.stats.currentStreak = (user.stats.currentStreak || 0) + 1;
+      user.stats.longestStreak = Math.max(
+        user.stats.longestStreak || 0,
+        user.stats.currentStreak
+      );
+    } else {
+      // Streak broken
+      user.stats.currentStreak = 1;
+    }
+
+    user.stats.lastActivityDate = today;
+  }
+
+  // Check streak-based achievements
+  private async checkStreakAchievements(userId: string): Promise<UserAchievementDocument[]> {
+    const unlockedAchievements: UserAchievementDocument[] = [];
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) return unlockedAchievements;
+
+    const currentStreak = user.stats.currentStreak || 0;
+
+    // Check Daily Driver (3 days)
+    if (currentStreak >= 3) {
+      const achievement = await this.achievementModel.findOne({ key: 'daily_driver' }).exec();
+      if (achievement) {
+        const unlocked = await this.unlockAchievement(userId, achievement._id.toString());
+        if (unlocked) unlockedAchievements.push(unlocked);
+      }
+    }
+
+    // Check Week Warrior (7 days)
+    if (currentStreak >= 7) {
+      const achievement = await this.achievementModel.findOne({ key: 'week_warrior' }).exec();
+      if (achievement) {
+        const unlocked = await this.unlockAchievement(userId, achievement._id.toString());
+        if (unlocked) unlockedAchievements.push(unlocked);
+      }
+    }
+
+    // Check Monthly Grind (30 days)
+    if (currentStreak >= 30) {
+      const achievement = await this.achievementModel.findOne({ key: 'monthly_grind' }).exec();
+      if (achievement) {
+        const unlocked = await this.unlockAchievement(userId, achievement._id.toString());
+        if (unlocked) unlockedAchievements.push(unlocked);
+      }
+    }
+
+    return unlockedAchievements;
+  }
+
+  // Check time-based achievements (Early Bird / Night Owl)
+  private async checkTimeBasedAchievements(userId: string): Promise<UserAchievementDocument[]> {
+    const unlockedAchievements: UserAchievementDocument[] = [];
+    const now = new Date();
+    const hour = now.getHours();
+
+    // Check Early Bird (before 9 AM)
+    if (hour < 9) {
+      const achievement = await this.achievementModel.findOne({ key: 'early_bird' }).exec();
+      if (achievement) {
+        const unlocked = await this.unlockAchievement(userId, achievement._id.toString());
+        if (unlocked) unlockedAchievements.push(unlocked);
+      }
+    }
+
+    // Check Night Owl (after 10 PM)
+    if (hour >= 22) {
+      const achievement = await this.achievementModel.findOne({ key: 'night_owl' }).exec();
+      if (achievement) {
+        const unlocked = await this.unlockAchievement(userId, achievement._id.toString());
+        if (unlocked) unlockedAchievements.push(unlocked);
+      }
+    }
 
     return unlockedAchievements;
   }
@@ -458,6 +571,9 @@ export class AchievementsService {
           'stats.helpedOthersIssues': 0,
           'stats.mentionsReceived': 0,
           'stats.projectsAssigned': 0,
+          'stats.currentStreak': 0,
+          'stats.longestStreak': 0,
+          'stats.lastActivityDate': null,
           completedIssuesForAchievements: [],
           commentedIssues: [],
           helpedIssues: [],
