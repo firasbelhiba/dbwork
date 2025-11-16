@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getInitials } from '@/lib/utils';
 import { toast } from 'react-hot-toast';
 import { UserRole } from '@/types/user';
+import { MentionTextarea } from '@/components/common/MentionTextarea';
 
 interface Comment {
   _id: string;
@@ -150,13 +151,12 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ feedbackId }) =>
             </div>
           )}
           <div className="flex-1">
-            <textarea
+            <MentionTextarea
               value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Write a comment..."
+              onChange={setNewComment}
+              placeholder="Write a comment... Use @ to mention someone"
               rows={3}
-              maxLength={1000}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-dark-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-dark-400 text-gray-900 dark:text-gray-100"
+              disabled={submitting}
             />
             <div className="flex items-center justify-between mt-2">
               <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -221,12 +221,11 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ feedbackId }) =>
 
                 {editingId === comment._id ? (
                   <div className="space-y-2">
-                    <textarea
+                    <MentionTextarea
                       value={editContent}
-                      onChange={(e) => setEditContent(e.target.value)}
+                      onChange={setEditContent}
+                      placeholder="Edit your comment..."
                       rows={3}
-                      maxLength={1000}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-dark-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-dark-400 text-gray-900 dark:text-gray-100 text-sm"
                     />
                     <div className="flex items-center gap-2">
                       <button

@@ -18,6 +18,8 @@ export class FeedbackService {
     private feedbackModel: Model<FeedbackDocument>,
     @InjectModel(FeedbackComment.name)
     private feedbackCommentModel: Model<FeedbackCommentDocument>,
+    @InjectModel('User')
+    private userModel: Model<any>,
     private activitiesService: ActivitiesService,
     private notificationsService: NotificationsService,
   ) {}
@@ -443,6 +445,37 @@ export class FeedbackService {
       }
     } catch (error) {
       console.error('[NOTIFICATION] Error notifying feedback commented:', error);
+    }
+
+    // Detect mentions in comment and notify mentioned users
+    try {
+      const mentionRegex = /@(\w+)(\w+)/g;
+      const mentions = createCommentDto.content.match(mentionRegex);
+
+      if (mentions && mentions.length > 0) {
+        for (const mention of mentions) {
+          // Extract firstName and lastName from @FirstNameLastName
+          const nameWithoutAt = mention.substring(1); // Remove @
+
+          // Find user by matching firstName+lastName
+          const users = await this.userModel.find().select('_id firstName lastName').exec();
+          const mentionedUser = users.find(u =>
+            `${u.firstName}${u.lastName}`.toLowerCase() === nameWithoutAt.toLowerCase()
+          );
+
+          if (mentionedUser && mentionedUser._id.toString() !== userId) {
+            await this.notificationsService.notifyFeedbackCommentMention(
+              mentionedUser._id.toString(),
+              feedbackId,
+              savedComment._id.toString(),
+              feedback.title,
+              userId,
+            );
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[NOTIFICATION] Error notifying mentions in feedback comment:', error);
     }
 
     // Populate user data before returning

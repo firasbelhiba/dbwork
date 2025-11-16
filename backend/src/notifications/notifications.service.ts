@@ -485,6 +485,23 @@ export class NotificationsService {
     });
   }
 
+  async notifyFeedbackCommentMention(
+    userId: string,
+    feedbackId: string,
+    commentId: string,
+    feedbackTitle: string,
+    mentionedBy: string,
+  ): Promise<NotificationDocument> {
+    return this.create({
+      userId,
+      type: 'comment_mention' as any,
+      title: 'You were mentioned',
+      message: `You were mentioned in a comment on feedback: "${feedbackTitle}"`,
+      link: `/feedback/${feedbackId}`,
+      metadata: { feedbackId, commentId, mentionedBy },
+    });
+  }
+
   // Changelog notification methods
   async notifyNewChangelog(
     userId: string,
