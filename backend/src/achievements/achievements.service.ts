@@ -81,12 +81,31 @@ export class AchievementsService {
   async checkIssueCompletionAchievements(
     userId: string,
     issueType: string,
+    issueId: string,
   ): Promise<UserAchievementDocument[]> {
     const unlockedAchievements: UserAchievementDocument[] = [];
 
     // Update user stats
     const user = await this.userModel.findById(userId).exec();
     if (!user) return unlockedAchievements;
+
+    // Anti-cheating: Check if this issue has already been counted
+    const issueObjectId = new Types.ObjectId(issueId);
+    if (!user.completedIssuesForAchievements) {
+      user.completedIssuesForAchievements = [];
+    }
+
+    const alreadyCounted = user.completedIssuesForAchievements.some(
+      (completedIssueId) => completedIssueId.toString() === issueObjectId.toString()
+    );
+
+    if (alreadyCounted) {
+      // This issue has already been counted, skip to prevent cheating
+      return unlockedAchievements;
+    }
+
+    // Add this issue to the completed issues list
+    user.completedIssuesForAchievements.push(issueObjectId);
 
     // Increment stats
     user.stats.issuesCompleted = (user.stats.issuesCompleted || 0) + 1;
@@ -295,13 +314,14 @@ export class AchievementsService {
     // Delete all user achievements
     await this.userAchievementModel.deleteMany({ userId: userIdObj }).exec();
 
-    // Reset user stats
+    // Reset user stats and clear completed issues tracking
     await this.userModel
       .findByIdAndUpdate(userIdObj, {
         $set: {
           'stats.issuesCompleted': 0,
           'stats.bugsFixed': 0,
           'stats.totalPoints': 0,
+          completedIssuesForAchievements: [], // Clear the anti-cheat tracking
         },
       })
       .exec();

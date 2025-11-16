@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { UserRole } from '@common/enums';
 import { UserPreferences } from '@common/interfaces';
 
@@ -65,6 +65,10 @@ export class User {
     issuesCreated: number;
     commentsPosted: number;
   };
+
+  // Track which issues have been counted for achievements to prevent cheating
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Issue' }], default: [] })
+  completedIssuesForAchievements: Types.ObjectId[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

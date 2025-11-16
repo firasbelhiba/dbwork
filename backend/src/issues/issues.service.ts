@@ -378,6 +378,7 @@ export class IssuesService {
                 await this.achievementsService.checkIssueCompletionAchievements(
                   assigneeId,
                   issue.type,
+                  id, // Pass the issue ID to prevent counting the same issue multiple times
                 );
               } catch (error) {
                 console.error(`[ACHIEVEMENTS] Error checking achievements for user ${assigneeId}:`, error);

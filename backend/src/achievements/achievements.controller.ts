@@ -1,4 +1,5 @@
 import { Controller, Get, Param, Put, Post, UseGuards, Req } from '@nestjs/common';
+import { Types } from 'mongoose';
 import { AchievementsService } from './achievements.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
@@ -37,9 +38,12 @@ export class AchievementsController {
 
   @Get('debug/check-my-achievements')
   async debugCheckAchievements(@Req() req: any) {
+    // Generate a unique fake issue ID for testing to avoid cheating detection
+    const fakeIssueId = new Types.ObjectId().toString();
     const result = await this.achievementsService.checkIssueCompletionAchievements(
       req.user._id,
       'task', // Generic issue type
+      fakeIssueId, // Use a unique ID each time for testing
     );
     return {
       message: 'Achievement check completed',
