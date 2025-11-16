@@ -190,53 +190,56 @@ export class FeedbackService {
   }
 
   async toggleUpvote(id: string, userId: string): Promise<FeedbackDocument> {
-    const feedback = await this.feedbackModel.findById(id).exec();
-
-    if (!feedback) {
-      throw new NotFoundException('Feedback not found');
-    }
-
     const userObjectId = new Types.ObjectId(userId);
-    const hasUpvoted = feedback.upvotedBy.some(
-      (id) => id.toString() === userId,
-    );
 
-    if (hasUpvoted) {
-      // Remove upvote atomically using $pull and $inc to prevent race conditions
-      await this.feedbackModel.findByIdAndUpdate(
-        id,
-        {
-          $pull: { upvotedBy: userObjectId },
-          $inc: { upvotes: -1 },
-        },
-        { new: true },
-      ).exec();
-    } else {
-      // Add upvote atomically using $addToSet (prevents duplicates) and $inc
-      await this.feedbackModel.findByIdAndUpdate(
-        id,
-        {
-          $addToSet: { upvotedBy: userObjectId }, // $addToSet prevents duplicate entries
-          $inc: { upvotes: 1 },
-        },
-        { new: true },
-      ).exec();
+    // Try to add upvote - only succeeds if user hasn't upvoted yet
+    const addResult = await this.feedbackModel.findOneAndUpdate(
+      {
+        _id: id,
+        upvotedBy: { $ne: userObjectId }, // Only update if user NOT in array
+      },
+      {
+        $addToSet: { upvotedBy: userObjectId },
+        $inc: { upvotes: 1 },
+      },
+      { new: true },
+    ).exec();
 
-      // Notify feedback author about the upvote (if not self-upvoting)
+    if (addResult) {
+      // Successfully added upvote - notify feedback author (if not self-upvoting)
       try {
-        const feedbackAuthorId = feedback.userId.toString();
+        const feedbackAuthorId = addResult.userId.toString();
         if (feedbackAuthorId !== userId) {
           await this.notificationsService.notifyFeedbackUpvoted(
             feedbackAuthorId,
-            feedback._id.toString(),
-            feedback.title,
+            addResult._id.toString(),
+            addResult.title,
             userId,
-            feedback.upvotes + 1, // Use the new count
+            addResult.upvotes,
           );
         }
       } catch (error) {
         console.error('[NOTIFICATION] Error notifying feedback upvoted:', error);
       }
+
+      return this.findOne(id);
+    }
+
+    // User already upvoted - try to remove upvote
+    const removeResult = await this.feedbackModel.findOneAndUpdate(
+      {
+        _id: id,
+        upvotedBy: userObjectId, // Only update if user IS in array
+      },
+      {
+        $pull: { upvotedBy: userObjectId },
+        $inc: { upvotes: -1 },
+      },
+      { new: true },
+    ).exec();
+
+    if (!removeResult) {
+      throw new NotFoundException('Feedback not found');
     }
 
     return this.findOne(id);
