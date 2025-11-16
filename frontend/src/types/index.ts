@@ -5,3 +5,4 @@ export * from './sprint';
 export * from './comment';
 export * from './notification';
 export * from './changelog';
+export * from './achievement';

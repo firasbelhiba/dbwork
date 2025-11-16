@@ -264,4 +264,13 @@ export const changelogsAPI = {
   delete: (id: string) => api.delete(`/changelogs/${id}`),
 };
 
+// Achievements API
+export const achievementsAPI = {
+  getAll: () => api.get('/achievements'),
+  getMyAchievements: () => api.get('/achievements/my-achievements'),
+  getUserAchievements: (userId: string) => api.get(`/achievements/user/${userId}`),
+  getNewlyUnlocked: () => api.get('/achievements/newly-unlocked'),
+  markAsViewed: (achievementId: string) => api.put(`/achievements/mark-viewed/${achievementId}`),
+};
+
 export default api;

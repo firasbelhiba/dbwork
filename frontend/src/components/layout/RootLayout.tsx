@@ -2,11 +2,13 @@
 
 import React from 'react';
 import { Toaster } from 'react-hot-toast';
+import { AchievementNotifier } from '@/components/achievements/AchievementNotifier';
 
 export const RootLayoutClient: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <>
       {children}
+      <AchievementNotifier />
       <Toaster
         position="top-right"
         toastOptions={{
