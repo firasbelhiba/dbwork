@@ -142,23 +142,39 @@ export default function NotificationsPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="p-8">
         {/* Breadcrumb */}
         <Breadcrumb
           items={[
-            { label: 'Dashboard', href: '/dashboard' },
-            { label: 'Notifications', href: '/notifications' },
+            {
+              label: 'Home',
+              href: '/dashboard',
+              icon: (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+              ),
+            },
+            {
+              label: 'Notifications',
+              icon: (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+              ),
+            },
           ]}
+          className="mb-6"
         />
 
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
               Notifications
             </h1>
             {unreadCount > 0 && (
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <p className="text-gray-600 dark:text-gray-400 mt-1">
                 You have {unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}
               </p>
             )}
@@ -184,7 +200,7 @@ export default function NotificationsPage() {
         </div>
 
         {/* Filter Tabs */}
-        <div className="border-b border-gray-200 dark:border-dark-300">
+        <div className="mb-6 border-b border-gray-200 dark:border-gray-700">
           <nav className="flex gap-8">
             <button
               onClick={() => setFilter('all')}
@@ -220,7 +236,7 @@ export default function NotificationsPage() {
         </div>
 
         {/* Notifications List */}
-        <div className="bg-white dark:bg-dark-500 rounded-lg shadow-sm border border-gray-200 dark:border-dark-400">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           {loading ? (
             <div className="flex items-center justify-center py-24">
               <LogoLoader size="md" />
@@ -238,7 +254,7 @@ export default function NotificationsPage() {
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-200 dark:divide-dark-400">
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
               {filteredNotifications.map((notification) => (
                 <Link
                   key={notification._id}
@@ -248,7 +264,7 @@ export default function NotificationsPage() {
                       handleMarkAsRead(notification._id);
                     }
                   }}
-                  className={`block px-6 py-4 hover:bg-gray-50 dark:hover:bg-dark-400 transition-colors ${
+                  className={`block px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${
                     !notification.read ? 'bg-primary-50 dark:bg-primary-900/10' : ''
                   }`}
                 >
