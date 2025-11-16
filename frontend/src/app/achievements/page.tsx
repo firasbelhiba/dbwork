@@ -136,6 +136,21 @@ export default function AchievementsPage() {
     }
   };
 
+  const handleResetAchievements = async () => {
+    if (!confirm('Are you sure you want to reset all your achievements? This will delete all progress and cannot be undone!')) {
+      return;
+    }
+    try {
+      const response = await achievementsAPI.debugResetAchievements();
+      toast.success('Achievements reset successfully!');
+      console.log('Reset Result:', response.data);
+      await fetchAchievements(); // Refresh achievements
+    } catch (error) {
+      console.error('Error resetting achievements:', error);
+      toast.error('Failed to reset achievements');
+    }
+  };
+
   const filteredAchievements = achievements.filter((achievement) => {
     if (selectedCategory === 'all') return true;
     return achievement.category === selectedCategory;
@@ -225,6 +240,13 @@ export default function AchievementsPage() {
                 title="Manually trigger achievement check"
               >
                 Check Now
+              </button>
+              <button
+                onClick={handleResetAchievements}
+                className="px-4 py-2 bg-red-200 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg hover:bg-red-300 dark:hover:bg-red-900/50 text-sm"
+                title="Reset all achievements and stats (cannot be undone)"
+              >
+                Reset
               </button>
             </div>
           </div>

@@ -287,4 +287,25 @@ export class AchievementsService {
       })),
     };
   }
+
+  // Debug method to reset user achievements
+  async resetUserAchievements(userId: string | Types.ObjectId): Promise<void> {
+    const userIdObj = typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
+
+    // Delete all user achievements
+    await this.userAchievementModel.deleteMany({ userId: userIdObj }).exec();
+
+    // Reset user stats
+    await this.userModel
+      .findByIdAndUpdate(userIdObj, {
+        $set: {
+          'stats.issuesCompleted': 0,
+          'stats.bugsFixed': 0,
+          'stats.totalPoints': 0,
+        },
+      })
+      .exec();
+
+    console.log(`[ACHIEVEMENTS] Reset achievements and stats for user ${userIdObj}`);
+  }
 }

@@ -275,6 +275,7 @@ export const achievementsAPI = {
   // Debug endpoints
   debugGetMyStats: () => api.get('/achievements/debug/my-stats'),
   debugCheckAchievements: () => api.get('/achievements/debug/check-my-achievements'),
+  debugResetAchievements: () => api.post('/achievements/debug/reset-my-achievements'),
 };
 
 export default api;

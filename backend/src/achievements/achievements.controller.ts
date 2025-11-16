@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Put, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Param, Put, Post, UseGuards, Req } from '@nestjs/common';
 import { AchievementsService } from './achievements.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
@@ -52,5 +52,15 @@ export class AchievementsController {
   @Get('debug/my-stats')
   async debugGetMyStats(@Req() req: any) {
     return this.achievementsService.getUserStats(req.user._id);
+  }
+
+  @Post('debug/reset-my-achievements')
+  async debugResetMyAchievements(@Req() req: any) {
+    console.log('[DEBUG] Resetting achievements for user:', req.user._id);
+    await this.achievementsService.resetUserAchievements(req.user._id);
+    return {
+      message: 'Your achievements and stats have been reset',
+      userId: req.user._id,
+    };
   }
 }
