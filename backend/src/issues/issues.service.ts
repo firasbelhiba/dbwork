@@ -43,17 +43,20 @@ export class IssuesService {
       status = sortedStatuses[0].id;
     }
 
-    // Generate issue key - find the highest issue number globally across all issues
-    const allIssues = await this.issueModel
-      .find({})
+    // Generate issue key using project key - find the highest issue number for this project
+    const projectKeyPrefix = project.key || 'ISSUE';
+
+    // Find all issues with keys matching this project's prefix
+    const projectIssues = await this.issueModel
+      .find({ key: new RegExp(`^${projectKeyPrefix}-\\d+$`) })
       .select('key')
       .lean()
       .exec();
 
     let maxIssueNumber = 0;
-    allIssues.forEach((issue) => {
+    projectIssues.forEach((issue) => {
       if (issue.key) {
-        // Extract number from key like "ISSUE-5" or "PROJ-10"
+        // Extract number from key like "TAI-5" or "PROJ-10"
         const match = issue.key.match(/-(\d+)$/);
         if (match) {
           const number = parseInt(match[1], 10);
@@ -64,7 +67,7 @@ export class IssuesService {
       }
     });
 
-    const issueKey = `ISSUE-${maxIssueNumber + 1}`;
+    const issueKey = `${projectKeyPrefix}-${maxIssueNumber + 1}`;
 
     const issue = new this.issueModel({
       ...createIssueDto,

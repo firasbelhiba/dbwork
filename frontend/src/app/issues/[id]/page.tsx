@@ -212,7 +212,6 @@ export default function IssueDetailPage() {
     );
   }
 
-  const projectKey = typeof issue.projectId === 'object' ? issue.projectId.key : '';
   const assignees = issue.assignees
     ?.filter(a => typeof a === 'object')
     .map(a => a as any) || [];
@@ -249,7 +248,7 @@ export default function IssueDetailPage() {
                   href: `/projects/${typeof issue.projectId === 'object' ? issue.projectId._id : issue.projectId}`,
                 },
                 {
-                  label: `${projectKey}-${issue._id.slice(-4)}`,
+                  label: issue.key,
                 },
               ]}
               className="mb-4"
