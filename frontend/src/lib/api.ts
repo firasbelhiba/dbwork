@@ -272,6 +272,9 @@ export const achievementsAPI = {
   getUserAchievements: (userId: string) => api.get(`/achievements/user/${userId}`),
   getNewlyUnlocked: () => api.get('/achievements/newly-unlocked'),
   markAsViewed: (achievementId: string) => api.put(`/achievements/mark-viewed/${achievementId}`),
+  // Debug endpoints
+  debugGetMyStats: () => api.get('/achievements/debug/my-stats'),
+  debugCheckAchievements: () => api.get('/achievements/debug/check-my-achievements'),
 };
 
 export default api;
