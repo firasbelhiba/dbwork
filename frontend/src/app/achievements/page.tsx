@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Achievement, UserAchievement, AchievementCategory, AchievementRarity } from '@/types';
+import { Achievement, UserAchievement, AchievementCategory, AchievementRarity, UserRole } from '@/types';
 import { achievementsAPI } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { AdminAchievementsOverview } from '@/components/achievements/AdminAchievementsOverview';
 import { toast } from 'react-hot-toast';
 
 const rarityColors: Record<AchievementRarity, { bg: string; border: string; text: string }> = {
@@ -130,12 +131,24 @@ export default function AchievementsPage() {
     );
   }
 
+  // Show admin overview for admins, personal achievements for developers
+  if (user?.role === UserRole.ADMIN) {
+    return (
+      <DashboardLayout>
+        <div className="p-6">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Achievements Overview</h1>
+          <AdminAchievementsOverview />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="p-6">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Achievements</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">My Achievements</h1>
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
