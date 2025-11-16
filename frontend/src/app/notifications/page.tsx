@@ -66,6 +66,20 @@ export default function NotificationsPage() {
     }
   };
 
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
+    e.preventDefault(); // Prevent navigation to the notification link
+    e.stopPropagation();
+
+    try {
+      await notificationsAPI.delete(id);
+      setNotifications(notifications.filter(n => n._id !== id));
+      toast.success('Notification deleted');
+    } catch (error) {
+      console.error('Failed to delete notification:', error);
+      toast.error('Failed to delete notification');
+    }
+  };
+
   const getNotificationIcon = (type: NotificationType) => {
     switch (type) {
       case NotificationType.ISSUE_ASSIGNED:
@@ -374,9 +388,20 @@ export default function NotificationsPage() {
                         <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
                           {notification.title}
                         </h3>
-                        {!notification.read && (
-                          <span className="flex-shrink-0 w-2.5 h-2.5 bg-primary-500 rounded-full mt-1.5"></span>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {!notification.read && (
+                            <span className="flex-shrink-0 w-2.5 h-2.5 bg-primary-500 rounded-full mt-1.5"></span>
+                          )}
+                          <button
+                            onClick={(e) => handleDelete(e, notification._id)}
+                            className="flex-shrink-0 p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                            title="Delete notification"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                         {notification.message}
