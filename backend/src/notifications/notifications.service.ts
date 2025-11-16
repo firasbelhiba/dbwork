@@ -526,4 +526,21 @@ export class NotificationsService {
       metadata: { changelogId, version },
     });
   }
+
+  // Achievement notification methods
+  async notifyAchievementUnlocked(
+    userId: string,
+    achievementId: string,
+    achievementName: string,
+    points: number,
+  ): Promise<NotificationDocument> {
+    return this.create({
+      userId,
+      type: 'achievement_unlocked' as any,
+      title: 'Achievement Unlocked!',
+      message: `You've unlocked "${achievementName}"! +${points} points`,
+      link: `/achievements`,
+      metadata: { achievementId, achievementName, points },
+    });
+  }
 }

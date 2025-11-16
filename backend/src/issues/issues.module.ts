@@ -6,6 +6,7 @@ import { Issue, IssueSchema } from './schemas/issue.schema';
 import { UsersModule } from '../users/users.module';
 import { ActivitiesModule } from '../activities/activities.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { AchievementsModule } from '../achievements/achievements.module';
 import { ProjectsModule } from '../projects/projects.module';
 
 @Module({
@@ -14,6 +15,7 @@ import { ProjectsModule } from '../projects/projects.module';
     UsersModule, // UsersModule exports MongooseModule with User model
     ActivitiesModule,
     NotificationsModule,
+    AchievementsModule,
     forwardRef(() => ProjectsModule),
   ],
   controllers: [IssuesController],

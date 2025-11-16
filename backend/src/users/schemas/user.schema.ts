@@ -50,6 +50,21 @@ export class User {
 
   @Prop({ default: null })
   refreshToken: string;
+
+  @Prop({ type: Object, default: {
+    totalPoints: 0,
+    issuesCompleted: 0,
+    bugsFixed: 0,
+    issuesCreated: 0,
+    commentsPosted: 0,
+  }})
+  stats: {
+    totalPoints: number;
+    issuesCompleted: number;
+    bugsFixed: number;
+    issuesCreated: number;
+    commentsPosted: number;
+  };
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -12,6 +12,7 @@ import { User, UserDocument } from '../users/schemas/user.schema';
 import { CreateIssueDto, UpdateIssueDto, FilterIssuesDto, AddTimeLogDto } from './dto';
 import { ActivitiesService } from '../activities/activities.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { AchievementsService } from '../achievements/achievements.service';
 import { ActionType, EntityType } from '../activities/schemas/activity.schema';
 import { ProjectsService } from '../projects/projects.service';
 
@@ -22,6 +23,7 @@ export class IssuesService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private activitiesService: ActivitiesService,
     private notificationsService: NotificationsService,
+    private achievementsService: AchievementsService,
     @Inject(forwardRef(() => ProjectsService))
     private projectsService: ProjectsService,
   ) {}
@@ -360,6 +362,27 @@ export class IssuesService {
               changes.status.to,
               userId,
             );
+          }
+        }
+
+        // Check achievements when issue is completed
+        if (changes.status.to === 'done') {
+          // Check achievements for all assignees
+          if (issue.assignees && Array.isArray(issue.assignees)) {
+            for (const assignee of issue.assignees) {
+              const assigneeId = typeof assignee === 'object' && assignee !== null
+                ? (assignee as any)._id.toString()
+                : String(assignee);
+
+              try {
+                await this.achievementsService.checkIssueCompletionAchievements(
+                  assigneeId,
+                  issue.type,
+                );
+              } catch (error) {
+                console.error(`[ACHIEVEMENTS] Error checking achievements for user ${assigneeId}:`, error);
+              }
+            }
           }
         }
       }
