@@ -1,6 +1,6 @@
 import { IsOptional, IsEnum, IsMongoId, IsString, IsArray, IsNumber, Min, IsBoolean } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 import { IssueType, IssuePriority, IssueStatus } from '@common/enums';
 
 export class FilterIssuesDto {
@@ -31,6 +31,12 @@ export class FilterIssuesDto {
 
   @ApiProperty({ required: false, type: [String], description: 'Filter by assignee user IDs (supports multiple)' })
   @IsOptional()
+  @Transform(({ value }) => {
+    // Handle single value or array from query params
+    if (typeof value === 'string') return [value];
+    if (Array.isArray(value)) return value;
+    return value;
+  })
   @IsArray()
   @IsMongoId({ each: true })
   assignees?: string[];
