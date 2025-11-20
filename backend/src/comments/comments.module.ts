@@ -7,6 +7,7 @@ import { ActivitiesModule } from '../activities/activities.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { IssuesModule } from '../issues/issues.module';
 import { UsersModule } from '../users/users.module';
+import { AchievementsModule } from '../achievements/achievements.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { UsersModule } from '../users/users.module';
     NotificationsModule,
     forwardRef(() => IssuesModule),
     UsersModule,
+    forwardRef(() => AchievementsModule),
   ],
   controllers: [CommentsController],
   providers: [CommentsService],
