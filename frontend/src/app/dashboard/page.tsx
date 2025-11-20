@@ -69,14 +69,17 @@ export default function DashboardPage() {
         setStats(statsRes.data || {});
       } else {
         // Non-admin: Get user's projects and assigned issues (fetch more for accurate stats)
+        console.log('[DASHBOARD] Fetching issues for user:', user?._id);
         const [projectsRes, issuesRes] = await Promise.all([
           projectsAPI.getMyProjects(),
           issuesAPI.getAll({ assignees: [user?._id], limit: 100 }),
         ]);
 
+        console.log('[DASHBOARD] Issues response:', issuesRes.data);
         setProjects(projectsRes.data || []);
         const issuesData = issuesRes.data.items || issuesRes.data.issues || issuesRes.data;
         const userIssues = Array.isArray(issuesData) ? issuesData : [];
+        console.log('[DASHBOARD] Parsed user issues:', userIssues.length);
 
         // Show only the 10 most recent issues in the list
         setAssignedIssues(userIssues.slice(0, 10));

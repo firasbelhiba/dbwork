@@ -151,6 +151,9 @@ export class IssuesService {
       sortOrder = 'desc',
     } = filterDto;
 
+    console.log('[ISSUES SERVICE] findAll called with filterDto:', JSON.stringify(filterDto));
+    console.log('[ISSUES SERVICE] assignees parameter:', assignees, 'type:', typeof assignees, 'isArray:', Array.isArray(assignees));
+
     const query: any = {};
 
     if (projectId) query.projectId = new Types.ObjectId(projectId);
@@ -160,6 +163,7 @@ export class IssuesService {
     if (priority) query.priority = priority;
     if (assignees && assignees.length > 0) {
       query.assignees = { $in: assignees.map(id => new Types.ObjectId(id)) };
+      console.log('[ISSUES SERVICE] Query with assignees filter:', JSON.stringify(query));
     }
     if (reporter) query.reporter = new Types.ObjectId(reporter);
     if (labels && labels.length > 0) query.labels = { $in: labels };
