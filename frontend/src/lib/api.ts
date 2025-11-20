@@ -117,7 +117,24 @@ export const projectsAPI = {
 
 // Issues API
 export const issuesAPI = {
-  getAll: (params?: any) => api.get('/issues', { params }),
+  getAll: (params?: any) => {
+    // Handle array parameters properly for NestJS
+    if (params?.assignees && Array.isArray(params.assignees)) {
+      // Convert array to repeated query params: assignees=id1&assignees=id2
+      const searchParams = new URLSearchParams();
+      params.assignees.forEach((id: string) => searchParams.append('assignees', id));
+
+      // Add other params
+      Object.keys(params).forEach(key => {
+        if (key !== 'assignees' && params[key] !== undefined) {
+          searchParams.append(key, params[key].toString());
+        }
+      });
+
+      return api.get(`/issues?${searchParams.toString()}`);
+    }
+    return api.get('/issues', { params });
+  },
   getById: (id: string) => api.get(`/issues/${id}`),
   getSubIssues: (parentIssueId: string) => api.get(`/issues/${parentIssueId}/sub-issues`),
   getByProject: (projectId: string, params?: any) => api.get(`/issues/project/${projectId}`, { params }),
