@@ -67,7 +67,7 @@ export class CommentsService {
               `${u.firstName}${u.lastName}`.toLowerCase() === username.toLowerCase()
             );
 
-            if (mentionedUser && mentionedUser._id.toString() !== userId) {
+            if (mentionedUser && mentionedUser._id.toString() !== userId.toString()) {
               recipientIds.add(mentionedUser._id.toString());
               await this.notificationsService.notifyCommentMention(
                 mentionedUser._id.toString(),
@@ -170,7 +170,7 @@ export class CommentsService {
               `${u.firstName}${u.lastName}`.toLowerCase() === username.toLowerCase()
             );
 
-            if (mentionedUser && mentionedUser._id.toString() !== userId) {
+            if (mentionedUser && mentionedUser._id.toString() !== userId.toString()) {
               await this.achievementsService.checkMentionAchievements(mentionedUser._id.toString());
             }
           } catch (error) {
@@ -272,7 +272,7 @@ export class CommentsService {
 
     // Check if user already reacted
     const existingReaction = comment.reactions.find(
-      (r) => r.userId.toString() === userId,
+      (r) => r.userId.toString() === userId.toString(),
     );
 
     if (existingReaction) {

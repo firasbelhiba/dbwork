@@ -474,7 +474,7 @@ export class FeedbackService {
             `${u.firstName}${u.lastName}`.toLowerCase() === nameWithoutAt.toLowerCase()
           );
 
-          if (mentionedUser && mentionedUser._id.toString() !== userId) {
+          if (mentionedUser && mentionedUser._id.toString() !== userId.toString()) {
             await this.notificationsService.notifyFeedbackCommentMention(
               mentionedUser._id.toString(),
               feedbackId,

@@ -187,7 +187,7 @@ export class ChangelogsService {
 
       for (const user of activeUsers) {
         // Skip the user who published
-        if (user._id.toString() === userId) continue;
+        if (user._id.toString() === userId.toString()) continue;
 
         try {
           await this.notificationsService.notifyNewChangelog(

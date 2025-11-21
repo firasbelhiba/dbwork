@@ -226,7 +226,7 @@ export class SprintsService {
       throw new BadRequestException('Cannot add issues to completed sprint');
     }
 
-    if (sprint.issues.some((issue) => issue.toString() === issueId)) {
+    if (sprint.issues.some((issue) => issue.toString() === issueId.toString())) {
       throw new BadRequestException('Issue already in sprint');
     }
 
@@ -266,7 +266,7 @@ export class SprintsService {
       throw new BadRequestException('Cannot remove issues from completed sprint');
     }
 
-    sprint.issues = sprint.issues.filter((issue) => issue.toString() !== issueId);
+    sprint.issues = sprint.issues.filter((issue) => issue.toString() !== issueId.toString());
     return sprint.save();
   }
 

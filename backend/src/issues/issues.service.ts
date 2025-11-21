@@ -530,7 +530,7 @@ export class IssuesService {
   async addWatcher(issueId: string, userId: string): Promise<IssueDocument> {
     const issue = await this.findOne(issueId);
 
-    if (issue.watchers.some((w) => w.toString() === userId)) {
+    if (issue.watchers.some((w) => w.toString() === userId.toString())) {
       throw new BadRequestException('User is already watching this issue');
     }
 
@@ -541,7 +541,7 @@ export class IssuesService {
   async removeWatcher(issueId: string, userId: string): Promise<IssueDocument> {
     const issue = await this.findOne(issueId);
 
-    issue.watchers = issue.watchers.filter((w) => w.toString() !== userId);
+    issue.watchers = issue.watchers.filter((w) => w.toString() !== userId.toString());
     return issue.save();
   }
 
@@ -549,7 +549,7 @@ export class IssuesService {
     const issue = await this.findOne(issueId);
     const blockerIssue = await this.findOne(blockerIssueId);
 
-    if (issue.blockedBy.some((b) => b.toString() === blockerIssueId)) {
+    if (issue.blockedBy.some((b) => b.toString() === blockerIssueId.toString())) {
       throw new BadRequestException('This blocker already exists');
     }
 
@@ -564,8 +564,8 @@ export class IssuesService {
     const issue = await this.findOne(issueId);
     const blockerIssue = await this.findOne(blockerIssueId);
 
-    issue.blockedBy = issue.blockedBy.filter((b) => b.toString() !== blockerIssueId);
-    blockerIssue.blocks = blockerIssue.blocks.filter((b) => b.toString() !== issueId);
+    issue.blockedBy = issue.blockedBy.filter((b) => b.toString() !== blockerIssueId.toString());
+    blockerIssue.blocks = blockerIssue.blocks.filter((b) => b.toString() !== issueId.toString());
 
     await blockerIssue.save();
     return issue.save();
@@ -716,7 +716,7 @@ export class IssuesService {
     }
 
     // Ensure parent issue is in the same project
-    if (parentIssue.projectId.toString() !== projectId) {
+    if (parentIssue.projectId.toString() !== projectId.toString()) {
       throw new BadRequestException('Parent issue must be in the same project');
     }
 

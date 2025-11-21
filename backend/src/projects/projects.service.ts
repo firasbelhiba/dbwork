@@ -294,7 +294,7 @@ export class ProjectsService {
 
     // Check if user is already a member
     const isMember = project.members.some(
-      (member) => member.userId.toString() === addMemberDto.userId,
+      (member) => member.userId.toString() === addMemberDto.userId.toString(),
     );
 
     if (isMember) {
@@ -349,7 +349,7 @@ export class ProjectsService {
     const project = await this.findOne(projectId);
 
     // Prevent removing the project lead
-    if (project.lead.toString() === userId) {
+    if (project.lead.toString() === userId.toString()) {
       throw new BadRequestException('Cannot remove project lead from members');
     }
 
