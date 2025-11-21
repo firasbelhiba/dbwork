@@ -354,7 +354,7 @@ export class ProjectsService {
     }
 
     project.members = project.members.filter(
-      (member) => member.userId.toString() !== userId,
+      (member) => member.userId.toString() !== userId.toString(),
     );
 
     const savedProject = await project.save();

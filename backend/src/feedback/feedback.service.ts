@@ -141,7 +141,7 @@ export class FeedbackService {
     }
 
     // Check if user is the owner
-    if (feedback.userId.toString() !== userId) {
+    if (feedback.userId.toString() !== userId.toString()) {
       throw new ForbiddenException('You can only update your own feedback');
     }
 
@@ -173,7 +173,7 @@ export class FeedbackService {
     }
 
     // Check if user is the owner
-    if (feedback.userId.toString() !== userId) {
+    if (feedback.userId.toString() !== userId.toString()) {
       throw new ForbiddenException('You can only delete your own feedback');
     }
 
@@ -516,7 +516,7 @@ export class FeedbackService {
     }
 
     // Check ownership
-    if (comment.userId.toString() !== userId) {
+    if (comment.userId.toString() !== userId.toString()) {
       throw new ForbiddenException('You can only edit your own comments');
     }
 
@@ -540,7 +540,7 @@ export class FeedbackService {
     }
 
     // Allow deletion if owner or admin
-    if (comment.userId.toString() !== userId && !isAdmin) {
+    if (comment.userId.toString() !== userId.toString() && !isAdmin) {
       throw new ForbiddenException('You can only delete your own comments');
     }
 

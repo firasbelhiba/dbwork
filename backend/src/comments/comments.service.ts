@@ -217,7 +217,7 @@ export class CommentsService {
     const comment = await this.findOne(id);
 
     // Only the author can edit their comment
-    if (comment.userId.toString() !== userId) {
+    if (comment.userId.toString() !== userId.toString()) {
       throw new ForbiddenException('You can only edit your own comments');
     }
 
@@ -245,7 +245,7 @@ export class CommentsService {
     const comment = await this.findOne(id);
 
     // Only author or admin can delete
-    if (comment.userId.toString() !== userId && !isAdmin) {
+    if (comment.userId.toString() !== userId.toString() && !isAdmin) {
       throw new ForbiddenException('You can only delete your own comments');
     }
 
@@ -293,7 +293,7 @@ export class CommentsService {
     const comment = await this.findOne(commentId);
 
     comment.reactions = comment.reactions.filter(
-      (r) => r.userId.toString() !== userId,
+      (r) => r.userId.toString() !== userId.toString(),
     );
 
     return comment.save();

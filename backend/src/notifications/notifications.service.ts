@@ -52,7 +52,7 @@ export class NotificationsService {
   async markAsRead(id: string, userId: string): Promise<NotificationDocument> {
     const notification = await this.findOne(id);
 
-    if (notification.userId.toString() !== userId) {
+    if (notification.userId.toString() !== userId.toString()) {
       throw new NotFoundException('Notification not found');
     }
 
