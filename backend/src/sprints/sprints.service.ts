@@ -52,6 +52,7 @@ export class SprintsService {
 
     const sprint = new this.sprintModel({
       ...createSprintDto,
+      projectId: new Types.ObjectId(createSprintDto.projectId),
       status: SprintStatus.PLANNED,
       issues: [],
       completedPoints: 0,
