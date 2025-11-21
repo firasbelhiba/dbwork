@@ -7,7 +7,7 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Sprint, SprintDocument } from './schemas/sprint.schema';
 import { CreateSprintDto, UpdateSprintDto } from './dto';
 import { SprintStatus } from '@common/enums';
@@ -230,7 +230,7 @@ export class SprintsService {
       throw new BadRequestException('Issue already in sprint');
     }
 
-    sprint.issues.push(issueId as any);
+    sprint.issues.push(new Types.ObjectId(issueId));
     const savedSprint = await sprint.save();
 
     // Notify assignees that their issue was added to a sprint

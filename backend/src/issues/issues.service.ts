@@ -534,7 +534,7 @@ export class IssuesService {
       throw new BadRequestException('User is already watching this issue');
     }
 
-    issue.watchers.push(userId as any);
+    issue.watchers.push(new Types.ObjectId(userId));
     return issue.save();
   }
 
@@ -553,8 +553,8 @@ export class IssuesService {
       throw new BadRequestException('This blocker already exists');
     }
 
-    issue.blockedBy.push(blockerIssueId as any);
-    blockerIssue.blocks.push(issueId as any);
+    issue.blockedBy.push(new Types.ObjectId(blockerIssueId));
+    blockerIssue.blocks.push(new Types.ObjectId(issueId));
 
     await blockerIssue.save();
     return issue.save();

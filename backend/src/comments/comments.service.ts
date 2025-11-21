@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Comment, CommentDocument } from './schemas/comment.schema';
 import { CreateCommentDto, UpdateCommentDto } from './dto';
 import { ActivitiesService } from '../activities/activities.service';
@@ -32,8 +32,8 @@ export class CommentsService {
 
     const comment = new this.commentModel({
       ...createCommentDto,
-      issueId,
-      userId,
+      issueId: new Types.ObjectId(issueId),
+      userId: new Types.ObjectId(userId),
       mentions, // Store mentions in the comment
     });
 
@@ -281,7 +281,7 @@ export class CommentsService {
     } else {
       // Add new reaction
       comment.reactions.push({
-        userId: userId as any,
+        userId: new Types.ObjectId(userId),
         reaction,
       });
     }

@@ -6,7 +6,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Project, ProjectDocument } from './schemas/project.schema';
 import { CreateProjectDto, UpdateProjectDto, AddMemberDto, CreateCustomStatusDto, UpdateCustomStatusDto, ReorderCustomStatusesDto, CreateDemoEventDto, UpdateDemoEventDto } from './dto';
 import { ActivitiesService } from '../activities/activities.service';
@@ -36,10 +36,10 @@ export class ProjectsService {
     const project = new this.projectModel({
       ...createProjectDto,
       key: createProjectDto.key.toUpperCase(),
-      lead: createProjectDto.lead || userId,
+      lead: new Types.ObjectId(createProjectDto.lead || userId),
       members: [
         {
-          userId: createProjectDto.lead || userId,
+          userId: new Types.ObjectId(createProjectDto.lead || userId),
           addedAt: new Date(),
         },
       ],
@@ -302,7 +302,7 @@ export class ProjectsService {
     }
 
     project.members.push({
-      userId: addMemberDto.userId as any,
+      userId: new Types.ObjectId(addMemberDto.userId),
       addedAt: new Date(),
     } as any);
 
@@ -530,7 +530,7 @@ export class ProjectsService {
       description: createDemoEventDto.description || '',
       date: new Date(createDemoEventDto.date),
       location: createDemoEventDto.location || '',
-      createdBy: userId as any,
+      createdBy: new Types.ObjectId(userId),
       createdAt: new Date(),
       updatedAt: new Date(),
     };
