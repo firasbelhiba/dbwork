@@ -96,6 +96,9 @@ export const usersAPI = {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
+  getNotificationPreferences: (id: string) => api.get(`/users/${id}/notification-preferences`),
+  updateNotificationPreferences: (id: string, preferences: any) =>
+    api.patch(`/users/${id}/notification-preferences`, preferences),
 };
 
 // Projects API

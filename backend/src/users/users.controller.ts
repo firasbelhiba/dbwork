@@ -23,7 +23,7 @@ import {
   ApiConsumes,
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { CreateUserDto, UpdateUserDto } from './dto';
+import { CreateUserDto, UpdateUserDto, UpdateNotificationPreferencesDto } from './dto';
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@auth/guards/roles.guard';
 import { Roles, CurrentUser } from '@common/decorators';
@@ -113,5 +113,24 @@ export class UsersController {
   @ApiResponse({ status: 404, description: 'User not found' })
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
+  }
+
+  @Get(':id/notification-preferences')
+  @ApiOperation({ summary: 'Get user notification preferences' })
+  @ApiResponse({ status: 200, description: 'Notification preferences retrieved' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  getNotificationPreferences(@Param('id') id: string) {
+    return this.usersService.getNotificationPreferences(id);
+  }
+
+  @Patch(':id/notification-preferences')
+  @ApiOperation({ summary: 'Update user notification preferences' })
+  @ApiResponse({ status: 200, description: 'Preferences successfully updated' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  updateNotificationPreferences(
+    @Param('id') id: string,
+    @Body() updatePreferencesDto: UpdateNotificationPreferencesDto,
+  ) {
+    return this.usersService.updateNotificationPreferences(id, updatePreferencesDto as any);
   }
 }

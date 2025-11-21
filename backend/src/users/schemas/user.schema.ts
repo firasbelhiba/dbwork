@@ -38,6 +38,40 @@ export class User {
       mentions: true,
       sprintUpdates: true,
     },
+    notificationPreferences: {
+      // Issue notifications
+      issue_assigned: true,
+      issue_updated: true,
+      issue_commented: true,
+      issue_status_changed: true,
+      issue_priority_changed: true,
+      issue_due_date_changed: true,
+      // Comment notifications
+      comment_on_issue: true,
+      comment_mention: true,
+      comment_reply: true,
+      // General mentions
+      mention: true,
+      // Sprint notifications
+      sprint_started: true,
+      sprint_completed: true,
+      sprint_issue_added: true,
+      sprint_starting_soon: true,
+      sprint_ending_soon: true,
+      // Project notifications
+      project_invitation: true,
+      project_member_added: true,
+      project_member_removed: true,
+      project_role_changed: true,
+      project_archived: true,
+      project_deleted: true,
+      // Feedback notifications
+      feedback_upvoted: true,
+      feedback_status_changed: true,
+      feedback_commented: true,
+      // Changelog notifications
+      new_changelog: true,
+    },
     language: 'en',
   }})
   preferences: UserPreferences;

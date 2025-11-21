@@ -32,6 +32,10 @@ export default function ProfilePage() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Notification preferences
+  const [notificationPreferences, setNotificationPreferences] = useState<any>(null);
+  const [loadingPreferences, setLoadingPreferences] = useState(false);
+
   useEffect(() => {
     if (user) {
       setProfileData({
@@ -39,8 +43,20 @@ export default function ProfilePage() {
         lastName: user.lastName || '',
         email: user.email || '',
       });
+      loadNotificationPreferences();
     }
   }, [user]);
+
+  const loadNotificationPreferences = async () => {
+    if (!user?._id) return;
+
+    try {
+      const response = await usersAPI.getNotificationPreferences(user._id);
+      setNotificationPreferences(response.data);
+    } catch (error) {
+      console.error('Error loading notification preferences:', error);
+    }
+  };
 
   const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -111,6 +127,38 @@ export default function ProfilePage() {
       toast.error(errorMessage);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleNotificationToggle = async (notificationType: string) => {
+    if (!user?._id || !notificationPreferences) return;
+
+    const newValue = !notificationPreferences[notificationType];
+
+    // Optimistic update
+    setNotificationPreferences({
+      ...notificationPreferences,
+      [notificationType]: newValue,
+    });
+
+    setLoadingPreferences(true);
+
+    try {
+      await usersAPI.updateNotificationPreferences(user._id, {
+        [notificationType]: newValue,
+      });
+      toast.success('Notification preference updated');
+    } catch (error: any) {
+      console.error('Error updating notification preferences:', error);
+      toast.error(error.response?.data?.message || 'Failed to update preferences');
+
+      // Revert on error
+      setNotificationPreferences({
+        ...notificationPreferences,
+        [notificationType]: !newValue,
+      });
+    } finally {
+      setLoadingPreferences(false);
     }
   };
 
@@ -326,6 +374,172 @@ export default function ProfilePage() {
               </Button>
             </div>
           </form>
+        </div>
+
+        {/* Notification Preferences */}
+        <div className="bg-white dark:bg-dark-600 rounded-lg shadow-sm border border-gray-200 dark:border-dark-400 p-8 mt-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Notification Preferences</h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+            Choose which notifications you want to receive
+          </p>
+
+          {notificationPreferences ? (
+            <div className="space-y-6">
+              {/* Issue Notifications */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">
+                  Issue Notifications
+                </h3>
+                <div className="space-y-3">
+                  {[
+                    { key: 'issue_assigned', label: 'Issue Assigned to You' },
+                    { key: 'issue_updated', label: 'Issue Updates' },
+                    { key: 'issue_commented', label: 'New Comments on Issues' },
+                    { key: 'issue_status_changed', label: 'Issue Status Changed' },
+                    { key: 'issue_priority_changed', label: 'Issue Priority Changed' },
+                    { key: 'issue_due_date_changed', label: 'Issue Due Date Changed' },
+                  ].map((pref) => (
+                    <label key={pref.key} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-500 transition-colors cursor-pointer">
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{pref.label}</span>
+                      <div className="relative inline-block w-11 h-6">
+                        <input
+                          type="checkbox"
+                          checked={notificationPreferences[pref.key] ?? true}
+                          onChange={() => handleNotificationToggle(pref.key)}
+                          disabled={loadingPreferences}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Comment Notifications */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">
+                  Comment Notifications
+                </h3>
+                <div className="space-y-3">
+                  {[
+                    { key: 'comment_on_issue', label: 'Comments on Your Issues' },
+                    { key: 'comment_mention', label: 'Mentioned in Comments' },
+                    { key: 'comment_reply', label: 'Replies to Your Comments' },
+                    { key: 'mention', label: 'General Mentions' },
+                  ].map((pref) => (
+                    <label key={pref.key} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-500 transition-colors cursor-pointer">
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{pref.label}</span>
+                      <div className="relative inline-block w-11 h-6">
+                        <input
+                          type="checkbox"
+                          checked={notificationPreferences[pref.key] ?? true}
+                          onChange={() => handleNotificationToggle(pref.key)}
+                          disabled={loadingPreferences}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Sprint Notifications */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">
+                  Sprint Notifications
+                </h3>
+                <div className="space-y-3">
+                  {[
+                    { key: 'sprint_started', label: 'Sprint Started' },
+                    { key: 'sprint_completed', label: 'Sprint Completed' },
+                    { key: 'sprint_issue_added', label: 'Issue Added to Sprint' },
+                    { key: 'sprint_starting_soon', label: 'Sprint Starting Soon' },
+                    { key: 'sprint_ending_soon', label: 'Sprint Ending Soon' },
+                  ].map((pref) => (
+                    <label key={pref.key} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-500 transition-colors cursor-pointer">
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{pref.label}</span>
+                      <div className="relative inline-block w-11 h-6">
+                        <input
+                          type="checkbox"
+                          checked={notificationPreferences[pref.key] ?? true}
+                          onChange={() => handleNotificationToggle(pref.key)}
+                          disabled={loadingPreferences}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Project Notifications */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">
+                  Project Notifications
+                </h3>
+                <div className="space-y-3">
+                  {[
+                    { key: 'project_invitation', label: 'Project Invitation' },
+                    { key: 'project_member_added', label: 'Member Added to Project' },
+                    { key: 'project_member_removed', label: 'Member Removed from Project' },
+                    { key: 'project_role_changed', label: 'Your Project Role Changed' },
+                    { key: 'project_archived', label: 'Project Archived' },
+                    { key: 'project_deleted', label: 'Project Deleted' },
+                  ].map((pref) => (
+                    <label key={pref.key} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-500 transition-colors cursor-pointer">
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{pref.label}</span>
+                      <div className="relative inline-block w-11 h-6">
+                        <input
+                          type="checkbox"
+                          checked={notificationPreferences[pref.key] ?? true}
+                          onChange={() => handleNotificationToggle(pref.key)}
+                          disabled={loadingPreferences}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Feedback & Changelog Notifications */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">
+                  Other Notifications
+                </h3>
+                <div className="space-y-3">
+                  {[
+                    { key: 'feedback_upvoted', label: 'Feedback Upvoted' },
+                    { key: 'feedback_status_changed', label: 'Feedback Status Changed' },
+                    { key: 'feedback_commented', label: 'Comments on Feedback' },
+                    { key: 'new_changelog', label: 'New Changelog Entries' },
+                  ].map((pref) => (
+                    <label key={pref.key} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-500 transition-colors cursor-pointer">
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{pref.label}</span>
+                      <div className="relative inline-block w-11 h-6">
+                        <input
+                          type="checkbox"
+                          checked={notificationPreferences[pref.key] ?? true}
+                          onChange={() => handleNotificationToggle(pref.key)}
+                          disabled={loadingPreferences}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+            </div>
+          )}
         </div>
 
         {/* Account Information */}

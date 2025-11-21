@@ -3,15 +3,46 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Notification, NotificationDocument } from './schemas/notification.schema';
 import { CreateNotificationDto } from './dto';
+import { User, UserDocument } from '../users/schemas/user.schema';
 
 @Injectable()
 export class NotificationsService {
   constructor(
     @InjectModel(Notification.name)
     private notificationModel: Model<NotificationDocument>,
+    @InjectModel(User.name)
+    private userModel: Model<UserDocument>,
   ) {}
 
-  async create(createNotificationDto: CreateNotificationDto): Promise<NotificationDocument> {
+  private async shouldNotify(userId: string, notificationType: string): Promise<boolean> {
+    try {
+      const user = await this.userModel
+        .findById(userId)
+        .select('preferences.notificationPreferences')
+        .exec();
+
+      if (!user || !user.preferences?.notificationPreferences) {
+        return true;
+      }
+
+      const preference = user.preferences.notificationPreferences[notificationType];
+      return preference !== false;
+    } catch (error) {
+      console.error('Error checking notification preferences:', error);
+      return true;
+    }
+  }
+
+  async create(createNotificationDto: CreateNotificationDto): Promise<NotificationDocument | null> {
+    const shouldCreate = await this.shouldNotify(
+      createNotificationDto.userId,
+      createNotificationDto.type,
+    );
+
+    if (!shouldCreate) {
+      return null;
+    }
+
     const notification = new this.notificationModel(createNotificationDto);
     return notification.save();
   }

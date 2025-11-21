@@ -113,4 +113,52 @@ export class UsersService {
       .limit(10)
       .exec();
   }
+
+  async updateNotificationPreferences(
+    userId: string,
+    preferences: Record<string, boolean>,
+  ): Promise<UserDocument> {
+    const user = await this.userModel.findById(userId).exec();
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Merge new preferences with existing ones
+    const updatedPreferences = {
+      ...user.preferences,
+      notificationPreferences: {
+        ...user.preferences.notificationPreferences,
+        ...preferences,
+      },
+    };
+
+    const updatedUser = await this.userModel
+      .findByIdAndUpdate(
+        userId,
+        { preferences: updatedPreferences },
+        { new: true },
+      )
+      .select('-password -refreshToken')
+      .exec();
+
+    if (!updatedUser) {
+      throw new NotFoundException('User not found');
+    }
+
+    return updatedUser;
+  }
+
+  async getNotificationPreferences(userId: string): Promise<any> {
+    const user = await this.userModel
+      .findById(userId)
+      .select('preferences.notificationPreferences')
+      .exec();
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user.preferences?.notificationPreferences || {};
+  }
 }
