@@ -77,7 +77,7 @@ export class SprintsService {
 
   async findAll(projectId?: string, status?: string): Promise<SprintDocument[]> {
     const query: any = {};
-    if (projectId) query.projectId = new this.sprintModel.base.Types.ObjectId(projectId);
+    if (projectId) query.projectId = new Types.ObjectId(projectId);
     if (status) query.status = status;
 
     return this.sprintModel
