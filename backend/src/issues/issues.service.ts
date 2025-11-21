@@ -74,6 +74,7 @@ export class IssuesService {
     const issue = new this.issueModel({
       ...createIssueDto,
       projectId: new Types.ObjectId(createIssueDto.projectId), // Ensure ObjectId conversion
+      assignees: createIssueDto.assignees?.map(id => new Types.ObjectId(id)) || [], // Convert assignees to ObjectIds
       key: issueKey,
       reporter: reporterId,
       status: status as any, // Use determined status (custom status ID or enum value)
@@ -258,8 +259,16 @@ export class IssuesService {
     // Get original issue for comparison
     const originalIssue = await this.issueModel.findById(id);
 
+    // Convert assignees to ObjectIds if present
+    const updateData = {
+      ...updateIssueDto,
+      ...(updateIssueDto.assignees && {
+        assignees: updateIssueDto.assignees.map(id => new Types.ObjectId(id))
+      })
+    };
+
     const issue = await this.issueModel
-      .findByIdAndUpdate(id, updateIssueDto, { new: true })
+      .findByIdAndUpdate(id, updateData, { new: true })
       .populate({ path: 'assignees', select: 'firstName lastName email avatar', model: 'User' })
       .populate({ path: 'reporter', select: 'firstName lastName email avatar', model: 'User' })
       .populate('projectId', 'name key')
