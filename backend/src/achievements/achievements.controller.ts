@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Put, Post, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Param, Put, Post, Body, UseGuards, Req } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { AchievementsService } from './achievements.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -64,5 +64,20 @@ export class AchievementsController {
       message: 'Your achievements and stats have been reset',
       userId: req.user._id,
     };
+  }
+
+  @Post('admin/grant')
+  async grantAchievement(@Body() body: { email: string; achievementKey: string }) {
+    const { email, achievementKey } = body;
+
+    if (!email || !achievementKey) {
+      return {
+        success: false,
+        message: 'Email and achievementKey are required',
+      };
+    }
+
+    const result = await this.achievementsService.grantAchievementByEmail(email, achievementKey);
+    return result;
   }
 }

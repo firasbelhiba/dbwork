@@ -280,8 +280,8 @@ export class AchievementsService {
     // For now, we'll add this logic later when we have completion timestamps
   }
 
-  // Unlock an achievement for a user
-  private async unlockAchievement(
+  // Unlock an achievement for a user (can be called manually or automatically)
+  async unlockAchievement(
     userId: string,
     achievementId: string,
   ): Promise<UserAchievementDocument | null> {
@@ -524,6 +524,45 @@ export class AchievementsService {
     }
 
     return unlockedAchievements;
+  }
+
+  // Get achievement by key
+  async getAchievementByKey(key: string) {
+    return this.achievementModel.findOne({ key }).exec();
+  }
+
+  // Manually grant achievement to user by email
+  async grantAchievementByEmail(email: string, achievementKey: string): Promise<any> {
+    // Find user by email
+    const user = await this.userModel.findOne({ email: email.toLowerCase() }).exec();
+    if (!user) {
+      throw new NotFoundException(`User with email ${email} not found`);
+    }
+
+    // Find achievement by key
+    const achievement = await this.getAchievementByKey(achievementKey);
+    if (!achievement) {
+      throw new NotFoundException(`Achievement with key ${achievementKey} not found`);
+    }
+
+    // Unlock the achievement
+    const unlocked = await this.unlockAchievement(user._id.toString(), achievement._id.toString());
+
+    return {
+      success: true,
+      user: {
+        id: user._id,
+        email: user.email,
+        name: `${user.firstName} ${user.lastName}`,
+      },
+      achievement: {
+        id: achievement._id,
+        key: achievement.key,
+        name: achievement.name,
+        points: achievement.points,
+      },
+      alreadyUnlocked: unlocked === null,
+    };
   }
 
   // Debug method to get user stats
