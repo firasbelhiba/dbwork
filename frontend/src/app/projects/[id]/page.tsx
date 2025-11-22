@@ -73,14 +73,11 @@ export default function ProjectDetailPage() {
 
   const fetchSprints = async () => {
     try {
-      console.log('Fetching sprints for project:', projectId);
       const [sprintsRes, activeSprintRes] = await Promise.all([
         sprintsAPI.getByProject(projectId),
         sprintsAPI.getActiveSprint(projectId).catch(() => ({ data: null })),
       ]);
 
-      console.log('Fetched sprints:', sprintsRes.data);
-      console.log('Active sprint:', activeSprintRes.data);
 
       setSprints(sprintsRes.data);
       setActiveSprint(activeSprintRes.data);

@@ -89,7 +89,6 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, color, is
   const bgColor = color?.startsWith('#') ? color : (colorMap[color] || '#3B82F6');
 
   // Debug log to see what color is being used
-  console.log(`[KanbanColumn] ${title}: color="${color}" -> bgColor="${bgColor}"`);
 
   return (
     <div className="flex-shrink-0 w-80">

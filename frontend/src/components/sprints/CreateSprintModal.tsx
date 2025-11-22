@@ -81,7 +81,6 @@ export const CreateSprintModal: React.FC<CreateSprintModalProps> = ({
         endDate: new Date(formData.endDate),
       });
 
-      console.log('Sprint created:', response.data);
       toast.success('Sprint created successfully');
 
       // Await the callback to ensure sprints are refetched before closing

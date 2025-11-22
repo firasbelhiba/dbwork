@@ -102,14 +102,10 @@ export class IssuesService {
     );
 
     // Send notifications to assigned users
-    console.log(`[NOTIFICATION] Reporter ID: ${reporterId}, Assignees:`, createIssueDto.assignees);
     if (createIssueDto.assignees && createIssueDto.assignees.length > 0) {
-      console.log(`[NOTIFICATION] Creating notifications for ${createIssueDto.assignees.length} assignees`);
       for (const assigneeId of createIssueDto.assignees) {
-        console.log(`[NOTIFICATION] Comparing assigneeId (${assigneeId}) with reporterId (${reporterId})`);
         // Don't notify if the reporter assigned themselves
         if (assigneeId !== reporterId) {
-          console.log(`[NOTIFICATION] IDs don't match - Sending notification to user ${assigneeId} for issue ${savedIssue.key}`);
           try {
             await this.notificationsService.create({
               userId: assigneeId,
@@ -119,16 +115,11 @@ export class IssuesService {
               link: `/issues/${savedIssue._id}`,
               metadata: { issueKey: savedIssue.key, assignedBy: reporterId },
             });
-            console.log(`[NOTIFICATION] ✓ Successfully created notification for user ${assigneeId}`);
           } catch (error) {
-            console.error(`[NOTIFICATION] ✗ Error creating notification for user ${assigneeId}:`, error);
+            console.error(`[NOTIFICATION] Error creating notification for user ${assigneeId}:`, error);
           }
-        } else {
-          console.log(`[NOTIFICATION] IDs match - Skipping self-notification for user ${assigneeId}`);
         }
       }
-    } else {
-      console.log('[NOTIFICATION] No assignees found or assignees array is empty');
     }
 
     return savedIssue;
@@ -152,8 +143,6 @@ export class IssuesService {
       sortOrder = 'desc',
     } = filterDto;
 
-    console.log('[ISSUES SERVICE] findAll called with filterDto:', JSON.stringify(filterDto));
-    console.log('[ISSUES SERVICE] assignees parameter:', assignees, 'type:', typeof assignees, 'isArray:', Array.isArray(assignees));
 
     const query: any = {};
 
@@ -164,7 +153,6 @@ export class IssuesService {
     if (priority) query.priority = priority;
     if (assignees && assignees.length > 0) {
       query.assignees = { $in: assignees.map(id => new Types.ObjectId(id)) };
-      console.log('[ISSUES SERVICE] Query with assignees filter:', JSON.stringify(query));
     }
     if (reporter) query.reporter = new Types.ObjectId(reporter);
     if (labels && labels.length > 0) query.labels = { $in: labels };
@@ -609,7 +597,6 @@ export class IssuesService {
   }
 
   async getIssuesByProject(projectId: string, status?: string, isArchived?: string, assignedTo?: string, userId?: string): Promise<IssueDocument[]> {
-    console.log('[getIssuesByProject] Called with projectId:', projectId, 'isArchived:', isArchived, 'assignedTo:', assignedTo);
     const query: any = {
       projectId: new Types.ObjectId(projectId),
     };
@@ -626,14 +613,11 @@ export class IssuesService {
     // Handle assignedTo=me filter
     if (assignedTo === 'me' && userId) {
       query.assignees = { $in: [new Types.ObjectId(userId)] };
-      console.log('[getIssuesByProject] Filtering by assignedTo=me, userId:', userId);
     }
 
-    console.log('[getIssuesByProject] Query:', JSON.stringify(query));
 
     // Count before query
     const count = await this.issueModel.countDocuments(query);
-    console.log('[getIssuesByProject] Count in DB:', count);
 
     const results = await this.issueModel
       .find(query)
@@ -643,26 +627,10 @@ export class IssuesService {
       .sort({ order: 1, createdAt: -1 })
       .exec();
 
-    console.log('[getIssuesByProject] Results returned:', results.length);
-    console.log('[getIssuesByProject] First 3 keys:', results.slice(0, 3).map(i => i.key));
-
-    // DEBUG: Check if assignees are populated
-    const sampleIssue = results[0];
-    if (sampleIssue) {
-      console.log('[getIssuesByProject] Sample issue assignees:', {
-        key: sampleIssue.key,
-        assignees: sampleIssue.assignees,
-        assigneesType: typeof sampleIssue.assignees,
-        firstAssignee: sampleIssue.assignees?.[0],
-        firstAssigneeType: typeof sampleIssue.assignees?.[0]
-      });
-    }
-
     return results;
   }
 
   async getIssuesBySprint(sprintId: string, isArchived?: string, assignedTo?: string, userId?: string): Promise<IssueDocument[]> {
-    console.log('[getIssuesBySprint] Called with sprintId:', sprintId, 'isArchived:', isArchived, 'assignedTo:', assignedTo);
     const query: any = {
       sprintId: new Types.ObjectId(sprintId),
     };
@@ -677,10 +645,8 @@ export class IssuesService {
     // Handle assignedTo=me filter
     if (assignedTo === 'me' && userId) {
       query.assignees = { $in: [new Types.ObjectId(userId)] };
-      console.log('[getIssuesBySprint] Filtering by assignedTo=me, userId:', userId);
     }
 
-    console.log('[getIssuesBySprint] Query:', JSON.stringify(query));
 
     return this.issueModel
       .find(query)

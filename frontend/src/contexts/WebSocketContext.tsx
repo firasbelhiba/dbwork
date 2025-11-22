@@ -47,12 +47,10 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     });
 
     newSocket.on('connect', () => {
-      console.log('WebSocket connected');
       setConnected(true);
     });
 
     newSocket.on('disconnect', () => {
-      console.log('WebSocket disconnected');
       setConnected(false);
     });
 

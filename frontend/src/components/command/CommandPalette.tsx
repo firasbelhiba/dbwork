@@ -155,7 +155,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       ),
       onSelect: () => {
         router.push('/projects?create=true');
-        console.log('[CommandPalette] Item selected, calling onClose()');
         onClose?.();
       },
     },
@@ -171,7 +170,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       ),
       onSelect: () => {
         router.push('/issues/new');
-        console.log('[CommandPalette] Item selected, calling onClose()');
         onClose?.();
       },
     },
@@ -186,7 +184,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       ),
       onSelect: () => {
         router.push('/dashboard');
-        console.log('[CommandPalette] Item selected, calling onClose()');
         onClose?.();
       },
     },
@@ -201,7 +198,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       ),
       onSelect: () => {
         router.push('/projects');
-        console.log('[CommandPalette] Item selected, calling onClose()');
         onClose?.();
       },
     },
@@ -216,7 +212,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       ),
       onSelect: () => {
         router.push('/reports');
-        console.log('[CommandPalette] Item selected, calling onClose()');
         onClose?.();
       },
     },
@@ -240,7 +235,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
             ),
             onSelect: () => {
               router.push(`/projects/${item.data._id}`);
-              console.log('[CommandPalette] Item selected, calling onClose()');
               onClose?.();
             },
           });
@@ -257,7 +251,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
             ),
             onSelect: () => {
               router.push(`/issues/${item.data._id}`);
-              console.log('[CommandPalette] Item selected, calling onClose()');
               onClose?.();
             },
           });
@@ -315,7 +308,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
     <div
       className="fixed inset-0 z-50 flex items-start justify-center pt-20 bg-black/50"
       onClick={() => {
-        console.log('[CommandPalette] Backdrop clicked, calling onClose()');
         onClose?.();
       }}
     >
