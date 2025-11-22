@@ -704,15 +704,22 @@ export class IssuesService {
     return this.update(issueId, { order: newOrder });
   }
 
-  async getSubIssues(parentIssueId: string): Promise<IssueDocument[]> {
+  async getSubIssues(parentIssueId: string, includeArchived?: string): Promise<IssueDocument[]> {
     // Verify parent issue exists
     const parentIssue = await this.issueModel.findById(parentIssueId);
     if (!parentIssue) {
       throw new NotFoundException('Parent issue not found');
     }
 
+    const query: any = { parentIssue: new Types.ObjectId(parentIssueId) };
+
+    // By default, exclude archived sub-issues unless explicitly requested
+    if (includeArchived !== 'true' && includeArchived !== 'all') {
+      query.isArchived = false;
+    }
+
     return this.issueModel
-      .find({ parentIssue: parentIssueId })
+      .find(query)
       .populate({ path: 'assignees', select: 'firstName lastName email avatar', model: 'User' })
       .populate({ path: 'reporter', select: 'firstName lastName email avatar', model: 'User' })
       .populate('projectId', 'name key')

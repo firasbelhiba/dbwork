@@ -93,8 +93,8 @@ export class IssuesController {
   @Get(':id/sub-issues')
   @ApiOperation({ summary: 'Get sub-issues of a parent issue' })
   @ApiResponse({ status: 200, description: 'List of sub-issues' })
-  getSubIssues(@Param('id') id: string) {
-    return this.issuesService.getSubIssues(id);
+  getSubIssues(@Param('id') id: string, @Query('includeArchived') includeArchived?: string) {
+    return this.issuesService.getSubIssues(id, includeArchived);
   }
 
   @Patch('bulk-update')
