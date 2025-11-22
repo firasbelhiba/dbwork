@@ -220,7 +220,13 @@ export class IssuesService {
     }
 
     // Count sub-issues and calculate progress
-    const subIssues = await this.issueModel.find({ parentIssue: new Types.ObjectId(id) }).exec();
+    // Query for both string and ObjectId types to handle legacy data
+    const subIssues = await this.issueModel.find({
+      $or: [
+        { parentIssue: new Types.ObjectId(id) },
+        { parentIssue: id }
+      ]
+    }).exec();
     const subIssueCount = subIssues.length;
     const completedSubIssues = subIssues.filter(subIssue => subIssue.status === 'done').length;
     const subIssueProgress = subIssueCount > 0 ? Math.round((completedSubIssues / subIssueCount) * 100) : 0;
@@ -682,7 +688,13 @@ export class IssuesService {
       throw new NotFoundException('Parent issue not found');
     }
 
-    const query: any = { parentIssue: new Types.ObjectId(parentIssueId) };
+    // Query for both string and ObjectId types to handle legacy data
+    const query: any = {
+      $or: [
+        { parentIssue: new Types.ObjectId(parentIssueId) },
+        { parentIssue: parentIssueId }
+      ]
+    };
 
     // By default, exclude archived sub-issues unless explicitly requested
     if (includeArchived !== 'true' && includeArchived !== 'all') {
