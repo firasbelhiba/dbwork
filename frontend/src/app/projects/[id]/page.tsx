@@ -43,6 +43,21 @@ export default function ProjectDetailPage() {
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [zoomLevel, setZoomLevel] = useState(100);
   const [showArchived, setShowArchived] = useState(false);
+  const [myTasksOnly, setMyTasksOnly] = useState(() => {
+    // Load from localStorage on mount
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('kanban-myTasksOnly');
+      return saved === 'true';
+    }
+    return false;
+  });
+
+  // Save to localStorage when myTasksOnly changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('kanban-myTasksOnly', String(myTasksOnly));
+    }
+  }, [myTasksOnly]);
 
   useEffect(() => {
     if (projectId && !authLoading) {
@@ -363,6 +378,31 @@ export default function ProjectDetailPage() {
                     Manage Columns
                   </Button>
 
+                  {/* My Tasks Only Toggle */}
+                  <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 px-3 py-2">
+                    <label htmlFor="my-tasks-only" className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer flex items-center gap-2">
+                      <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      My Tasks Only
+                    </label>
+                    <button
+                      id="my-tasks-only"
+                      type="button"
+                      onClick={() => setMyTasksOnly(!myTasksOnly)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                        myTasksOnly ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'
+                      }`}
+                      aria-label="Toggle My Tasks Only"
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          myTasksOnly ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
                   {/* Show Archived Toggle */}
                   <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 px-3 py-2">
                     <label htmlFor="show-archived" className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer flex items-center gap-2">
@@ -378,6 +418,7 @@ export default function ProjectDetailPage() {
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
                         showArchived ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'
                       }`}
+                      aria-label="Toggle Show Archived"
                     >
                       <span
                         className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -489,6 +530,7 @@ export default function ProjectDetailPage() {
               sprintId={selectedSprintId === 'all' ? undefined : selectedSprintId}
               zoomLevel={zoomLevel}
               showArchived={showArchived}
+              myTasksOnly={myTasksOnly}
             />
           ) : view === 'calendar' ? (
             <ProjectCalendar

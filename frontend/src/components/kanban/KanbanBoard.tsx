@@ -34,9 +34,10 @@ interface KanbanBoardProps {
   sprintId?: string;
   zoomLevel: number;
   showArchived?: boolean;
+  myTasksOnly?: boolean;
 }
 
-export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, zoomLevel, showArchived = false }) => {
+export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, zoomLevel, showArchived = false, myTasksOnly = false }) => {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [activeIssue, setActiveIssue] = useState<Issue | null>(null);
   const [loading, setLoading] = useState(true);
@@ -57,7 +58,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
   useEffect(() => {
     fetchProject();
     fetchIssues();
-  }, [projectId, sprintId, showArchived]);
+  }, [projectId, sprintId, showArchived, myTasksOnly]);
 
   const fetchProject = async () => {
     try {
@@ -76,9 +77,14 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
   const fetchIssues = async () => {
     try {
       let response;
-      const params = showArchived ? { isArchived: 'all' } : {};
+      const params: any = showArchived ? { isArchived: 'all' } : {};
 
-      console.log('[KanbanBoard] fetchIssues called with showArchived:', showArchived, 'params:', params);
+      // Add myTasksOnly filter
+      if (myTasksOnly) {
+        params.assignedTo = 'me';
+      }
+
+      console.log('[KanbanBoard] fetchIssues called with showArchived:', showArchived, 'myTasksOnly:', myTasksOnly, 'params:', params);
 
       if (sprintId) {
         // For sprint view

@@ -603,8 +603,8 @@ export class IssuesService {
       .exec();
   }
 
-  async getIssuesByProject(projectId: string, status?: string, isArchived?: string): Promise<IssueDocument[]> {
-    console.log('[getIssuesByProject] Called with projectId:', projectId, 'isArchived:', isArchived);
+  async getIssuesByProject(projectId: string, status?: string, isArchived?: string, assignedTo?: string, userId?: string): Promise<IssueDocument[]> {
+    console.log('[getIssuesByProject] Called with projectId:', projectId, 'isArchived:', isArchived, 'assignedTo:', assignedTo);
     const query: any = {
       projectId: new Types.ObjectId(projectId),
     };
@@ -617,6 +617,13 @@ export class IssuesService {
     }
 
     if (status) query.status = status;
+
+    // Handle assignedTo=me filter
+    if (assignedTo === 'me' && userId) {
+      query.assignees = { $in: [new Types.ObjectId(userId)] };
+      console.log('[getIssuesByProject] Filtering by assignedTo=me, userId:', userId);
+    }
+
     console.log('[getIssuesByProject] Query:', JSON.stringify(query));
 
     // Count before query
@@ -649,8 +656,8 @@ export class IssuesService {
     return results;
   }
 
-  async getIssuesBySprint(sprintId: string, isArchived?: string): Promise<IssueDocument[]> {
-    console.log('[getIssuesBySprint] Called with sprintId:', sprintId, 'isArchived:', isArchived);
+  async getIssuesBySprint(sprintId: string, isArchived?: string, assignedTo?: string, userId?: string): Promise<IssueDocument[]> {
+    console.log('[getIssuesBySprint] Called with sprintId:', sprintId, 'isArchived:', isArchived, 'assignedTo:', assignedTo);
     const query: any = {
       sprintId: new Types.ObjectId(sprintId),
     };
@@ -660,6 +667,12 @@ export class IssuesService {
     // Otherwise, only show non-archived issues
     if (isArchived !== 'all') {
       query.isArchived = false;
+    }
+
+    // Handle assignedTo=me filter
+    if (assignedTo === 'me' && userId) {
+      query.assignees = { $in: [new Types.ObjectId(userId)] };
+      console.log('[getIssuesBySprint] Filtering by assignedTo=me, userId:', userId);
     }
 
     console.log('[getIssuesBySprint] Query:', JSON.stringify(query));
