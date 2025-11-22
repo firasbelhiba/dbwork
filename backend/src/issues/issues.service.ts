@@ -231,12 +231,17 @@ export class IssuesService {
       throw new NotFoundException('Issue not found');
     }
 
-    // Count sub-issues
-    const subIssueCount = await this.issueModel.countDocuments({ parentIssue: id }).exec();
+    // Count sub-issues and calculate progress
+    const subIssues = await this.issueModel.find({ parentIssue: new Types.ObjectId(id) }).exec();
+    const subIssueCount = subIssues.length;
+    const completedSubIssues = subIssues.filter(subIssue => subIssue.status === 'done').length;
+    const subIssueProgress = subIssueCount > 0 ? Math.round((completedSubIssues / subIssueCount) * 100) : 0;
 
     return {
       ...issue.toObject(),
       subIssueCount,
+      completedSubIssues,
+      subIssueProgress,
     };
   }
 

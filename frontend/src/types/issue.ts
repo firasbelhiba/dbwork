@@ -47,6 +47,8 @@ export interface Issue {
   blocks: (Issue | string)[];
   parentIssue: Issue | string | null;
   subIssueCount?: number;
+  completedSubIssues?: number;
+  subIssueProgress?: number;
   order: number;
   isArchived?: boolean;
   archivedAt?: Date | null;

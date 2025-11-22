@@ -253,13 +253,14 @@ export default function IssueDetailPage() {
               ]}
               className="mb-4"
             />
-            <div className="flex items-start gap-3 mb-4">
-              <Badge variant={issue.type as any}>{issue.type}</Badge>
-              {issue.isArchived && (
-                <Badge variant="default" className="bg-gray-500 text-white">ARCHIVED</Badge>
-              )}
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex-1">{issue.title}</h1>
-              <div className="flex items-center gap-2">
+            <div className="mb-4">
+              <div className="flex items-start gap-3 mb-3">
+                <Badge variant={issue.type as any}>{issue.type}</Badge>
+                {issue.isArchived && (
+                  <Badge variant="default" className="bg-gray-500 text-white">ARCHIVED</Badge>
+                )}
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex-1">{issue.title}</h1>
+                <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   onClick={() => setShowEditModal(true)}
@@ -310,6 +311,33 @@ export default function IssueDetailPage() {
                   </>
                 )}
               </div>
+              </div>
+
+              {/* Sub-issue Progress Bar - Only show for parent issues */}
+              {!issue.parentIssue && issue.subIssueCount && issue.subIssueCount > 0 && (
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                  <div className="flex items-center justify-between text-sm mb-2">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                      </svg>
+                      <span className="text-blue-800 dark:text-blue-300 font-medium">
+                        Sub-issues Progress: {issue.completedSubIssues || 0}/{issue.subIssueCount} completed
+                      </span>
+                    </div>
+                    <span className="font-semibold text-blue-900 dark:text-blue-200">{issue.subIssueProgress || 0}%</span>
+                  </div>
+                  <div className="w-full bg-blue-200 dark:bg-blue-900/40 rounded-full h-3">
+                    <div
+                      className={`h-3 rounded-full transition-all duration-300 ${
+                        (issue.subIssueProgress || 0) === 100 ? 'bg-green-500' :
+                        (issue.subIssueProgress || 0) >= 50 ? 'bg-blue-500' : 'bg-yellow-500'
+                      }`}
+                      style={{ width: `${issue.subIssueProgress || 0}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Parent Issue Link */}

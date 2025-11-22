@@ -51,12 +51,22 @@ export const SubIssues: React.FC<SubIssuesProps> = ({
     );
   }
 
+  // Calculate progress
+  const completedCount = subIssues.filter(issue => issue.status === 'done').length;
+  const totalCount = subIssues.length;
+  const progressPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
   return (
     <div className="bg-white dark:bg-dark-400 rounded-lg shadow-sm border border-gray-200 dark:border-dark-300 p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Sub-issues</h3>
           <Badge variant="default">{subIssues.length}</Badge>
+          {totalCount > 0 && (
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              ({completedCount}/{totalCount} completed)
+            </span>
+          )}
         </div>
         <Button size="sm" onClick={onCreateSubIssue}>
           <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,6 +75,28 @@ export const SubIssues: React.FC<SubIssuesProps> = ({
           Add Sub-issue
         </Button>
       </div>
+
+      {/* Progress Bar */}
+      {totalCount > 0 && (
+        <div className="mb-4">
+          <div className="flex items-center justify-between text-sm mb-1">
+            <span className="text-gray-600 dark:text-gray-400">Progress</span>
+            <span className="font-semibold text-gray-900 dark:text-gray-100">{progressPercentage}%</span>
+          </div>
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+            <div
+              className={`h-2.5 rounded-full transition-all duration-300 ${
+                progressPercentage === 100
+                  ? 'bg-green-500'
+                  : progressPercentage >= 50
+                  ? 'bg-blue-500'
+                  : 'bg-yellow-500'
+              }`}
+              style={{ width: `${progressPercentage}%` }}
+            ></div>
+          </div>
+        </div>
+      )}
 
       {subIssues.length === 0 ? (
         <div className="text-center py-8 text-gray-500 dark:text-gray-400">
