@@ -51,6 +51,8 @@ export default function ProjectDetailPage() {
     }
     return false;
   });
+  const [showFiltersMenu, setShowFiltersMenu] = useState(false);
+  const [showSprintsMenu, setShowSprintsMenu] = useState(false);
 
   // Save to localStorage when myTasksOnly changes
   useEffect(() => {
@@ -58,6 +60,22 @@ export default function ProjectDetailPage() {
       localStorage.setItem('kanban-myTasksOnly', String(myTasksOnly));
     }
   }, [myTasksOnly]);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.relative')) {
+        setShowFiltersMenu(false);
+        setShowSprintsMenu(false);
+      }
+    };
+
+    if (showFiltersMenu || showSprintsMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showFiltersMenu, showSprintsMenu]);
 
   useEffect(() => {
     if (projectId && !authLoading) {
@@ -309,7 +327,7 @@ export default function ProjectDetailPage() {
         {/* Toolbar */}
         <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-8 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               {/* Sprint Selector */}
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Sprint:</span>
@@ -360,137 +378,194 @@ export default function ProjectDetailPage() {
                   Calendar
                 </button>
               </div>
-            </div>
 
-            <div className="flex items-center gap-3">
+              {/* Board View Controls */}
               {view === 'board' && (
                 <>
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsCustomStatusModalOpen(true)}
-                  >
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
-                    </svg>
-                    Manage Columns
-                  </Button>
-
-                  {/* My Tasks Only Toggle */}
-                  <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 px-3 py-2">
-                    <label htmlFor="my-tasks-only" className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer flex items-center gap-2">
-                      <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                      My Tasks Only
-                    </label>
-                    <button
-                      id="my-tasks-only"
-                      type="button"
-                      onClick={() => setMyTasksOnly(!myTasksOnly)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                        myTasksOnly ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'
-                      }`}
-                      aria-label="Toggle My Tasks Only"
+                  {/* Filters Dropdown */}
+                  <div className="relative">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowFiltersMenu(!showFiltersMenu)}
+                      className={`${(myTasksOnly || showArchived) ? 'border-primary dark:border-primary' : ''}`}
                     >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          myTasksOnly ? 'translate-x-6' : 'translate-x-1'
-                        }`}
-                      />
-                    </button>
+                      <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                      </svg>
+                      Filters
+                      {(myTasksOnly || showArchived) && (
+                        <span className="ml-1 px-1.5 py-0.5 text-xs bg-primary text-white rounded-full">
+                          {(myTasksOnly ? 1 : 0) + (showArchived ? 1 : 0)}
+                        </span>
+                      )}
+                    </Button>
+                    {showFiltersMenu && (
+                      <div className="absolute left-0 top-full mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
+                        <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Filter Issues</h3>
+                        </div>
+                        <div className="px-4 py-3 space-y-3">
+                          <label className="flex items-center justify-between cursor-pointer group">
+                            <div className="flex items-center gap-2">
+                              <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                              </svg>
+                              <span className="text-sm text-gray-700 dark:text-gray-300">My Tasks Only</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setMyTasksOnly(!myTasksOnly)}
+                              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                                myTasksOnly ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'
+                              }`}
+                            >
+                              <span
+                                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                                  myTasksOnly ? 'translate-x-5' : 'translate-x-0.5'
+                                }`}
+                              />
+                            </button>
+                          </label>
+                          <label className="flex items-center justify-between cursor-pointer group">
+                            <div className="flex items-center gap-2">
+                              <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                              </svg>
+                              <span className="text-sm text-gray-700 dark:text-gray-300">Show Archived</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setShowArchived(!showArchived)}
+                              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                                showArchived ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'
+                              }`}
+                            >
+                              <span
+                                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                                  showArchived ? 'translate-x-5' : 'translate-x-0.5'
+                                }`}
+                              />
+                            </button>
+                          </label>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Show Archived Toggle */}
-                  <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 px-3 py-2">
-                    <label htmlFor="show-archived" className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer flex items-center gap-2">
-                      <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                      </svg>
-                      Show Archived
-                    </label>
-                    <button
-                      id="show-archived"
-                      type="button"
-                      onClick={() => setShowArchived(!showArchived)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                        showArchived ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'
-                      }`}
-                      aria-label="Toggle Show Archived"
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          showArchived ? 'translate-x-6' : 'translate-x-1'
-                        }`}
-                      />
-                    </button>
-                  </div>
-
-                  {/* Zoom Controls */}
-                  <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-1">
+                  {/* Zoom Controls - Compact */}
+                  <div className="flex items-center gap-0.5 bg-gray-100 dark:bg-gray-700 rounded-md p-0.5">
                     <button
                       onClick={handleZoomOut}
                       disabled={zoomLevel <= 50}
-                      className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="p-1.5 rounded hover:bg-white dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       title="Zoom Out"
                     >
-                      <svg className="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                       </svg>
                     </button>
-
                     <button
                       onClick={handleResetZoom}
-                      className="px-3 py-1 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+                      className="px-2 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600 rounded transition-colors min-w-[45px]"
                       title="Reset Zoom"
                     >
                       {zoomLevel}%
                     </button>
-
                     <button
                       onClick={handleZoomIn}
                       disabled={zoomLevel >= 150}
-                      className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="p-1.5 rounded hover:bg-white dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       title="Zoom In"
                     >
-                      <svg className="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                       </svg>
                     </button>
                   </div>
+
+                  {/* Manage Columns */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsCustomStatusModalOpen(true)}
+                  >
+                    <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                    </svg>
+                    Columns
+                  </Button>
                 </>
               )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              {/* Calendar Event Button */}
               {view === 'calendar' && (user?.role === UserRole.ADMIN || user?.role === UserRole.PROJECT_MANAGER) && (
                 <Button
                   variant="outline"
+                  size="sm"
                   onClick={() => {
                     setSelectedEvent(null);
                     setIsDemoEventModalOpen(true);
                   }}
                 >
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
-                  New Demo Event
+                  New Event
                 </Button>
               )}
-              <Button
-                variant="outline"
-                onClick={() => setShowSprintsList(!showSprintsList)}
-              >
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-                {showSprintsList ? 'Hide' : 'Manage'} Sprints ({sprints.length})
-              </Button>
-              <Button variant="outline" onClick={() => setIsSprintModalOpen(true)}>
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                New Sprint
-              </Button>
+
+              {/* Sprint Management Dropdown */}
+              <div className="relative">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowSprintsMenu(!showSprintsMenu)}
+                >
+                  <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  Sprints
+                  <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </Button>
+                {showSprintsMenu && (
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
+                    <button
+                      onClick={() => {
+                        setShowSprintsList(!showSprintsList);
+                        setShowSprintsMenu(false);
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                      Manage Sprints ({sprints.length})
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsSprintModalOpen(true);
+                        setShowSprintsMenu(false);
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      New Sprint
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Create Issue Button */}
               <Link href={`/issues/new?project=${projectId}`}>
-                <Button>
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <Button size="sm">
+                  <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
                   Create Issue
