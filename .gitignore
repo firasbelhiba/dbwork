@@ -36,6 +36,10 @@ yarn-error.log*
 .cache/
 nul
 
+# Debug/migration scripts (use backend/scripts/ directory instead)
+backend/*.js
+!backend/.eslintrc.js
+
 # Import scripts (temporary)
 transform-jira-import.js
 import-issues.js
