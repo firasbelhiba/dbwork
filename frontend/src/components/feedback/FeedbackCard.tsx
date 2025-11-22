@@ -69,6 +69,9 @@ export const FeedbackCard: React.FC<FeedbackCardProps> = ({
           {feedback.status === FeedbackStatus.RESOLVED && (
             <Badge variant="success">Resolved</Badge>
           )}
+          {feedback.status === FeedbackStatus.CLOSED && (
+            <Badge variant="secondary">Closed</Badge>
+          )}
         </div>
 
         {/* Upvote Button */}

@@ -99,6 +99,7 @@ export class FeedbackService {
         .find(filter)
         .populate('userId', 'firstName lastName email avatar')
         .populate('resolvedBy', 'firstName lastName email')
+        .populate('closedBy', 'firstName lastName email')
         .sort(sort)
         .skip(skip)
         .limit(limit)
@@ -120,6 +121,7 @@ export class FeedbackService {
       .findById(id)
       .populate('userId', 'firstName lastName email avatar')
       .populate('resolvedBy', 'firstName lastName email')
+      .populate('closedBy', 'firstName lastName email')
       .exec();
 
     if (!feedback) {
@@ -374,6 +376,53 @@ export class FeedbackService {
           feedback.title,
           oldStatus,
           FeedbackStatus.TO_TEST,
+          adminUserId,
+        );
+      }
+    } catch (error) {
+      console.error('[NOTIFICATION] Error notifying feedback status changed:', error);
+    }
+
+    return this.findOne(id);
+  }
+
+  async close(id: string, adminUserId: string): Promise<FeedbackDocument> {
+    const feedback = await this.feedbackModel.findById(id).exec();
+
+    if (!feedback) {
+      throw new NotFoundException('Feedback not found');
+    }
+
+    if (feedback.status === FeedbackStatus.CLOSED) {
+      throw new BadRequestException('Feedback is already closed');
+    }
+
+    const oldStatus = feedback.status;
+    feedback.status = FeedbackStatus.CLOSED;
+    feedback.closedAt = new Date();
+    feedback.closedBy = new Types.ObjectId(adminUserId);
+
+    await feedback.save();
+
+    // Log activity
+    await this.activitiesService.logActivity(
+      adminUserId,
+      ActionType.UPDATED,
+      EntityType.FEEDBACK,
+      feedback._id.toString(),
+      feedback.title,
+    );
+
+    // Notify feedback author about status change
+    try {
+      const feedbackAuthorId = feedback.userId.toString();
+      if (feedbackAuthorId !== adminUserId) {
+        await this.notificationsService.notifyFeedbackStatusChanged(
+          feedbackAuthorId,
+          feedback._id.toString(),
+          feedback.title,
+          oldStatus,
+          FeedbackStatus.CLOSED,
           adminUserId,
         );
       }

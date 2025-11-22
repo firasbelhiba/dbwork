@@ -11,6 +11,7 @@ export enum FeedbackStatus {
   OPEN = 'open',
   TO_TEST = 'to_test',
   RESOLVED = 'resolved',
+  CLOSED = 'closed',
 }
 
 export interface Feedback {
@@ -26,6 +27,8 @@ export interface Feedback {
   browserInfo?: string;
   resolvedAt?: string;
   resolvedBy?: User;
+  closedAt?: string;
+  closedBy?: User;
   createdAt: string;
   updatedAt: string;
 }

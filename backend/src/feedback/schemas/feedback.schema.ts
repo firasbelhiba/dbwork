@@ -47,6 +47,12 @@ export class Feedback {
   @Prop({ type: Types.ObjectId, ref: 'User', default: null })
   resolvedBy: Types.ObjectId;
 
+  @Prop({ default: null })
+  closedAt: Date;
+
+  @Prop({ type: Types.ObjectId, ref: 'User', default: null })
+  closedBy: Types.ObjectId;
+
   createdAt: Date;
   updatedAt: Date;
 }

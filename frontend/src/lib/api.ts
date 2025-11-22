@@ -267,6 +267,7 @@ export const feedbackAPI = {
   resolve: (id: string) => api.patch(`/feedback/${id}/resolve`),
   reopen: (id: string) => api.patch(`/feedback/${id}/reopen`),
   toTest: (id: string) => api.patch(`/feedback/${id}/to-test`),
+  close: (id: string) => api.patch(`/feedback/${id}/close`),
   getStats: () => api.get('/feedback/stats'),
   // Comments
   getComments: (feedbackId: string) => api.get(`/feedback/${feedbackId}/comments`),

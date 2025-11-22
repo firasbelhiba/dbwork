@@ -117,6 +117,16 @@ export class FeedbackController {
     return this.feedbackService.toTest(id, user._id);
   }
 
+  @Patch(':id/close')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Close feedback (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Feedback closed' })
+  @ApiResponse({ status: 403, description: 'Forbidden - admin only' })
+  @ApiResponse({ status: 404, description: 'Feedback not found' })
+  close(@Param('id') id: string, @CurrentUser() user) {
+    return this.feedbackService.close(id, user._id);
+  }
+
   // Comment routes
   @Post(':id/comments')
   @ApiOperation({ summary: 'Add a comment to feedback' })

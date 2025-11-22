@@ -100,6 +100,21 @@ export default function FeedbackDetailPage() {
     }
   };
 
+  const handleClose = async () => {
+    if (!feedback) return;
+    try {
+      setActionLoading(true);
+      const response = await feedbackAPI.close(feedback._id);
+      setFeedback(response.data);
+      toast.success('Feedback closed');
+    } catch (error: any) {
+      console.error('Error closing feedback:', error);
+      toast.error(error.response?.data?.message || 'Failed to close feedback');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleDelete = async () => {
     if (!feedback) return;
     if (!confirm('Are you sure you want to delete this feedback?')) return;
@@ -154,6 +169,8 @@ export default function FeedbackDetailPage() {
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
       case FeedbackStatus.RESOLVED:
         return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+      case FeedbackStatus.CLOSED:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
     }
@@ -214,7 +231,10 @@ export default function FeedbackDetailPage() {
                   {getTypeLabel(feedback.type)}
                 </span>
                 <span className={`text-sm font-medium px-2.5 py-0.5 rounded-full ${getStatusColor(feedback.status)}`}>
-                  {feedback.status === FeedbackStatus.OPEN ? 'Open' : feedback.status === FeedbackStatus.TO_TEST ? 'To Test' : 'Resolved'}
+                  {feedback.status === FeedbackStatus.OPEN ? 'Open' :
+                   feedback.status === FeedbackStatus.TO_TEST ? 'To Test' :
+                   feedback.status === FeedbackStatus.RESOLVED ? 'Resolved' :
+                   'Closed'}
                 </span>
               </div>
 
@@ -361,6 +381,43 @@ export default function FeedbackDetailPage() {
           </div>
         )}
 
+        {/* Closed Information */}
+        {feedback.status === FeedbackStatus.CLOSED && feedback.closedBy && (
+          <div className="bg-gray-50 dark:bg-gray-900/20 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <div className="flex items-start gap-3">
+              <svg
+                className="w-6 h-6 text-gray-600 dark:text-gray-400 flex-shrink-0 mt-0.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                  Closed
+                </h3>
+                <p className="text-sm text-gray-800 dark:text-gray-300">
+                  This feedback was closed by{' '}
+                  <span className="font-medium">
+                    {typeof feedback.closedBy === 'object'
+                      ? `${feedback.closedBy.firstName} ${feedback.closedBy.lastName}`
+                      : 'Admin'}
+                  </span>
+                  {feedback.closedAt && (
+                    <span> on {new Date(feedback.closedAt).toLocaleDateString()}</span>
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Actions */}
         <div className="flex items-center justify-between gap-4">
           <Button variant="outline" onClick={() => router.push('/feedback')}>
@@ -400,6 +457,14 @@ export default function FeedbackDetailPage() {
                     <Button onClick={handleResolve} disabled={actionLoading}>
                       {actionLoading ? 'Resolving...' : 'Mark as Resolved'}
                     </Button>
+                    <Button
+                      variant="outline"
+                      onClick={handleClose}
+                      disabled={actionLoading}
+                      className="text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/20"
+                    >
+                      {actionLoading ? 'Closing...' : 'Close'}
+                    </Button>
                   </>
                 )}
                 {feedback.status === FeedbackStatus.TO_TEST && (
@@ -410,9 +475,22 @@ export default function FeedbackDetailPage() {
                     <Button onClick={handleResolve} disabled={actionLoading}>
                       {actionLoading ? 'Resolving...' : 'Mark as Resolved'}
                     </Button>
+                    <Button
+                      variant="outline"
+                      onClick={handleClose}
+                      disabled={actionLoading}
+                      className="text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/20"
+                    >
+                      {actionLoading ? 'Closing...' : 'Close'}
+                    </Button>
                   </>
                 )}
                 {feedback.status === FeedbackStatus.RESOLVED && (
+                  <Button variant="outline" onClick={handleReopen} disabled={actionLoading}>
+                    {actionLoading ? 'Reopening...' : 'Reopen'}
+                  </Button>
+                )}
+                {feedback.status === FeedbackStatus.CLOSED && (
                   <Button variant="outline" onClick={handleReopen} disabled={actionLoading}>
                     {actionLoading ? 'Reopening...' : 'Reopen'}
                   </Button>
