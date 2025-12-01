@@ -259,12 +259,24 @@ export class IssuesService {
     const originalIssue = await this.issueModel.findById(id);
 
     // Convert assignees to ObjectIds if present
-    const updateData = {
+    const updateData: any = {
       ...updateIssueDto,
       ...(updateIssueDto.assignees && {
         assignees: updateIssueDto.assignees.map(id => new Types.ObjectId(id))
       })
     };
+
+    // Handle completedAt timestamp based on status change
+    if (updateIssueDto.status !== undefined && originalIssue) {
+      const isBecomingDone = updateIssueDto.status === 'done' && originalIssue.status !== 'done';
+      const isLeavingDone = updateIssueDto.status !== 'done' && originalIssue.status === 'done';
+
+      if (isBecomingDone) {
+        updateData.completedAt = new Date();
+      } else if (isLeavingDone) {
+        updateData.completedAt = null;
+      }
+    }
 
     const issue = await this.issueModel
       .findByIdAndUpdate(id, updateData, { new: true })

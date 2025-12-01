@@ -91,6 +91,9 @@ export class Issue {
   @Prop({ default: null })
   archivedAt: Date;
 
+  @Prop({ default: null })
+  completedAt: Date;
+
   // Timestamps (automatically added by MongoDB with { timestamps: true })
   createdAt?: Date;
   updatedAt?: Date;
@@ -113,6 +116,7 @@ IssueSchema.index({ createdAt: -1 });
 IssueSchema.index({ updatedAt: -1 });
 IssueSchema.index({ parentIssue: 1 });
 IssueSchema.index({ isArchived: 1 });
+IssueSchema.index({ completedAt: -1 });
 
 // Text index for search
 IssueSchema.index({ title: 'text', description: 'text', key: 'text' });

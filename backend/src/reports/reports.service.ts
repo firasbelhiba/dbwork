@@ -377,6 +377,7 @@ export class ReportsService {
         byType: [],
         byPriority: [],
         creationTrend: [],
+        completionTrend: [],
         dateRange: {
           start: startDate ? startDate.toISOString() : null,
           end: new Date().toISOString(),
@@ -532,6 +533,70 @@ export class ReportsService {
       }
     }
 
+    // Generate completion trend (issues completed by date)
+    const completedIssuesByDate: Record<string, number> = {};
+    issues.forEach((issue: any) => {
+      const category = getStatusCategory(issue.status);
+      if (category === 'completed') {
+        // Use completedAt if available, otherwise fall back to updatedAt
+        const completionDate = issue.completedAt || issue.updatedAt;
+        if (completionDate) {
+          const date = new Date(completionDate).toISOString().split('T')[0];
+          completedIssuesByDate[date] = (completedIssuesByDate[date] || 0) + 1;
+        }
+      }
+    });
+
+    const completionTrend: any[] = [];
+    let completedCumulative = 0;
+
+    if (aggregateByWeek) {
+      // Aggregate by week for completion trend
+      const weeklyCompletionData: Record<string, { count: number; weekStart: string }> = {};
+
+      for (let d = new Date(trendStartDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        const dateStr = d.toISOString().split('T')[0];
+        const count = completedIssuesByDate[dateStr] || 0;
+
+        // Get week start (Monday)
+        const weekStart = new Date(d);
+        const day = weekStart.getDay();
+        const diff = weekStart.getDate() - day + (day === 0 ? -6 : 1);
+        weekStart.setDate(diff);
+        const weekKey = weekStart.toISOString().split('T')[0];
+
+        if (!weeklyCompletionData[weekKey]) {
+          weeklyCompletionData[weekKey] = { count: 0, weekStart: weekKey };
+        }
+        weeklyCompletionData[weekKey].count += count;
+      }
+
+      // Convert to array with cumulative
+      Object.values(weeklyCompletionData)
+        .sort((a, b) => a.weekStart.localeCompare(b.weekStart))
+        .forEach((week) => {
+          completedCumulative += week.count;
+          completionTrend.push({
+            date: week.weekStart,
+            count: week.count,
+            cumulative: completedCumulative,
+          });
+        });
+    } else {
+      // Daily aggregation for completion trend
+      for (let d = new Date(trendStartDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        const dateStr = d.toISOString().split('T')[0];
+        const count = completedIssuesByDate[dateStr] || 0;
+        completedCumulative += count;
+
+        completionTrend.push({
+          date: dateStr,
+          count,
+          cumulative: completedCumulative,
+        });
+      }
+    }
+
     return {
       summary: {
         total,
@@ -544,6 +609,7 @@ export class ReportsService {
       byType,
       byPriority,
       creationTrend,
+      completionTrend,
       dateRange: {
         start: trendStartDate.toISOString(),
         end: endDate.toISOString(),

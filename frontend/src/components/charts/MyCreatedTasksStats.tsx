@@ -13,6 +13,8 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
+  BarChart,
+  Bar,
 } from 'recharts';
 import { reportsAPI } from '@/lib/api';
 import { Select } from '@/components/common';
@@ -29,6 +31,7 @@ interface MyCreatedTasksStatsData {
   byType: Array<{ type: string; count: number; color: string }>;
   byPriority: Array<{ priority: string; count: number; color: string }>;
   creationTrend: Array<{ date: string; count: number; cumulative: number }>;
+  completionTrend: Array<{ date: string; count: number; cumulative: number }>;
   dateRange: { start: string; end: string };
 }
 
@@ -39,11 +42,19 @@ const TIME_RANGE_OPTIONS = [
   { value: 'all', label: 'All time' },
 ];
 
+const CHART_SLIDES = [
+  { id: 'created', title: 'Created by Day' },
+  { id: 'completed', title: 'Completed by Day' },
+  { id: 'type', title: 'By Type' },
+  { id: 'priority', title: 'By Priority' },
+];
+
 export const MyCreatedTasksStats: React.FC = () => {
   const [data, setData] = useState<MyCreatedTasksStatsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState('all');
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
     fetchData();
@@ -71,6 +82,14 @@ export const MyCreatedTasksStats: React.FC = () => {
     if (!data?.dateRange?.start) return '';
     const start = new Date(data.dateRange.start);
     return `since ${start.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`;
+  };
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % CHART_SLIDES.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + CHART_SLIDES.length) % CHART_SLIDES.length);
   };
 
   if (loading) {
@@ -155,11 +174,171 @@ export const MyCreatedTasksStats: React.FC = () => {
     { name: 'To Do', value: data.summary.todo, color: '#6B7280' },
   ].filter((d) => d.value > 0);
 
-  // Format trend data for chart
-  const trendData = data.creationTrend.map((item) => ({
+  // Format trend data for charts
+  const creationTrendData = data.creationTrend.map((item) => ({
     ...item,
     date: formatDate(item.date),
   }));
+
+  const completionTrendData = (data.completionTrend || []).map((item) => ({
+    ...item,
+    date: formatDate(item.date),
+  }));
+
+  // Format type data for bar chart
+  const typeData = data.byType.map((item) => ({
+    name: item.type.charAt(0).toUpperCase() + item.type.slice(1),
+    count: item.count,
+    fill: item.color,
+  }));
+
+  // Format priority data for bar chart
+  const priorityData = data.byPriority.map((item) => ({
+    name: item.priority.charAt(0).toUpperCase() + item.priority.slice(1),
+    count: item.count,
+    fill: item.color,
+  }));
+
+  const renderChart = () => {
+    switch (CHART_SLIDES[currentSlide].id) {
+      case 'created':
+        return creationTrendData.length > 0 ? (
+          <ResponsiveContainer width="100%" height={200}>
+            <AreaChart data={creationTrendData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+              <defs>
+                <linearGradient id="colorCreated" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.1} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" className="dark:stroke-gray-600" />
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 10 }}
+                interval="preserveStartEnd"
+                className="dark:fill-gray-400"
+              />
+              <YAxis tick={{ fontSize: 10 }} className="dark:fill-gray-400" />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                }}
+              />
+              <Area
+                type="monotone"
+                dataKey="cumulative"
+                stroke="#3B82F6"
+                fill="url(#colorCreated)"
+                name="Total Created"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="h-48 flex items-center justify-center text-gray-500 dark:text-gray-400 text-sm">
+            No data available
+          </div>
+        );
+
+      case 'completed':
+        return completionTrendData.length > 0 ? (
+          <ResponsiveContainer width="100%" height={200}>
+            <AreaChart data={completionTrendData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+              <defs>
+                <linearGradient id="colorCompleted" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#22C55E" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#22C55E" stopOpacity={0.1} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" className="dark:stroke-gray-600" />
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 10 }}
+                interval="preserveStartEnd"
+                className="dark:fill-gray-400"
+              />
+              <YAxis tick={{ fontSize: 10 }} className="dark:fill-gray-400" />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                }}
+              />
+              <Area
+                type="monotone"
+                dataKey="cumulative"
+                stroke="#22C55E"
+                fill="url(#colorCompleted)"
+                name="Total Completed"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="h-48 flex items-center justify-center text-gray-500 dark:text-gray-400 text-sm">
+            No completed tasks yet
+          </div>
+        );
+
+      case 'type':
+        return typeData.length > 0 ? (
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={typeData} layout="vertical" margin={{ top: 5, right: 20, left: 50, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" className="dark:stroke-gray-600" />
+              <XAxis type="number" tick={{ fontSize: 10 }} className="dark:fill-gray-400" />
+              <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} className="dark:fill-gray-400" width={45} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                }}
+              />
+              <Bar dataKey="count" name="Tasks" radius={[0, 4, 4, 0]}>
+                {typeData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.fill} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="h-48 flex items-center justify-center text-gray-500 dark:text-gray-400 text-sm">
+            No type data available
+          </div>
+        );
+
+      case 'priority':
+        return priorityData.length > 0 ? (
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={priorityData} layout="vertical" margin={{ top: 5, right: 20, left: 50, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" className="dark:stroke-gray-600" />
+              <XAxis type="number" tick={{ fontSize: 10 }} className="dark:fill-gray-400" />
+              <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} className="dark:fill-gray-400" width={45} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                }}
+              />
+              <Bar dataKey="count" name="Tasks" radius={[0, 4, 4, 0]}>
+                {priorityData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.fill} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="h-48 flex items-center justify-center text-gray-500 dark:text-gray-400 text-sm">
+            No priority data available
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="bg-white dark:bg-dark-400 rounded-lg shadow-sm border border-gray-200 dark:border-dark-300 p-4 md:p-6 transition-colors">
@@ -338,49 +517,53 @@ export const MyCreatedTasksStats: React.FC = () => {
           </div>
         </div>
 
-        {/* Creation Trend Chart */}
+        {/* Chart Carousel */}
         <div className="bg-gray-50 dark:bg-dark-300 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
-            Creation Trend
-          </h3>
-          {trendData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={200}>
-              <AreaChart data={trendData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                <defs>
-                  <linearGradient id="colorCreated" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.1} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" className="dark:stroke-gray-600" />
-                <XAxis
-                  dataKey="date"
-                  tick={{ fontSize: 10 }}
-                  interval="preserveStartEnd"
-                  className="dark:fill-gray-400"
-                />
-                <YAxis tick={{ fontSize: 10 }} className="dark:fill-gray-400" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="cumulative"
-                  stroke="#3B82F6"
-                  fill="url(#colorCreated)"
-                  name="Total Tasks"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="h-48 flex items-center justify-center text-gray-500 dark:text-gray-400 text-sm">
-              No trend data available
-            </div>
-          )}
+          {/* Carousel Header with Navigation */}
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={prevSlide}
+              className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-dark-200 transition-colors"
+              aria-label="Previous chart"
+            >
+              <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              {CHART_SLIDES[currentSlide].title}
+            </h3>
+            <button
+              onClick={nextSlide}
+              className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-dark-200 transition-colors"
+              aria-label="Next chart"
+            >
+              <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Chart Content */}
+          <div className="transition-opacity duration-300">
+            {renderChart()}
+          </div>
+
+          {/* Dot Indicators */}
+          <div className="flex justify-center gap-2 mt-4">
+            {CHART_SLIDES.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentSlide(index)}
+                className={`w-2 h-2 rounded-full transition-colors ${
+                  index === currentSlide
+                    ? 'bg-primary-500'
+                    : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
+                }`}
+                aria-label={`Go to chart ${index + 1}`}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </div>
