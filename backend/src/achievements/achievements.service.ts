@@ -128,13 +128,6 @@ export class AchievementsService {
     for (const achievement of taskAchievements) {
       const criteria = achievement.criteria;
 
-      // Skip sprint and daily achievements for now (we'll handle those separately)
-      if (
-        criteria.type === 'sprint_completion' ||
-        criteria.type === 'daily_completion'
-      ) {
-        continue;
-      }
 
       if (criteria.type === 'issue_completion' && criteria.count) {
         if (issuesCompleted >= criteria.count) {
@@ -153,9 +146,6 @@ export class AchievementsService {
         }
       }
     }
-
-    // Check Marathon Runner (5 issues in one day)
-    await this.checkMarathonRunner(userId);
 
     // Check streak achievements
     const streakAchievements = await this.checkStreakAchievements(userId);
@@ -267,17 +257,6 @@ export class AchievementsService {
     }
 
     return unlockedAchievements;
-  }
-
-  // Check Marathon Runner achievement (5 issues completed today)
-  private async checkMarathonRunner(userId: string): Promise<void> {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    // Count issues completed today (we'd need to track this in activities or issues)
-    // For now, we'll add this logic later when we have completion timestamps
   }
 
   // Unlock an achievement for a user (can be called manually or automatically)
@@ -489,43 +468,6 @@ export class AchievementsService {
     return unlockedAchievements;
   }
 
-  // Check helpful hand achievement when issue is completed with non-assignee contributors
-  async checkHelpfulHandAchievements(
-    userId: string,
-    issueId: string,
-  ): Promise<UserAchievementDocument[]> {
-    const unlockedAchievements: UserAchievementDocument[] = [];
-    const user = await this.userModel.findById(userId).exec();
-    if (!user) return unlockedAchievements;
-
-    // Track issues where user helped (but wasn't assigned)
-    const issueObjectId = new Types.ObjectId(issueId);
-    if (!user.helpedIssues) {
-      user.helpedIssues = [];
-    }
-
-    const alreadyHelped = user.helpedIssues.some(
-      (helpedIssue) => helpedIssue.toString() === issueObjectId.toString()
-    );
-
-    if (!alreadyHelped) {
-      user.helpedIssues.push(issueObjectId);
-      user.stats.helpedOthersIssues = user.helpedIssues.length;
-      await user.save();
-    }
-
-    // Check Helpful Hand achievement (helped with 5 issues)
-    const helpfulHandAchievement = await this.achievementModel
-      .findOne({ key: 'helpful_hand' })
-      .exec();
-    if (helpfulHandAchievement && user.stats.helpedOthersIssues >= 5) {
-      const unlocked = await this.unlockAchievement(userId, helpfulHandAchievement._id.toString());
-      if (unlocked) unlockedAchievements.push(unlocked);
-    }
-
-    return unlockedAchievements;
-  }
-
   // Get achievement by key
   async getAchievementByKey(key: string) {
     return this.achievementModel.findOne({ key }).exec();
@@ -607,7 +549,6 @@ export class AchievementsService {
           'stats.totalPoints': 0,
           'stats.commentsPosted': 0,
           'stats.uniqueIssuesCommented': 0,
-          'stats.helpedOthersIssues': 0,
           'stats.mentionsReceived': 0,
           'stats.projectsAssigned': 0,
           'stats.currentStreak': 0,
@@ -615,7 +556,6 @@ export class AchievementsService {
           'stats.lastActivityDate': null,
           completedIssuesForAchievements: [],
           commentedIssues: [],
-          helpedIssues: [],
         },
       })
       .exec();

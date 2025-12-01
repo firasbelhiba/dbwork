@@ -81,33 +81,6 @@ const achievements = [
     },
     points: 500,
   },
-  {
-    key: 'sprint_finisher',
-    name: 'Sprint Finisher',
-    description: 'Complete all assigned issues in a sprint',
-    category: 'task_completion',
-    icon: '🏁',
-    rarity: 'rare',
-    criteria: {
-      type: 'sprint_completion',
-      count: 1,
-    },
-    points: 75,
-  },
-  {
-    key: 'marathon_runner',
-    name: 'Marathon Runner',
-    description: 'Complete 5 issues in a single day',
-    category: 'task_completion',
-    icon: '🏃',
-    rarity: 'epic',
-    criteria: {
-      type: 'daily_completion',
-      count: 5,
-      timeframe: '1day',
-    },
-    points: 150,
-  },
   // Collaboration & Teamwork
   {
     key: 'team_player',
@@ -134,19 +107,6 @@ const achievements = [
       count: 25,
     },
     points: 50,
-  },
-  {
-    key: 'helpful_hand',
-    name: 'Helpful Hand',
-    description: 'Help resolve 5 issues assigned to others',
-    category: 'collaboration',
-    icon: '🤲',
-    rarity: 'rare',
-    criteria: {
-      type: 'helped_others_issues',
-      count: 5,
-    },
-    points: 75,
   },
   {
     key: 'mentor',
