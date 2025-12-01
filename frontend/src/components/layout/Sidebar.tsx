@@ -75,12 +75,24 @@ const reportsNavItem: NavItem = {
   ),
 };
 
-export const Sidebar: React.FC = () => {
+interface SidebarProps {
+  onClose?: () => void;
+  isMobile?: boolean;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) => {
   const pathname = usePathname();
   const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [collapsed, setCollapsed] = useState(false);
   const [showChangelogModal, setShowChangelogModal] = useState(false);
+
+  // Handle link clicks on mobile - close the drawer
+  const handleLinkClick = () => {
+    if (isMobile && onClose) {
+      onClose();
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -100,32 +112,52 @@ export const Sidebar: React.FC = () => {
     }
   };
 
+  // On mobile, always show expanded
+  const isCollapsed = isMobile ? false : collapsed;
+
   return (
     <aside
       className={cn(
-        'bg-white dark:bg-dark-500 border-r border-gray-200 dark:border-dark-400 flex flex-col transition-all duration-300',
-        collapsed ? 'w-16' : 'w-64'
+        'bg-white dark:bg-dark-500 border-r border-gray-200 dark:border-dark-400 flex flex-col transition-all duration-300 h-full',
+        isCollapsed ? 'w-16' : 'w-64',
+        isMobile && 'w-full'
       )}
     >
-      {/* Toggle button */}
-      <button
-        onClick={() => setCollapsed(!collapsed)}
-        className="p-4 hover:bg-gray-50 dark:hover:bg-dark-400 transition-colors border-b border-gray-200 dark:border-dark-400"
-      >
-        <svg
-          className={cn('w-5 h-5 text-gray-600 dark:text-gray-400 transition-transform', collapsed && 'rotate-180')}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
+      {/* Mobile header with close button */}
+      {isMobile ? (
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-dark-400">
+          <span className="font-semibold text-gray-900 dark:text-white">Menu</span>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors"
+            aria-label="Close menu"
+          >
+            <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      ) : (
+        /* Desktop toggle button */
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="p-4 hover:bg-gray-50 dark:hover:bg-dark-400 transition-colors border-b border-gray-200 dark:border-dark-400"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
-          />
-        </svg>
-      </button>
+          <svg
+            className={cn('w-5 h-5 text-gray-600 dark:text-gray-400 transition-transform', collapsed && 'rotate-180')}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
+            />
+          </svg>
+        </button>
+      )}
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4">
@@ -137,16 +169,17 @@ export const Sidebar: React.FC = () => {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={handleLinkClick}
                 className={cn(
                   'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
                   isActive
                     ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-400 hover:text-gray-900 dark:hover:text-gray-100'
                 )}
-                title={collapsed ? item.name : undefined}
+                title={isCollapsed ? item.name : undefined}
               >
                 {item.icon}
-                {!collapsed && <span>{item.name}</span>}
+                {!isCollapsed && <span>{item.name}</span>}
               </Link>
             );
           })}
@@ -155,16 +188,17 @@ export const Sidebar: React.FC = () => {
           {user?.role === UserRole.ADMIN && (
             <Link
               href={reportsNavItem.href}
+              onClick={handleLinkClick}
               className={cn(
                 'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
                 pathname === reportsNavItem.href || pathname.startsWith(reportsNavItem.href + '/')
                   ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
                   : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-400 hover:text-gray-900 dark:hover:text-gray-100'
               )}
-              title={collapsed ? reportsNavItem.name : undefined}
+              title={isCollapsed ? reportsNavItem.name : undefined}
             >
               {reportsNavItem.icon}
-              {!collapsed && <span>{reportsNavItem.name}</span>}
+              {!isCollapsed && <span>{reportsNavItem.name}</span>}
             </Link>
           )}
 
@@ -172,18 +206,19 @@ export const Sidebar: React.FC = () => {
           {user?.role === UserRole.ADMIN && (
             <Link
               href="/users"
+              onClick={handleLinkClick}
               className={cn(
                 'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
                 pathname === '/users' || pathname.startsWith('/users/')
                   ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
                   : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-400 hover:text-gray-900 dark:hover:text-gray-100'
               )}
-              title={collapsed ? 'Users' : undefined}
+              title={isCollapsed ? 'Users' : undefined}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
-              {!collapsed && <span>Users</span>}
+              {!isCollapsed && <span>Users</span>}
             </Link>
           )}
 
@@ -191,25 +226,26 @@ export const Sidebar: React.FC = () => {
           {user?.role === UserRole.ADMIN && (
             <Link
               href="/admin/activity"
+              onClick={handleLinkClick}
               className={cn(
                 'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
                 pathname === '/admin/activity' || pathname.startsWith('/admin/activity/')
                   ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
                   : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-400 hover:text-gray-900 dark:hover:text-gray-100'
               )}
-              title={collapsed ? 'Activities' : undefined}
+              title={isCollapsed ? 'Activities' : undefined}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              {!collapsed && <span>Activities</span>}
+              {!isCollapsed && <span>Activities</span>}
             </Link>
           )}
 
         </div>
 
         {/* Projects section */}
-        {!collapsed && (
+        {!isCollapsed && (
           <div className="mt-6">
             <div className="px-6 mb-2">
               <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -223,6 +259,7 @@ export const Sidebar: React.FC = () => {
                   <Link
                     key={project._id}
                     href={`/projects/${project._id}`}
+                    onClick={handleLinkClick}
                     className={cn(
                       'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
                       isActive
@@ -242,6 +279,7 @@ export const Sidebar: React.FC = () => {
               {projects.length > 5 && (
                 <Link
                   href="/projects"
+                  onClick={handleLinkClick}
                   className="block px-3 py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 >
                   View all projects
@@ -256,16 +294,17 @@ export const Sidebar: React.FC = () => {
       <div className="border-t border-gray-200 dark:border-dark-400 p-3 space-y-1">
         <Link
           href={feedbackNavItem.href}
+          onClick={handleLinkClick}
           className={cn(
             'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
             pathname === feedbackNavItem.href || pathname.startsWith(feedbackNavItem.href + '/')
               ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
               : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-400 hover:text-gray-900 dark:hover:text-gray-100'
           )}
-          title={collapsed ? feedbackNavItem.name : undefined}
+          title={isCollapsed ? feedbackNavItem.name : undefined}
         >
           {feedbackNavItem.icon}
-          {!collapsed && <span>{feedbackNavItem.name}</span>}
+          {!isCollapsed && <span>{feedbackNavItem.name}</span>}
         </Link>
 
         <button
@@ -274,16 +313,16 @@ export const Sidebar: React.FC = () => {
             'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
             'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-400 hover:text-gray-900 dark:hover:text-gray-100'
           )}
-          title={collapsed ? 'Changelog' : undefined}
+          title={isCollapsed ? 'Changelog' : undefined}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          {!collapsed && <span>What's New</span>}
+          {!isCollapsed && <span>What's New</span>}
         </button>
 
         {/* Version Display */}
-        {!collapsed && (
+        {!isCollapsed && (
           <div className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400 text-center">
             Version 1.1.0
           </div>

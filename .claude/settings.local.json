@@ -3,7 +3,12 @@
     "allow": [
       "Bash(git rm:*)",
       "Bash(git log:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(npm run build:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: Add admin database export feature with UI\n\n- Create admin module with database export service (read-only operations)\n- Add endpoints: GET /admin/stats, GET /admin/export/database, GET /admin/export/collection/:name\n- Add admin API calls to frontend\n- Add Admin Settings section to profile page (visible only to admins)\n- Show database statistics and collection details\n- Export button downloads complete database as JSON backup\n- Sensitive data (passwords, tokens) sanitized from exports\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: Add mobile responsiveness across the application\n\n- Update DashboardLayout with mobile overlay drawer navigation\n- Add hamburger menu and responsive controls to Header\n- Make Sidebar mobile-friendly with close button and auto-close on nav\n- Add responsive padding, typography, and grids to Dashboard, Projects, Issues, Profile pages\n- Update Modal with full-width on mobile and stacked footer buttons\n- Increase touch targets for Input and Select components (h-11 on mobile)\n- Add snap scrolling and horizontal scroll to Kanban board for mobile\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []

@@ -165,7 +165,7 @@ export default function IssuesPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-8">
+      <div className="p-4 md:p-6 lg:p-8">
         <Breadcrumb
           items={[
             {
@@ -186,15 +186,15 @@ export default function IssuesPage() {
               ),
             },
           ]}
-          className="mb-6"
+          className="mb-4 md:mb-6"
         />
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-6 md:mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Issues</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">Browse and manage all issues</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">Issues</h1>
+            <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1">Browse and manage all issues</p>
           </div>
-          <Button onClick={() => router.push('/issues/new')}>
+          <Button onClick={() => router.push('/issues/new')} className="w-full sm:w-auto">
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
@@ -203,10 +203,10 @@ export default function IssuesPage() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 md:p-6 mb-4 md:mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
             {/* Search */}
-            <div className="lg:col-span-3">
+            <div className="sm:col-span-2 lg:col-span-3">
               <Input
                 placeholder="Search issues..."
                 value={searchQuery}
@@ -399,15 +399,16 @@ export default function IssuesPage() {
             </Select>
           </div>
 
-          <div className="flex items-center justify-between mt-4">
-            <Button variant="ghost" size="sm" onClick={clearFilters}>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mt-4">
+            <Button variant="ghost" size="sm" onClick={clearFilters} className="w-full sm:w-auto">
               Clear Filters
             </Button>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
               <Button
                 variant={viewMode === 'list' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('list')}
+                className="flex-1 sm:flex-none"
               >
                 List
               </Button>
@@ -415,6 +416,7 @@ export default function IssuesPage() {
                 variant={viewMode === 'board' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('board')}
+                className="flex-1 sm:flex-none"
               >
                 Board
               </Button>
@@ -430,12 +432,12 @@ export default function IssuesPage() {
         ) : viewMode === 'list' ? (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
             {issues.length === 0 ? (
-              <div className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
-                <svg className="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="px-4 md:px-6 py-8 md:py-12 text-center text-gray-500 dark:text-gray-400">
+                <svg className="w-12 h-12 md:w-16 md:h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                <p className="text-lg font-medium dark:text-gray-100">No issues found</p>
-                <p className="text-sm mt-1 dark:text-gray-400">Try adjusting your filters or create a new issue</p>
+                <p className="text-base md:text-lg font-medium dark:text-gray-100">No issues found</p>
+                <p className="text-xs md:text-sm mt-1 dark:text-gray-400">Try adjusting your filters or create a new issue</p>
               </div>
             ) : (
               <div className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -443,22 +445,22 @@ export default function IssuesPage() {
                   <Link
                     key={issue._id}
                     href={`/issues/${issue._id}`}
-                    className="block px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                    className="block px-4 md:px-6 py-3 md:py-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                   >
-                    <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start justify-between gap-2 md:gap-4">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center gap-1 md:gap-2 mb-2 flex-wrap">
                           <Badge variant={issue.type as any}>{issue.type}</Badge>
                           <Badge variant={issue.priority as any}>{issue.priority}</Badge>
                           <span className="text-xs text-gray-500 dark:text-gray-400">{issue.key}</span>
                         </div>
-                        <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
+                        <h3 className="text-xs md:text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
                           {issue.title}
                         </h3>
-                        <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-                          <span>{getProjectName(issue.projectId)}</span>
-                          <span>•</span>
-                          <span>{getAssigneesNames(issue.assignees)}</span>
+                        <div className="flex items-center gap-2 md:gap-4 text-xs text-gray-500 dark:text-gray-400 flex-wrap">
+                          <span className="truncate max-w-[120px] md:max-w-none">{getProjectName(issue.projectId)}</span>
+                          <span className="hidden sm:inline">•</span>
+                          <span className="truncate max-w-[120px] md:max-w-none">{getAssigneesNames(issue.assignees)}</span>
                         </div>
                       </div>
                       <Badge variant={issue.status as any} dot>
@@ -477,12 +479,12 @@ export default function IssuesPage() {
             zoomLevel={zoomLevel}
           />
         ) : (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 text-center">
-            <svg className="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 md:p-8 text-center">
+            <svg className="w-12 h-12 md:w-16 md:h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
             </svg>
-            <p className="text-lg font-medium text-gray-900 dark:text-gray-100">Select a Project</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Choose a project from the filter above to view the board</p>
+            <p className="text-base md:text-lg font-medium text-gray-900 dark:text-gray-100">Select a Project</p>
+            <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1">Choose a project from the filter above to view the board</p>
           </div>
         )}
       </div>

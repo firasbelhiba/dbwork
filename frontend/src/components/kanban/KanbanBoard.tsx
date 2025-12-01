@@ -302,7 +302,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
   }
 
   return (
-    <div>
+    <div className="-mx-4 md:mx-0">
       <DndContext
           sensors={sensors}
           onDragStart={handleDragStart}
@@ -311,10 +311,11 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
         >
           <SortableContext items={columns.map((col) => col.id)} strategy={horizontalListSortingStrategy}>
             <div
-              className="flex gap-4 overflow-x-auto pb-4 transition-transform origin-top-left"
+              className="flex gap-3 md:gap-4 overflow-x-auto pb-4 px-4 md:px-0 snap-x snap-mandatory md:snap-none transition-transform origin-top-left scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent"
               style={{
                 transform: `scale(${zoomLevel / 100})`,
-                transformOrigin: 'top left'
+                transformOrigin: 'top left',
+                WebkitOverflowScrolling: 'touch'
               }}
             >
               {columns.map((column) => (

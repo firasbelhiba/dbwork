@@ -91,7 +91,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, color, is
   // Debug log to see what color is being used
 
   return (
-    <div className="flex-shrink-0 w-80">
+    <div className="flex-shrink-0 w-72 md:w-80 snap-center md:snap-align-none">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         {/* Column Header with Color */}
         <div
@@ -137,7 +137,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, color, is
 
         {/* Issues List */}
         <SortableContext items={issues.map((i) => i._id)} strategy={verticalListSortingStrategy}>
-          <div ref={setNodeRef} className="space-y-3 min-h-[400px] p-4" style={{ minHeight: '400px' }}>
+          <div ref={setNodeRef} className="space-y-2 md:space-y-3 min-h-[300px] md:min-h-[400px] p-3 md:p-4" style={{ minHeight: 'min(300px, 400px)' }}>
             {issues.length === 0 ? (
               <div className="text-center py-8 text-gray-400 dark:text-gray-500 text-sm">
                 Drop issues here

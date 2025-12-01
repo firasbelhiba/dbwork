@@ -224,7 +224,7 @@ export default function ProfilePage() {
 
   return (
     <DashboardLayout>
-      <div className="p-8 max-w-4xl mx-auto">
+      <div className="p-4 md:p-6 lg:p-8 max-w-4xl mx-auto">
         <Breadcrumb
           items={[
             {
@@ -245,17 +245,17 @@ export default function ProfilePage() {
               ),
             },
           ]}
-          className="mb-6"
+          className="mb-4 md:mb-6"
         />
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Profile Settings</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">Manage your account settings and preferences</p>
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Profile Settings</h1>
+          <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1">Manage your account settings and preferences</p>
         </div>
 
         {/* Profile Information */}
-        <div className="bg-white dark:bg-dark-600 rounded-lg shadow-sm border border-gray-200 dark:border-dark-400 p-8 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Profile Information</h2>
+        <div className="bg-white dark:bg-dark-600 rounded-lg shadow-sm border border-gray-200 dark:border-dark-400 p-4 md:p-6 lg:p-8 mb-4 md:mb-6">
+          <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white mb-4 md:mb-6">Profile Information</h2>
           <form onSubmit={handleProfileSubmit} className="space-y-6">
             {/* Email (Read-only) */}
             <Input
@@ -312,8 +312,8 @@ export default function ProfilePage() {
         </div>
 
         {/* Change Password */}
-        <div className="bg-white dark:bg-dark-600 rounded-lg shadow-sm border border-gray-200 dark:border-dark-400 p-8">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Change Password</h2>
+        <div className="bg-white dark:bg-dark-600 rounded-lg shadow-sm border border-gray-200 dark:border-dark-400 p-4 md:p-6 lg:p-8">
+          <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white mb-4 md:mb-6">Change Password</h2>
           <form onSubmit={handlePasswordSubmit} className="space-y-6">
             {/* Current Password */}
             <Input
@@ -424,8 +424,8 @@ export default function ProfilePage() {
         </div>
 
         {/* Notification Preferences */}
-        <div className="bg-white dark:bg-dark-600 rounded-lg shadow-sm border border-gray-200 dark:border-dark-400 p-8 mt-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Notification Preferences</h2>
+        <div className="bg-white dark:bg-dark-600 rounded-lg shadow-sm border border-gray-200 dark:border-dark-400 p-4 md:p-6 lg:p-8 mt-4 md:mt-6">
+          <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white mb-2">Notification Preferences</h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
             Choose which notifications you want to receive
           </p>
@@ -590,12 +590,12 @@ export default function ProfilePage() {
         </div>
 
         {/* Account Information */}
-        <div className="bg-white dark:bg-dark-600 rounded-lg shadow-sm border border-gray-200 dark:border-dark-400 p-8 mt-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Account Information</h2>
+        <div className="bg-white dark:bg-dark-600 rounded-lg shadow-sm border border-gray-200 dark:border-dark-400 p-4 md:p-6 lg:p-8 mt-4 md:mt-6">
+          <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white mb-4 md:mb-6">Account Information</h2>
           <div className="space-y-4 text-sm">
-            <div className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-dark-400">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between py-3 border-b border-gray-200 dark:border-dark-400 gap-1">
               <span className="text-gray-600 dark:text-gray-400">User ID</span>
-              <span className="text-gray-900 dark:text-white font-mono">{user._id}</span>
+              <span className="text-gray-900 dark:text-white font-mono text-xs break-all">{user._id}</span>
             </div>
             <div className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-dark-400">
               <span className="text-gray-600 dark:text-gray-400">Account Status</span>
@@ -622,22 +622,22 @@ export default function ProfilePage() {
 
         {/* Admin Settings - Only visible for admins */}
         {user.role === 'admin' && (
-          <div className="bg-white dark:bg-dark-600 rounded-lg shadow-sm border border-red-200 dark:border-red-900/50 p-8 mt-6">
-            <div className="flex items-center gap-3 mb-6">
+          <div className="bg-white dark:bg-dark-600 rounded-lg shadow-sm border border-red-200 dark:border-red-900/50 p-4 md:p-6 lg:p-8 mt-4 md:mt-6">
+            <div className="flex items-center gap-3 mb-4 md:mb-6">
               <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
-                <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 md:w-6 md:h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Admin Settings</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Administrator-only features and tools</p>
+                <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white">Admin Settings</h2>
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Administrator-only features and tools</p>
               </div>
             </div>
 
             {/* Database Statistics */}
-            <div className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">
+            <div className="mb-4 md:mb-6">
+              <h3 className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">
                 Database Statistics
               </h3>
               {loadingStats ? (
@@ -645,34 +645,34 @@ export default function ProfilePage() {
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500"></div>
                 </div>
               ) : dbStats ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  <div className="bg-gray-50 dark:bg-dark-500 rounded-lg p-4">
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{dbStats.totalDocuments?.toLocaleString() || 0}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Total Documents</p>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+                  <div className="bg-gray-50 dark:bg-dark-500 rounded-lg p-3 md:p-4">
+                    <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{dbStats.totalDocuments?.toLocaleString() || 0}</p>
+                    <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Total Documents</p>
                   </div>
-                  <div className="bg-gray-50 dark:bg-dark-500 rounded-lg p-4">
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{dbStats.databaseSize || 'N/A'}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Database Size</p>
+                  <div className="bg-gray-50 dark:bg-dark-500 rounded-lg p-3 md:p-4">
+                    <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{dbStats.databaseSize || 'N/A'}</p>
+                    <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Database Size</p>
                   </div>
-                  <div className="bg-gray-50 dark:bg-dark-500 rounded-lg p-4">
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{Object.keys(dbStats.collections || {}).length}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Collections</p>
+                  <div className="bg-gray-50 dark:bg-dark-500 rounded-lg p-3 md:p-4 col-span-2 md:col-span-1">
+                    <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{Object.keys(dbStats.collections || {}).length}</p>
+                    <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Collections</p>
                   </div>
                 </div>
               ) : (
-                <p className="text-gray-500 dark:text-gray-400">Unable to load statistics</p>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">Unable to load statistics</p>
               )}
             </div>
 
             {/* Export Database */}
-            <div className="border-t border-gray-200 dark:border-dark-400 pt-6">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">
+            <div className="border-t border-gray-200 dark:border-dark-400 pt-4 md:pt-6">
+              <h3 className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">
                 Data Management
               </h3>
-              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-dark-500 rounded-lg">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3 md:p-4 bg-gray-50 dark:bg-dark-500 rounded-lg">
                 <div>
-                  <p className="font-medium text-gray-900 dark:text-white">Export Database</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="font-medium text-sm md:text-base text-gray-900 dark:text-white">Export Database</p>
+                  <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
                     Download a complete backup of all data as JSON
                   </p>
                 </div>
@@ -681,7 +681,7 @@ export default function ProfilePage() {
                   loading={exportingDatabase}
                   disabled={exportingDatabase}
                   variant="secondary"
-                  className="flex items-center gap-2"
+                  className="flex items-center justify-center gap-2 w-full sm:w-auto"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -693,13 +693,13 @@ export default function ProfilePage() {
 
             {/* Collection Details */}
             {dbStats?.collections && Object.keys(dbStats.collections).length > 0 && (
-              <div className="border-t border-gray-200 dark:border-dark-400 pt-6 mt-6">
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">
+              <div className="border-t border-gray-200 dark:border-dark-400 pt-4 md:pt-6 mt-4 md:mt-6">
+                <h3 className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">
                   Collection Details
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                   {Object.entries(dbStats.collections).map(([name, count]) => (
-                    <div key={name} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-dark-500 rounded text-sm">
+                    <div key={name} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-dark-500 rounded text-xs md:text-sm">
                       <span className="text-gray-700 dark:text-gray-300 truncate">{name}</span>
                       <span className="font-medium text-gray-900 dark:text-white ml-2">{(count as number).toLocaleString()}</span>
                     </div>

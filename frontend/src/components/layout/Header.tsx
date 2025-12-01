@@ -10,7 +10,11 @@ import { CommandPalette } from '@/components/command/CommandPalette';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { UserRole } from '@/types/user';
 
-export const Header: React.FC = () => {
+interface HeaderProps {
+  onMenuToggle?: () => void;
+}
+
+export const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -24,9 +28,20 @@ export const Header: React.FC = () => {
 
   return (
     <header className="bg-white dark:bg-dark-500 border-b border-gray-200 dark:border-dark-400 sticky top-0 z-40 transition-colors">
-      <div className="flex items-center justify-between h-16 px-6">
-        {/* Logo */}
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between h-14 md:h-16 px-3 md:px-6">
+        {/* Left side - Hamburger menu + Logo */}
+        <div className="flex items-center gap-2 md:gap-4">
+          {/* Hamburger menu - mobile only */}
+          <button
+            onClick={onMenuToggle}
+            className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors md:hidden"
+            aria-label="Toggle menu"
+          >
+            <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+
           <Link href="/dashboard" className="flex items-center hover:opacity-90 transition-opacity">
             {/* Light mode logo (original) */}
             <Image
@@ -35,7 +50,7 @@ export const Header: React.FC = () => {
               width={160}
               height={40}
               priority
-              className="h-8 w-auto dark:hidden"
+              className="h-6 md:h-8 w-auto dark:hidden"
             />
             {/* Dark mode logo (white) */}
             <Image
@@ -44,13 +59,13 @@ export const Header: React.FC = () => {
               width={160}
               height={40}
               priority
-              className="h-8 w-auto hidden dark:block"
+              className="h-6 md:h-8 w-auto hidden dark:block"
             />
           </Link>
         </div>
 
-        {/* Search */}
-        <div className="flex-1 max-w-2xl mx-8">
+        {/* Search - hidden on mobile, full on desktop */}
+        <div className="hidden md:flex flex-1 max-w-2xl mx-8">
           <button
             onClick={() => setShowCommandPalette(true)}
             className="w-full relative h-10 pl-10 pr-20 rounded-md border-2 border-gray-300 dark:border-dark-300 bg-white dark:bg-dark-400 text-left text-gray-400 dark:text-gray-500 hover:border-primary-500 dark:hover:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
@@ -76,16 +91,28 @@ export const Header: React.FC = () => {
         </div>
 
         {/* Right side */}
-        <div className="flex items-center gap-4">
-          {/* Create button */}
+        <div className="flex items-center gap-2 md:gap-4">
+          {/* Search icon - mobile only */}
+          <button
+            onClick={() => setShowCommandPalette(true)}
+            className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors md:hidden"
+            aria-label="Search"
+          >
+            <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
+
+          {/* Create button - icon only on mobile, full on desktop */}
           <Link
             href="/issues/new"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors shadow-sm font-medium"
+            className="inline-flex items-center justify-center gap-2 p-2 md:px-4 md:py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors shadow-sm font-medium"
+            aria-label="Create issue"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Create
+            <span className="hidden md:inline">Create</span>
           </Link>
 
           {/* Theme toggle */}
