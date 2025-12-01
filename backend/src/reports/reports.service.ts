@@ -337,4 +337,217 @@ export class ReportsService {
 
     return { projectId, trend };
   }
+
+  async getMyCreatedTasksStats(userId: string, daysParam?: string): Promise<any> {
+    const mongoose = require('mongoose');
+
+    // Parse days parameter
+    let days: number | null = null;
+    if (daysParam && daysParam !== 'all') {
+      days = parseInt(daysParam, 10);
+      if (isNaN(days)) days = null;
+    }
+
+    // Build query for issues created by this user
+    const query: any = { reporter: new mongoose.Types.ObjectId(userId) };
+
+    // Add date filter if days is specified
+    let startDate: Date | null = null;
+    if (days) {
+      startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+      query.createdAt = { $gte: startDate };
+    }
+
+    const issues = await this.issueModel
+      .find(query)
+      .sort({ createdAt: 1 })
+      .exec();
+
+    if (issues.length === 0) {
+      return {
+        summary: {
+          total: 0,
+          completed: 0,
+          inProgress: 0,
+          todo: 0,
+          completionRate: 0,
+        },
+        byStatus: [],
+        byType: [],
+        byPriority: [],
+        creationTrend: [],
+        dateRange: {
+          start: startDate ? startDate.toISOString() : null,
+          end: new Date().toISOString(),
+        },
+      };
+    }
+
+    // Calculate summary statistics
+    // Map common status patterns to categories
+    const getStatusCategory = (status: string): string => {
+      const s = status.toLowerCase();
+      if (s === 'done' || s.includes('complete') || s.includes('closed') || s.includes('resolved')) {
+        return 'completed';
+      }
+      if (s.includes('progress') || s.includes('review') || s.includes('testing')) {
+        return 'inProgress';
+      }
+      return 'todo';
+    };
+
+    let completed = 0;
+    let inProgress = 0;
+    let todo = 0;
+
+    // Count by status categories
+    const statusCounts: Record<string, number> = {};
+    const typeCounts: Record<string, number> = {};
+    const priorityCounts: Record<string, number> = {};
+
+    issues.forEach((issue) => {
+      // Status category
+      const category = getStatusCategory(issue.status);
+      if (category === 'completed') completed++;
+      else if (category === 'inProgress') inProgress++;
+      else todo++;
+
+      // Raw status counts
+      statusCounts[issue.status] = (statusCounts[issue.status] || 0) + 1;
+
+      // Type counts
+      typeCounts[issue.type] = (typeCounts[issue.type] || 0) + 1;
+
+      // Priority counts
+      priorityCounts[issue.priority] = (priorityCounts[issue.priority] || 0) + 1;
+    });
+
+    const total = issues.length;
+    const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+    // Status colors mapping
+    const statusColors: Record<string, string> = {
+      todo: '#6B7280',
+      in_progress: '#3B82F6',
+      in_review: '#8B5CF6',
+      done: '#22C55E',
+    };
+
+    // Convert to arrays
+    const byStatus = Object.entries(statusCounts).map(([status, count]) => ({
+      status,
+      count,
+      color: statusColors[status] || '#6B7280',
+    }));
+
+    const typeColors: Record<string, string> = {
+      bug: '#EF4444',
+      task: '#3B82F6',
+      story: '#22C55E',
+      epic: '#8B5CF6',
+    };
+
+    const byType = Object.entries(typeCounts).map(([type, count]) => ({
+      type,
+      count,
+      color: typeColors[type] || '#6B7280',
+    }));
+
+    const priorityColors: Record<string, string> = {
+      critical: '#EF4444',
+      high: '#F97316',
+      medium: '#EAB308',
+      low: '#22C55E',
+    };
+
+    const byPriority = Object.entries(priorityCounts).map(([priority, count]) => ({
+      priority,
+      count,
+      color: priorityColors[priority] || '#6B7280',
+    }));
+
+    // Generate creation trend
+    const issuesByDate: Record<string, number> = {};
+    issues.forEach((issue) => {
+      const date = new Date(issue.createdAt).toISOString().split('T')[0];
+      issuesByDate[date] = (issuesByDate[date] || 0) + 1;
+    });
+
+    // Determine date range for trend
+    const endDate = new Date();
+    const trendStartDate = startDate || new Date(issues[0].createdAt);
+
+    const creationTrend: any[] = [];
+    let cumulative = 0;
+
+    // For longer periods, aggregate by week
+    const daysDiff = Math.ceil((endDate.getTime() - trendStartDate.getTime()) / (1000 * 60 * 60 * 24));
+    const aggregateByWeek = daysDiff > 60;
+
+    if (aggregateByWeek) {
+      // Aggregate by week
+      const weeklyData: Record<string, { count: number; weekStart: string }> = {};
+
+      for (let d = new Date(trendStartDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        const dateStr = d.toISOString().split('T')[0];
+        const count = issuesByDate[dateStr] || 0;
+
+        // Get week start (Monday)
+        const weekStart = new Date(d);
+        const day = weekStart.getDay();
+        const diff = weekStart.getDate() - day + (day === 0 ? -6 : 1);
+        weekStart.setDate(diff);
+        const weekKey = weekStart.toISOString().split('T')[0];
+
+        if (!weeklyData[weekKey]) {
+          weeklyData[weekKey] = { count: 0, weekStart: weekKey };
+        }
+        weeklyData[weekKey].count += count;
+      }
+
+      // Convert to array with cumulative
+      Object.values(weeklyData)
+        .sort((a, b) => a.weekStart.localeCompare(b.weekStart))
+        .forEach((week) => {
+          cumulative += week.count;
+          creationTrend.push({
+            date: week.weekStart,
+            count: week.count,
+            cumulative,
+          });
+        });
+    } else {
+      // Daily aggregation
+      for (let d = new Date(trendStartDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        const dateStr = d.toISOString().split('T')[0];
+        const count = issuesByDate[dateStr] || 0;
+        cumulative += count;
+
+        creationTrend.push({
+          date: dateStr,
+          count,
+          cumulative,
+        });
+      }
+    }
+
+    return {
+      summary: {
+        total,
+        completed,
+        inProgress,
+        todo,
+        completionRate,
+      },
+      byStatus,
+      byType,
+      byPriority,
+      creationTrend,
+      dateRange: {
+        start: trendStartDate.toISOString(),
+        end: endDate.toISOString(),
+      },
+    };
+  }
 }

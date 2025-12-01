@@ -9,6 +9,7 @@ import { Issue } from '@/types/issue';
 import { UserRole } from '@/types/user';
 import { Badge, Breadcrumb, LogoLoader } from '@/components/common';
 import { RecentActivityWidget } from '@/components/activities/RecentActivityWidget';
+import { MyCreatedTasksStats } from '@/components/charts/MyCreatedTasksStats';
 import Link from 'next/link';
 
 export default function DashboardPage() {
@@ -280,6 +281,13 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* My Created Tasks - Developer role only */}
+        {user?.role === UserRole.DEVELOPER && (
+          <div className="mt-4 md:mt-8">
+            <MyCreatedTasksStats />
+          </div>
+        )}
 
         {/* Admin Activity Monitor Widget */}
         {user?.role === UserRole.ADMIN && (

@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards, Req } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -82,5 +82,15 @@ export class ReportsController {
     @Query('days') days?: number,
   ) {
     return this.reportsService.getIssueCreationTrend(projectId, days);
+  }
+
+  @Get('my-created-tasks-stats')
+  @ApiOperation({ summary: 'Get statistics for tasks created by the current user' })
+  @ApiResponse({ status: 200, description: 'My created tasks statistics' })
+  getMyCreatedTasksStats(
+    @Req() req: any,
+    @Query('days') days?: string,
+  ) {
+    return this.reportsService.getMyCreatedTasksStats(req.user._id, days);
   }
 }

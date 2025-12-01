@@ -247,6 +247,10 @@ export const reportsAPI = {
     const params = days ? { days } : {};
     return api.get(`/reports/project/${projectId}/issue-creation-trend`, { params });
   },
+  getMyCreatedTasksStats: (days?: string) => {
+    const params = days ? { days } : {};
+    return api.get('/reports/my-created-tasks-stats', { params });
+  },
 };
 
 // Activities API
