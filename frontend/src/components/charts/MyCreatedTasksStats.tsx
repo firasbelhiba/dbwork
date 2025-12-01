@@ -242,38 +242,36 @@ export const MyCreatedTasksStats: React.FC = () => {
         );
 
       case 'completed':
-        return completionTrendData.length > 0 ? (
+        // Get last 30 days of completion data for histogram
+        const last30DaysData = completionTrendData.slice(-30);
+        const hasCompletedTasks = last30DaysData.some(d => d.count > 0);
+
+        return hasCompletedTasks ? (
           <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={completionTrendData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-              <defs>
-                <linearGradient id="colorCompleted" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#22C55E" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#22C55E" stopOpacity={0.1} />
-                </linearGradient>
-              </defs>
+            <BarChart data={last30DaysData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" className="dark:stroke-gray-600" />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 10 }}
-                interval="preserveStartEnd"
+                tick={{ fontSize: 8 }}
+                interval={4}
                 className="dark:fill-gray-400"
               />
-              <YAxis tick={{ fontSize: 10 }} className="dark:fill-gray-400" />
+              <YAxis tick={{ fontSize: 10 }} className="dark:fill-gray-400" allowDecimals={false} />
               <Tooltip
                 contentStyle={{
                   backgroundColor: 'rgba(255, 255, 255, 0.95)',
                   border: '1px solid #e5e7eb',
                   borderRadius: '8px',
                 }}
+                formatter={(value: number) => [value, 'Completed']}
               />
-              <Area
-                type="monotone"
-                dataKey="cumulative"
-                stroke="#22C55E"
-                fill="url(#colorCompleted)"
-                name="Total Completed"
+              <Bar
+                dataKey="count"
+                fill="#22C55E"
+                name="Completed"
+                radius={[2, 2, 0, 0]}
               />
-            </AreaChart>
+            </BarChart>
           </ResponsiveContainer>
         ) : (
           <div className="h-48 flex items-center justify-center text-gray-500 dark:text-gray-400 text-sm">
