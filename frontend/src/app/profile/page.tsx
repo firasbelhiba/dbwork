@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button, Input, Breadcrumb } from '@/components/common';
 import { useAuth } from '@/contexts/AuthContext';
-import { usersAPI, authAPI } from '@/lib/api';
+import { usersAPI, authAPI, adminAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
 
 export default function ProfilePage() {
@@ -36,6 +36,11 @@ export default function ProfilePage() {
   const [notificationPreferences, setNotificationPreferences] = useState<any>(null);
   const [loadingPreferences, setLoadingPreferences] = useState(false);
 
+  // Admin state
+  const [exportingDatabase, setExportingDatabase] = useState(false);
+  const [dbStats, setDbStats] = useState<any>(null);
+  const [loadingStats, setLoadingStats] = useState(false);
+
   useEffect(() => {
     if (user) {
       setProfileData({
@@ -44,6 +49,11 @@ export default function ProfilePage() {
         email: user.email || '',
       });
       loadNotificationPreferences();
+
+      // Load admin stats if user is admin
+      if (user.role === 'admin') {
+        loadDatabaseStats();
+      }
     }
   }, [user]);
 
@@ -55,6 +65,43 @@ export default function ProfilePage() {
       setNotificationPreferences(response.data);
     } catch (error) {
       console.error('Error loading notification preferences:', error);
+    }
+  };
+
+  const loadDatabaseStats = async () => {
+    setLoadingStats(true);
+    try {
+      const response = await adminAPI.getStats();
+      setDbStats(response.data);
+    } catch (error) {
+      console.error('Error loading database stats:', error);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
+  const handleExportDatabase = async () => {
+    setExportingDatabase(true);
+    try {
+      const response = await adminAPI.exportDatabase();
+
+      // Create download link
+      const blob = new Blob([response.data], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `dbwork-export-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success('Database exported successfully!');
+    } catch (error: any) {
+      console.error('Error exporting database:', error);
+      toast.error(error.response?.data?.message || 'Failed to export database');
+    } finally {
+      setExportingDatabase(false);
     }
   };
 
@@ -572,6 +619,96 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
+
+        {/* Admin Settings - Only visible for admins */}
+        {user.role === 'admin' && (
+          <div className="bg-white dark:bg-dark-600 rounded-lg shadow-sm border border-red-200 dark:border-red-900/50 p-8 mt-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Admin Settings</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Administrator-only features and tools</p>
+              </div>
+            </div>
+
+            {/* Database Statistics */}
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">
+                Database Statistics
+              </h3>
+              {loadingStats ? (
+                <div className="flex items-center justify-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500"></div>
+                </div>
+              ) : dbStats ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="bg-gray-50 dark:bg-dark-500 rounded-lg p-4">
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{dbStats.totalDocuments?.toLocaleString() || 0}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Total Documents</p>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-dark-500 rounded-lg p-4">
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{dbStats.databaseSize || 'N/A'}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Database Size</p>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-dark-500 rounded-lg p-4">
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{Object.keys(dbStats.collections || {}).length}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Collections</p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-gray-500 dark:text-gray-400">Unable to load statistics</p>
+              )}
+            </div>
+
+            {/* Export Database */}
+            <div className="border-t border-gray-200 dark:border-dark-400 pt-6">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">
+                Data Management
+              </h3>
+              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-dark-500 rounded-lg">
+                <div>
+                  <p className="font-medium text-gray-900 dark:text-white">Export Database</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Download a complete backup of all data as JSON
+                  </p>
+                </div>
+                <Button
+                  onClick={handleExportDatabase}
+                  loading={exportingDatabase}
+                  disabled={exportingDatabase}
+                  variant="secondary"
+                  className="flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  {exportingDatabase ? 'Exporting...' : 'Export'}
+                </Button>
+              </div>
+            </div>
+
+            {/* Collection Details */}
+            {dbStats?.collections && Object.keys(dbStats.collections).length > 0 && (
+              <div className="border-t border-gray-200 dark:border-dark-400 pt-6 mt-6">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">
+                  Collection Details
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                  {Object.entries(dbStats.collections).map(([name, count]) => (
+                    <div key={name} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-dark-500 rounded text-sm">
+                      <span className="text-gray-700 dark:text-gray-300 truncate">{name}</span>
+                      <span className="font-medium text-gray-900 dark:text-white ml-2">{(count as number).toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );

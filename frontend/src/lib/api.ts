@@ -299,4 +299,14 @@ export const achievementsAPI = {
   debugResetAchievements: () => api.post('/achievements/debug/reset-my-achievements'),
 };
 
+// Admin API
+export const adminAPI = {
+  // Database export
+  getStats: () => api.get('/admin/stats'),
+  getExportableCollections: () => api.get('/admin/export/collections'),
+  exportDatabase: () => api.get('/admin/export/database', { responseType: 'blob' }),
+  exportCollection: (collectionName: string) =>
+    api.get(`/admin/export/collection/${collectionName}`, { responseType: 'blob' }),
+};
+
 export default api;

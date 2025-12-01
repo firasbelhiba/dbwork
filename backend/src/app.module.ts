@@ -20,6 +20,7 @@ import { ChangelogsModule } from './changelogs/changelogs.module';
 import { AchievementsModule } from './achievements/achievements.module';
 import { MailModule } from './mail/mail.module';
 import { WebSocketModule } from './websocket/websocket.module';
+import { AdminModule } from './admin/admin.module';
 import { HttpExceptionFilter } from './common/filters';
 import { LoggingInterceptor } from './common/interceptors';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
@@ -50,7 +51,8 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     ChangelogsModule,
     AchievementsModule,
     MailModule,
-    WebSocketModule
+    WebSocketModule,
+    AdminModule,
   ],
   providers: [
     {
