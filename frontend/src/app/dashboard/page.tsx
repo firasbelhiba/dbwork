@@ -194,6 +194,13 @@ export default function DashboardPage() {
           </div>
         )}
 
+        {/* My Created Tasks - Developer role only */}
+        {user?.role === UserRole.DEVELOPER && (
+          <div className="mb-6 md:mb-8">
+            <MyCreatedTasksStats />
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
           {/* My Issues */}
           <div className="bg-white dark:bg-dark-400 rounded-lg shadow-sm border border-gray-200 dark:border-dark-300 transition-colors">
@@ -281,13 +288,6 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-
-        {/* My Created Tasks - Developer role only */}
-        {user?.role === UserRole.DEVELOPER && (
-          <div className="mt-4 md:mt-8">
-            <MyCreatedTasksStats />
-          </div>
-        )}
 
         {/* Admin Activity Monitor Widget */}
         {user?.role === UserRole.ADMIN && (
