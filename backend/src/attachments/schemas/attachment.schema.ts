@@ -24,7 +24,10 @@ export class Attachment {
   size: number;
 
   @Prop({ required: true })
-  path: string;
+  url: string;
+
+  @Prop({ required: true })
+  cloudinaryId: string;
 
   @Prop({ default: null })
   thumbnail: string;

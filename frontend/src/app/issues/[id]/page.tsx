@@ -9,7 +9,7 @@ import { Comment } from '@/types/comment';
 import { UserRole } from '@/types/user';
 import { Button, Badge, Select, Breadcrumb, LogoLoader } from '@/components/common';
 import { MentionTextarea } from '@/components/common/MentionTextarea';
-import { SubIssues, SubIssueModal, EditIssueModal } from '@/components/issues';
+import { SubIssues, SubIssueModal, EditIssueModal, AttachmentSection } from '@/components/issues';
 import { useAuth } from '@/contexts/AuthContext';
 import { getInitials, formatDateTime, getRelativeTime } from '@/lib/utils';
 import Link from 'next/link';
@@ -441,6 +441,9 @@ export default function IssueDetailPage() {
                   )}
                 </div>
               </div>
+
+              {/* Attachments Section */}
+              <AttachmentSection issueId={issue._id} />
 
               {/* Sub-issues Section - Only show if not a sub-issue itself */}
               {!issue.parentIssue && (

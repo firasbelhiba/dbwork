@@ -8,12 +8,9 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
-  Res,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
-import { Response } from 'express';
+import { memoryStorage } from 'multer';
 import {
   ApiTags,
   ApiOperation,
@@ -36,28 +33,23 @@ export class AttachmentsController {
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads/attachments',
-        filename: (req, file, cb) => {
-          const randomName = Array(32)
-            .fill(null)
-            .map(() => Math.round(Math.random() * 16).toString(16))
-            .join('');
-          cb(null, `${randomName}${extname(file.originalname)}`);
-        },
-      }),
+      storage: memoryStorage(),
       fileFilter: (req, file, cb) => {
         // Allow most common file types
         const allowedMimes = [
           'image/jpeg',
           'image/png',
           'image/gif',
+          'image/webp',
           'application/pdf',
           'text/plain',
           'application/msword',
           'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
           'application/vnd.ms-excel',
           'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'application/zip',
+          'application/x-zip-compressed',
+          'text/csv',
         ];
 
         if (allowedMimes.includes(file.mimetype)) {
@@ -71,7 +63,7 @@ export class AttachmentsController {
       },
     }),
   )
-  @ApiOperation({ summary: 'Upload attachment to issue' })
+  @ApiOperation({ summary: 'Upload attachment to issue (stored on Cloudinary)' })
   @ApiResponse({ status: 201, description: 'Attachment uploaded successfully' })
   create(
     @Param('issueId') issueId: string,
@@ -104,14 +96,6 @@ export class AttachmentsController {
   @ApiResponse({ status: 200, description: 'Attachment information' })
   findOne(@Param('id') id: string) {
     return this.attachmentsService.findOne(id);
-  }
-
-  @Get(':id/download')
-  @ApiOperation({ summary: 'Download attachment' })
-  @ApiResponse({ status: 200, description: 'File download' })
-  async download(@Param('id') id: string, @Res() res: Response) {
-    const attachment = await this.attachmentsService.findOne(id);
-    res.download(attachment.path, attachment.originalName);
   }
 
   @Delete(':id')
