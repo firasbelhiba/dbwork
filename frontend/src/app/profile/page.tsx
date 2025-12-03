@@ -52,6 +52,10 @@ export default function ProfilePage() {
   const [connectingGoogle, setConnectingGoogle] = useState(false);
   const [disconnectingGoogle, setDisconnectingGoogle] = useState(false);
 
+  // Gmail email for Google Calendar
+  const [gmailEmail, setGmailEmail] = useState('');
+  const [savingGmailEmail, setSavingGmailEmail] = useState(false);
+
   useEffect(() => {
     if (user) {
       setProfileData({
@@ -59,6 +63,7 @@ export default function ProfilePage() {
         lastName: user.lastName || '',
         email: user.email || '',
       });
+      setGmailEmail(user.gmailEmail || '');
       loadNotificationPreferences();
       loadGoogleCalendarStatus();
 
@@ -128,6 +133,29 @@ export default function ProfilePage() {
       toast.error(error.response?.data?.message || 'Failed to disconnect Google Calendar');
     } finally {
       setDisconnectingGoogle(false);
+    }
+  };
+
+  const handleSaveGmailEmail = async () => {
+    if (!user?._id) return;
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (gmailEmail && !emailRegex.test(gmailEmail)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+    setSavingGmailEmail(true);
+    try {
+      const response = await usersAPI.update(user._id, { gmailEmail: gmailEmail || null });
+      updateUser(response.data);
+      toast.success('Gmail email saved successfully!');
+    } catch (error: any) {
+      console.error('Error saving Gmail email:', error);
+      toast.error(error.response?.data?.message || 'Failed to save Gmail email');
+    } finally {
+      setSavingGmailEmail(false);
     }
   };
 
@@ -727,6 +755,39 @@ export default function ProfilePage() {
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
             Connect your accounts to enable additional features
           </p>
+
+          {/* Gmail Email for Google Calendar */}
+          <div className="mb-6 p-4 bg-gray-50 dark:bg-dark-500 rounded-lg">
+            <div className="flex items-center gap-3 mb-3">
+              <svg className="w-6 h-6 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 18h-2V9.25L12 13 6 9.25V18H4V6h1.2l6.8 4.25L18.8 6H20m0-2H4c-1.11 0-2 .89-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2z"/>
+              </svg>
+              <div>
+                <p className="font-medium text-gray-900 dark:text-white">Gmail Email</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400">
+                  Enter your Gmail address for Google Calendar integration (must be added as a test user in Google Cloud Console)
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Input
+                type="email"
+                value={gmailEmail}
+                onChange={(e) => setGmailEmail(e.target.value)}
+                placeholder="your-email@gmail.com"
+                className="flex-1"
+              />
+              <Button
+                onClick={handleSaveGmailEmail}
+                loading={savingGmailEmail}
+                disabled={savingGmailEmail}
+                variant="secondary"
+                className="w-full sm:w-auto"
+              >
+                Save
+              </Button>
+            </div>
+          </div>
 
           {/* Google Calendar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-gray-50 dark:bg-dark-500 rounded-lg">

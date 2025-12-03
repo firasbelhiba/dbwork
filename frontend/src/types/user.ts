@@ -18,6 +18,7 @@ export interface User {
   lastLoginAt?: Date;
   createdAt: Date;
   updatedAt: Date;
+  gmailEmail?: string | null;
 }
 
 export interface UserPreferences {

@@ -133,6 +133,10 @@ export class User {
   @Prop({ default: null })
   lastSeenChangelogVersion: string;
 
+  // Gmail email for Google Calendar integration (may differ from account email)
+  @Prop({ default: null })
+  gmailEmail: string;
+
   // Google Calendar integration
   @Prop({ type: Object, default: {
     isConnected: false,
