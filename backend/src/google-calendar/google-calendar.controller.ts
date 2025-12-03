@@ -42,7 +42,7 @@ export class GoogleCalendarController {
     @Query('error') error: string,
     @Res() res: Response,
   ): Promise<void> {
-    const frontendUrl = process.env.CORS_ORIGIN || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || process.env.CORS_ORIGIN || 'http://localhost:3000';
 
     if (error) {
       // User denied access or error occurred
