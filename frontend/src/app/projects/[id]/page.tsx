@@ -735,6 +735,7 @@ export default function ProjectDetailPage() {
             fetchProjectData();
           }}
           canEdit={user?.role === UserRole.ADMIN || user?.role === UserRole.PROJECT_MANAGER}
+          projectMembers={project?.members || []}
         />
       </div>
     </DashboardLayout>

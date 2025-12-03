@@ -1,13 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { DemoEvent } from '@/types/project';
-import { Button, Input, Textarea } from '@/components/common';
+import { DemoEvent, ProjectMember } from '@/types/project';
+import { Button, Input, Textarea, MultiUserSelect } from '@/components/common';
 import { User } from '@/types/user';
 import { googleCalendarAPI } from '@/lib/api';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { formatDateTime, getInitials } from '@/lib/utils';
+
+type InviteOption = 'none' | 'all' | 'select';
 
 interface DemoEventModalProps {
   projectId: string;
@@ -16,6 +18,7 @@ interface DemoEventModalProps {
   onClose: () => void;
   onSuccess: () => void;
   canEdit: boolean; // Admin or PM can edit
+  projectMembers?: ProjectMember[]; // Project members for attendee selection
 }
 
 export const DemoEventModal: React.FC<DemoEventModalProps> = ({
@@ -25,6 +28,7 @@ export const DemoEventModal: React.FC<DemoEventModalProps> = ({
   onClose,
   onSuccess,
   canEdit,
+  projectMembers = [],
 }) => {
   const [formData, setFormData] = useState({
     title: '',
@@ -33,8 +37,9 @@ export const DemoEventModal: React.FC<DemoEventModalProps> = ({
     endDate: '',
     location: '',
     createGoogleMeet: false,
-    inviteAllMembers: false,
   });
+  const [inviteOption, setInviteOption] = useState<InviteOption>('all');
+  const [selectedAttendeeIds, setSelectedAttendeeIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [googleCalendarConnected, setGoogleCalendarConnected] = useState(false);
@@ -80,8 +85,9 @@ export const DemoEventModal: React.FC<DemoEventModalProps> = ({
         endDate: endDateString,
         location: event.location || '',
         createGoogleMeet: false,
-        inviteAllMembers: false,
       });
+      setInviteOption('all');
+      setSelectedAttendeeIds([]);
       setIsEditing(false);
     } else {
       setFormData({
@@ -91,8 +97,9 @@ export const DemoEventModal: React.FC<DemoEventModalProps> = ({
         endDate: '',
         location: '',
         createGoogleMeet: false,
-        inviteAllMembers: true, // Default to invite all for new events
       });
+      setInviteOption('all'); // Default to invite all for new events
+      setSelectedAttendeeIds([]);
       setIsEditing(true);
     }
   }, [event]);
@@ -116,6 +123,12 @@ export const DemoEventModal: React.FC<DemoEventModalProps> = ({
       return;
     }
 
+    // Validate attendee selection
+    if (formData.createGoogleMeet && inviteOption === 'select' && selectedAttendeeIds.length === 0) {
+      toast.error('Please select at least one attendee');
+      return;
+    }
+
     setLoading(true);
     try {
       const token = localStorage.getItem('accessToken');
@@ -131,9 +144,24 @@ export const DemoEventModal: React.FC<DemoEventModalProps> = ({
       }
 
       // Only include Google Meet options for new events
-      if (!event) {
-        payload.createGoogleMeet = formData.createGoogleMeet;
-        payload.inviteAllMembers = formData.inviteAllMembers;
+      if (!event && formData.createGoogleMeet) {
+        payload.createGoogleMeet = true;
+        payload.inviteAllMembers = inviteOption === 'all';
+
+        // If selecting specific attendees, get their emails
+        if (inviteOption === 'select' && selectedAttendeeIds.length > 0) {
+          const selectedEmails = projectMembers
+            .filter(m => {
+              const user = typeof m.userId === 'object' ? m.userId : null;
+              return user && selectedAttendeeIds.includes(user._id);
+            })
+            .map(m => {
+              const user = m.userId as User;
+              // Prefer gmailEmail for calendar invites, fall back to regular email
+              return user.gmailEmail || user.email;
+            });
+          payload.attendees = selectedEmails;
+        }
       }
 
       if (event) {
@@ -461,23 +489,91 @@ export const DemoEventModal: React.FC<DemoEventModalProps> = ({
                         </label>
 
                         {formData.createGoogleMeet && (
-                          <label className="flex items-center gap-3 cursor-pointer ml-8">
-                            <input
-                              type="checkbox"
-                              checked={formData.inviteAllMembers}
-                              onChange={(e) => setFormData({ ...formData, inviteAllMembers: e.target.checked })}
-                              className="w-5 h-5 rounded border-gray-300 dark:border-dark-200 text-blue-600 focus:ring-blue-500"
-                              disabled={loading}
-                            />
-                            <div>
-                              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                Invite all project members
-                              </span>
-                              <p className="text-xs text-gray-500 dark:text-gray-400">
-                                All team members will receive calendar invitations
-                              </p>
-                            </div>
-                          </label>
+                          <div className="ml-8 space-y-3">
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Who should receive calendar invites?
+                            </p>
+
+                            {/* No invites option */}
+                            <label className="flex items-center gap-3 cursor-pointer">
+                              <input
+                                type="radio"
+                                name="inviteOption"
+                                checked={inviteOption === 'none'}
+                                onChange={() => setInviteOption('none')}
+                                className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                                disabled={loading}
+                              />
+                              <div>
+                                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                  No invites
+                                </span>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  Only create the event on my calendar
+                                </p>
+                              </div>
+                            </label>
+
+                            {/* Invite all option */}
+                            <label className="flex items-center gap-3 cursor-pointer">
+                              <input
+                                type="radio"
+                                name="inviteOption"
+                                checked={inviteOption === 'all'}
+                                onChange={() => setInviteOption('all')}
+                                className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                                disabled={loading}
+                              />
+                              <div>
+                                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                  All project members
+                                </span>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  Everyone on the team will receive calendar invitations
+                                </p>
+                              </div>
+                            </label>
+
+                            {/* Select specific option */}
+                            <label className="flex items-center gap-3 cursor-pointer">
+                              <input
+                                type="radio"
+                                name="inviteOption"
+                                checked={inviteOption === 'select'}
+                                onChange={() => setInviteOption('select')}
+                                className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                                disabled={loading}
+                              />
+                              <div>
+                                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                  Select specific people
+                                </span>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  Choose who should be invited
+                                </p>
+                              </div>
+                            </label>
+
+                            {/* Multi-select for specific attendees */}
+                            {inviteOption === 'select' && (
+                              <div className="ml-7 mt-2">
+                                <MultiUserSelect
+                                  users={projectMembers
+                                    .map(m => typeof m.userId === 'object' ? m.userId : null)
+                                    .filter((u): u is User => u !== null)}
+                                  selectedUserIds={selectedAttendeeIds}
+                                  onChange={setSelectedAttendeeIds}
+                                  placeholder="Select attendees..."
+                                  disabled={loading}
+                                />
+                                {selectedAttendeeIds.length === 0 && (
+                                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                                    Please select at least one attendee
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         )}
                       </div>
                     ) : (
