@@ -490,6 +490,8 @@ function EditUserModal({ isOpen, onClose, user, onSuccess }: any) {
   const [formData, setFormData] = useState({
     firstName: user.firstName,
     lastName: user.lastName,
+    email: user.email,
+    gmailEmail: user.gmailEmail || '',
     role: user.role,
     isActive: user.isActive,
   });
@@ -520,8 +522,30 @@ function EditUserModal({ isOpen, onClose, user, onSuccess }: any) {
         <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Edit User</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-            <Input value={user.email} disabled />
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Email <span className="text-danger-500">*</span>
+            </label>
+            <Input
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              disabled={updating}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Gmail Email
+            </label>
+            <Input
+              type="email"
+              value={formData.gmailEmail}
+              onChange={(e) => setFormData({ ...formData, gmailEmail: e.target.value })}
+              placeholder="For Google Calendar integration"
+              disabled={updating}
+            />
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Used for Google Calendar invites (if different from account email)
+            </p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
