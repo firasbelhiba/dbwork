@@ -9,6 +9,7 @@ import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { User, UserDocument } from './schemas/user.schema';
 import { CreateUserDto, UpdateUserDto } from './dto';
+import cloudinary from '../attachments/cloudinary.config';
 
 @Injectable()
 export class UsersService {
@@ -71,17 +72,50 @@ export class UsersService {
     return user;
   }
 
-  async updateAvatar(id: string, avatarPath: string): Promise<UserDocument> {
-    const user = await this.userModel
-      .findByIdAndUpdate(id, { avatar: avatarPath }, { new: true })
-      .select('-password -refreshToken')
-      .exec();
-
+  async uploadAvatar(id: string, file: Express.Multer.File): Promise<UserDocument> {
+    const user = await this.userModel.findById(id).exec();
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    return user;
+    // Delete old avatar from Cloudinary if it exists
+    if (user.avatarCloudinaryId) {
+      try {
+        await cloudinary.uploader.destroy(user.avatarCloudinaryId);
+      } catch (error) {
+        console.error('Error deleting old avatar from Cloudinary:', error);
+      }
+    }
+
+    // Upload new avatar to Cloudinary
+    const result = await new Promise<any>((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'avatars',
+          resource_type: 'image',
+          transformation: [
+            { width: 200, height: 200, crop: 'fill', gravity: 'face' },
+          ],
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        },
+      );
+      uploadStream.end(file.buffer);
+    });
+
+    // Update user with new avatar URL and Cloudinary ID
+    const updatedUser = await this.userModel
+      .findByIdAndUpdate(
+        id,
+        { avatar: result.secure_url, avatarCloudinaryId: result.public_id },
+        { new: true },
+      )
+      .select('-password -refreshToken')
+      .exec();
+
+    return updatedUser;
   }
 
   async remove(id: string): Promise<void> {

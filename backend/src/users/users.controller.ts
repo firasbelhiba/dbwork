@@ -13,8 +13,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { memoryStorage } from 'multer';
 import {
   ApiTags,
   ApiOperation,
@@ -78,18 +77,9 @@ export class UsersController {
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     FileInterceptor('avatar', {
-      storage: diskStorage({
-        destination: './uploads/avatars',
-        filename: (req, file, cb) => {
-          const randomName = Array(32)
-            .fill(null)
-            .map(() => Math.round(Math.random() * 16).toString(16))
-            .join('');
-          cb(null, `${randomName}${extname(file.originalname)}`);
-        },
-      }),
+      storage: memoryStorage(),
       fileFilter: (req, file, cb) => {
-        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
           return cb(new BadRequestException('Only image files are allowed'), false);
         }
         cb(null, true);
@@ -99,11 +89,11 @@ export class UsersController {
   )
   @ApiOperation({ summary: 'Upload user avatar' })
   @ApiResponse({ status: 200, description: 'Avatar successfully uploaded' })
-  uploadAvatar(@Param('id') id: string, @UploadedFile() file: Express.Multer.File) {
+  async uploadAvatar(@Param('id') id: string, @UploadedFile() file: Express.Multer.File) {
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }
-    return this.usersService.updateAvatar(id, `/uploads/avatars/${file.filename}`);
+    return this.usersService.uploadAvatar(id, file);
   }
 
   @Delete(':id')

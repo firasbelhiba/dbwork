@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button, Input, Breadcrumb } from '@/components/common';
 import { useAuth } from '@/contexts/AuthContext';
 import { usersAPI, authAPI, adminAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
+import { getInitials } from '@/lib/utils';
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuth();
@@ -40,6 +41,10 @@ export default function ProfilePage() {
   const [exportingDatabase, setExportingDatabase] = useState(false);
   const [dbStats, setDbStats] = useState<any>(null);
   const [loadingStats, setLoadingStats] = useState(false);
+
+  // Avatar upload
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -177,6 +182,39 @@ export default function ProfilePage() {
     }
   };
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user?._id) return;
+
+    // Validate file type
+    if (!file.type.match(/^image\/(jpeg|jpg|png|gif|webp)$/)) {
+      toast.error('Please select an image file (JPG, PNG, GIF, or WebP)');
+      return;
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be less than 5MB');
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      const response = await usersAPI.uploadAvatar(user._id, file);
+      updateUser(response.data);
+      toast.success('Profile picture updated!');
+    } catch (err: any) {
+      console.error('Error uploading avatar:', err);
+      toast.error(err.response?.data?.message || 'Failed to upload profile picture');
+    } finally {
+      setUploadingAvatar(false);
+      // Reset input so the same file can be selected again
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   const handleNotificationToggle = async (notificationType: string) => {
     if (!user?._id || !notificationPreferences) return;
 
@@ -256,6 +294,54 @@ export default function ProfilePage() {
         {/* Profile Information */}
         <div className="bg-white dark:bg-dark-600 rounded-lg shadow-sm border border-gray-200 dark:border-dark-400 p-4 md:p-6 lg:p-8 mb-4 md:mb-6">
           <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white mb-4 md:mb-6">Profile Information</h2>
+
+          {/* Profile Picture */}
+          <div className="flex flex-col sm:flex-row items-center gap-6 mb-6 pb-6 border-b border-gray-200 dark:border-dark-400">
+            <div className="relative">
+              {user.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={`${user.firstName} ${user.lastName}`}
+                  className="w-24 h-24 rounded-full object-cover border-4 border-gray-200 dark:border-dark-400"
+                />
+              ) : (
+                <div className="w-24 h-24 rounded-full bg-primary-500 flex items-center justify-center text-white text-2xl font-semibold border-4 border-gray-200 dark:border-dark-400">
+                  {getInitials(user.firstName, user.lastName)}
+                </div>
+              )}
+              {uploadingAvatar && (
+                <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent"></div>
+                </div>
+              )}
+            </div>
+            <div className="flex flex-col items-center sm:items-start gap-2">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">Profile Picture</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 text-center sm:text-left">
+                Upload a new profile picture. JPG, PNG, GIF or WebP. Max 5MB.
+              </p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                onChange={handleAvatarUpload}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingAvatar}
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                {uploadingAvatar ? 'Uploading...' : 'Change Picture'}
+              </Button>
+            </div>
+          </div>
+
           <form onSubmit={handleProfileSubmit} className="space-y-6">
             {/* Email (Read-only) */}
             <Input

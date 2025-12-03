@@ -22,6 +22,9 @@ export class User {
   @Prop({ default: null })
   avatar: string;
 
+  @Prop({ default: null })
+  avatarCloudinaryId: string;
+
   @Prop({
     type: String,
     enum: Object.values(UserRole),
