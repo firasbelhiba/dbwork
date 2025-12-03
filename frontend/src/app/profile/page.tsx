@@ -775,7 +775,7 @@ export default function ProfilePage() {
                 value={gmailEmail}
                 onChange={(e) => setGmailEmail(e.target.value)}
                 placeholder="your-email@gmail.com"
-                className="flex-1"
+                className="flex-1 dark:bg-dark-600 dark:border-dark-400"
               />
               <Button
                 onClick={handleSaveGmailEmail}
