@@ -37,8 +37,9 @@ export default function UsersPage() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await usersAPI.getAll();
-      setUsers(response.data);
+      const response = await usersAPI.getAll({ limit: 100 });
+      // Handle paginated response - items contains the user array
+      setUsers(response.data.items || response.data);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast.error('Failed to load users');
