@@ -4,6 +4,12 @@ import { FeedbackType, FeedbackStatus } from '../enums/feedback.enum';
 
 export type FeedbackDocument = Feedback & Document;
 
+export interface FeedbackImage {
+  url: string;
+  cloudinaryId: string;
+  fileName?: string;
+}
+
 @Schema({ timestamps: true })
 export class Feedback {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
@@ -34,6 +40,9 @@ export class Feedback {
 
   @Prop({ default: null })
   browserInfo: string;
+
+  @Prop({ type: [{ url: String, cloudinaryId: String, fileName: String }], default: [] })
+  images: FeedbackImage[];
 
   @Prop({ default: 0 })
   upvotes: number;

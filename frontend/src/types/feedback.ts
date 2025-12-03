@@ -1,5 +1,11 @@
 import { User } from './user';
 
+export interface FeedbackImage {
+  url: string;
+  cloudinaryId: string;
+  fileName?: string;
+}
+
 export enum FeedbackType {
   BUG = 'bug',
   FEATURE_REQUEST = 'feature_request',
@@ -25,6 +31,7 @@ export interface Feedback {
   upvotedBy: string[];
   pageUrl?: string;
   browserInfo?: string;
+  images?: FeedbackImage[];
   resolvedAt?: string;
   resolvedBy?: User;
   closedAt?: string;
@@ -39,6 +46,7 @@ export interface CreateFeedbackDto {
   description: string;
   pageUrl?: string;
   browserInfo?: string;
+  images?: FeedbackImage[];
 }
 
 export interface UpdateFeedbackDto {

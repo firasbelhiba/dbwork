@@ -7,9 +7,11 @@ import { CreateFeedbackDto, UpdateFeedbackDto, QueryFeedbackDto } from './dto';
 import { CreateFeedbackCommentDto } from './dto/create-feedback-comment.dto';
 import { UpdateFeedbackCommentDto } from './dto/update-feedback-comment.dto';
 import { FeedbackStatus } from './enums/feedback.enum';
+import { FeedbackImage } from './schemas/feedback.schema';
 import { ActivitiesService } from '../activities/activities.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ActionType, EntityType } from '../activities/schemas/activity.schema';
+import { getCloudinary } from '../attachments/cloudinary.config';
 
 @Injectable()
 export class FeedbackService {
@@ -600,5 +602,33 @@ export class FeedbackService {
     return this.feedbackCommentModel
       .countDocuments({ feedbackId: new Types.ObjectId(feedbackId) })
       .exec();
+  }
+
+  async uploadImage(file: Express.Multer.File): Promise<FeedbackImage> {
+    const cloudinary = getCloudinary();
+
+    // Upload image to Cloudinary
+    const result = await new Promise<any>((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'feedback-images',
+          resource_type: 'image',
+          transformation: [
+            { width: 1200, height: 1200, crop: 'limit' }, // Limit max dimensions
+          ],
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        },
+      );
+      uploadStream.end(file.buffer);
+    });
+
+    return {
+      url: result.secure_url,
+      cloudinaryId: result.public_id,
+      fileName: file.originalname,
+    };
   }
 }

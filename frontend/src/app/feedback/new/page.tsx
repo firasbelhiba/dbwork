@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button, Select, Input, Breadcrumb } from '@/components/common';
 import { feedbackAPI } from '@/lib/api';
-import { FeedbackType } from '@/types/feedback';
+import { FeedbackType, FeedbackImage } from '@/types/feedback';
 import toast from 'react-hot-toast';
 
 export default function NewFeedbackPage() {
@@ -21,6 +22,53 @@ export default function NewFeedbackPage() {
         ? `${navigator.userAgent}`
         : '',
   });
+  const [images, setImages] = useState<FeedbackImage[]>([]);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = async (file: File) => {
+    if (!file.type.match(/^image\/(jpg|jpeg|png|gif|webp)$/)) {
+      toast.error('Only image files are allowed');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be less than 5MB');
+      return;
+    }
+
+    try {
+      setUploadingImage(true);
+      const response = await feedbackAPI.uploadImage(file);
+      setImages((prev) => [...prev, response.data]);
+      toast.success('Image uploaded');
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Failed to upload image');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handlePasteImage = async (e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (file) {
+          await handleImageUpload(file);
+        }
+        break;
+      }
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +90,10 @@ export default function NewFeedbackPage() {
 
     try {
       setLoading(true);
-      await feedbackAPI.create(formData);
+      await feedbackAPI.create({
+        ...formData,
+        images: images.length > 0 ? images : undefined,
+      });
       toast.success('Feedback submitted successfully!');
       router.push('/feedback');
     } catch (error: any) {
@@ -146,12 +197,95 @@ export default function NewFeedbackPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
+                onPaste={handlePasteImage}
                 required
                 maxLength={2000}
               />
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 {formData.description.length}/2000 characters
               </p>
+            </div>
+
+            {/* Screenshots */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Screenshots (optional)
+              </label>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                Attach screenshots to help illustrate the issue. You can also paste images directly (Ctrl+V).
+              </p>
+
+              {/* Image previews */}
+              {images.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
+                  {images.map((image, index) => (
+                    <div key={index} className="relative group">
+                      <div className="aspect-video relative rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                        <Image
+                          src={image.url}
+                          alt={image.fileName || `Screenshot ${index + 1}`}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                      {image.fileName && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
+                          {image.fileName}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Upload button */}
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    handleImageUpload(file);
+                    e.target.value = '';
+                  }
+                }}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => imageInputRef.current?.click()}
+                disabled={uploadingImage}
+                className="gap-2"
+              >
+                {uploadingImage ? (
+                  <>
+                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Add Screenshot
+                  </>
+                )}
+              </Button>
             </div>
 
             {/* Page URL */}

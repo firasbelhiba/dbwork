@@ -8,8 +8,13 @@ import {
   Delete,
   Query,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 import { FeedbackService } from './feedback.service';
 import { CreateFeedbackDto, UpdateFeedbackDto, QueryFeedbackDto } from './dto';
 import { CreateFeedbackCommentDto } from './dto/create-feedback-comment.dto';
@@ -125,6 +130,32 @@ export class FeedbackController {
   @ApiResponse({ status: 404, description: 'Feedback not found' })
   close(@Param('id') id: string, @CurrentUser() user) {
     return this.feedbackService.close(id, user._id);
+  }
+
+  @Post('upload-image')
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Upload an image for feedback' })
+  @ApiResponse({ status: 201, description: 'Image successfully uploaded' })
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: memoryStorage(),
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
+          return cb(new BadRequestException('Only image files are allowed'), false);
+        }
+        cb(null, true);
+      },
+      limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    }),
+  )
+  uploadImage(
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() user,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+    return this.feedbackService.uploadImage(file);
   }
 
   // Comment routes

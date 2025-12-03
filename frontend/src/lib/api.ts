@@ -288,6 +288,14 @@ export const feedbackAPI = {
   toTest: (id: string) => api.patch(`/feedback/${id}/to-test`),
   close: (id: string) => api.patch(`/feedback/${id}/close`),
   getStats: () => api.get('/feedback/stats'),
+  // Image upload
+  uploadImage: (file: File) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    return api.post('/feedback/upload-image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
   // Comments
   getComments: (feedbackId: string) => api.get(`/feedback/${feedbackId}/comments`),
   createComment: (feedbackId: string, data: { content: string }) => api.post(`/feedback/${feedbackId}/comments`, data),

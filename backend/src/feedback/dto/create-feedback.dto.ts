@@ -1,6 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsString, IsOptional, MaxLength, MinLength } from 'class-validator';
+import { IsEnum, IsString, IsOptional, MaxLength, MinLength, IsArray, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 import { FeedbackType } from '../enums/feedback.enum';
+
+export class FeedbackImageDto {
+  @ApiProperty({ example: 'https://res.cloudinary.com/...' })
+  @IsString()
+  url: string;
+
+  @ApiProperty({ example: 'feedback-images/abc123' })
+  @IsString()
+  cloudinaryId: string;
+
+  @ApiProperty({ example: 'screenshot.png', required: false })
+  @IsOptional()
+  @IsString()
+  fileName?: string;
+}
 
 export class CreateFeedbackDto {
   @ApiProperty({
@@ -50,4 +66,15 @@ export class CreateFeedbackDto {
   @IsOptional()
   @IsString()
   browserInfo?: string;
+
+  @ApiProperty({
+    type: [FeedbackImageDto],
+    description: 'Screenshots or images attached to feedback',
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => FeedbackImageDto)
+  images?: FeedbackImageDto[];
 }
