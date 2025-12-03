@@ -176,10 +176,15 @@ export class GoogleCalendarService {
       return result;
     } catch (error) {
       console.error('[GoogleCalendar] Error creating event:', error);
+      console.error('[GoogleCalendar] Error details:', JSON.stringify(error.response?.data || error.message || error, null, 2));
+
       if (error.code === 401) {
         throw new UnauthorizedException('Google Calendar authorization expired. Please reconnect your account.');
       }
-      throw new BadRequestException('Failed to create Google Calendar event');
+
+      // Provide more specific error message if available
+      const errorMessage = error.response?.data?.error?.message || error.message || 'Failed to create Google Calendar event';
+      throw new BadRequestException(errorMessage);
     }
   }
 
