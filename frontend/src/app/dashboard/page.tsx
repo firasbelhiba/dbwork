@@ -263,7 +263,7 @@ export default function DashboardPage() {
                   No projects found
                 </div>
               ) : (
-                projects.slice(0, 5).map((project) => (
+                projects.slice(0, 10).map((project) => (
                   <Link
                     key={project._id}
                     href={`/projects/${project._id}`}
