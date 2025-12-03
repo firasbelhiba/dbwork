@@ -232,6 +232,14 @@ export default function UsersPage() {
                                 {user.firstName} {user.lastName}
                               </div>
                               <div className="text-sm text-gray-500 dark:text-gray-400">{user.email}</div>
+                              {user.gmailEmail && user.gmailEmail !== user.email && (
+                                <div className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
+                                  <svg className="w-3 h-3 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M20 18h-2V9.25L12 13 6 9.25V18H4V6h1.2l6.8 4.25L18.8 6H20m0-2H4c-1.11 0-2 .89-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2z"/>
+                                  </svg>
+                                  {user.gmailEmail}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </td>
