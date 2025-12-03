@@ -56,13 +56,18 @@ export class CommentsService {
       const issue = await this.issuesService.findOne(issueId);
       const recipientIds = new Set<string>();
 
+      // Fetch all users ONCE before processing mentions (fixes N+1 query problem)
+      let allUsers: any[] = [];
+      if (mentions.length > 0) {
+        allUsers = await this.usersService.findAll();
+      }
+
       // 1. Notify mentioned users
       if (mentions.length > 0) {
         for (const username of mentions) {
           try {
-            // Find user by firstName or lastName matching the mention
-            const users = await this.usersService.findAll();
-            const mentionedUser = users.find(u =>
+            // Find user by firstName or lastName matching the mention (using cached users)
+            const mentionedUser = allUsers.find(u =>
               u.firstName.toLowerCase() === username.toLowerCase() ||
               u.lastName.toLowerCase() === username.toLowerCase() ||
               `${u.firstName}${u.lastName}`.toLowerCase() === username.toLowerCase()
@@ -160,12 +165,12 @@ export class CommentsService {
         console.error('[ACHIEVEMENTS] Error checking comment achievements:', error);
       }
 
-      // Check mention achievements for mentioned users
+      // Check mention achievements for mentioned users (reusing allUsers from above)
       if (mentions.length > 0) {
         for (const username of mentions) {
           try {
-            const users = await this.usersService.findAll();
-            const mentionedUser = users.find(u =>
+            // Reuse allUsers instead of fetching again (fixes N+1 query problem)
+            const mentionedUser = allUsers.find(u =>
               u.firstName.toLowerCase() === username.toLowerCase() ||
               u.lastName.toLowerCase() === username.toLowerCase() ||
               `${u.firstName}${u.lastName}`.toLowerCase() === username.toLowerCase()
