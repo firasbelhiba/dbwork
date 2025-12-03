@@ -1,11 +1,18 @@
 import { User } from './user';
 import { Issue } from './issue';
 
+export interface CommentImage {
+  url: string;
+  cloudinaryId: string;
+  fileName?: string;
+}
+
 export interface Comment {
   _id: string;
   issueId: string | Issue;
   userId: string | User;
   content: string;
+  images?: CommentImage[];
   mentions: string[];
   parentCommentId: string | Comment | null;
   reactions: CommentReaction[];

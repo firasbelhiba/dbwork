@@ -3,6 +3,12 @@ import { Document, Types } from 'mongoose';
 
 export type CommentDocument = Comment & Document;
 
+export interface CommentImage {
+  url: string;
+  cloudinaryId: string;
+  fileName?: string;
+}
+
 @Schema({ timestamps: true })
 export class Comment {
   @Prop({ type: Types.ObjectId, ref: 'Issue', required: true })
@@ -13,6 +19,9 @@ export class Comment {
 
   @Prop({ required: true })
   content: string;
+
+  @Prop({ type: [{ url: String, cloudinaryId: String, fileName: String }], default: [] })
+  images: CommentImage[];
 
   @Prop({ type: [String], default: [] })
   mentions: string[];

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Comment, CommentDocument } from './schemas/comment.schema';
+import { Comment, CommentDocument, CommentImage } from './schemas/comment.schema';
 import { CreateCommentDto, UpdateCommentDto } from './dto';
 import { ActivitiesService } from '../activities/activities.service';
 import { ActionType, EntityType } from '../activities/schemas/activity.schema';
@@ -9,6 +9,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { IssuesService } from '../issues/issues.service';
 import { UsersService } from '../users/users.service';
 import { AchievementsService } from '../achievements/achievements.service';
+import { getCloudinary } from '../attachments/cloudinary.config';
 
 @Injectable()
 export class CommentsService {
@@ -309,5 +310,33 @@ export class CommentsService {
 
   async getCommentCount(issueId: string): Promise<number> {
     return this.commentModel.countDocuments({ issueId: new Types.ObjectId(issueId) }).exec();
+  }
+
+  async uploadImage(file: Express.Multer.File): Promise<CommentImage> {
+    const cloudinary = getCloudinary();
+
+    // Upload image to Cloudinary
+    const result = await new Promise<any>((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'comment-images',
+          resource_type: 'image',
+          transformation: [
+            { width: 1200, height: 1200, crop: 'limit' }, // Limit max dimensions
+          ],
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        },
+      );
+      uploadStream.end(file.buffer);
+    });
+
+    return {
+      url: result.secure_url,
+      cloudinaryId: result.public_id,
+      fileName: file.originalname,
+    };
   }
 }

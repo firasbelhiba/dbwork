@@ -200,6 +200,13 @@ export const commentsAPI = {
   delete: (id: string) => api.delete(`/comments/${id}`),
   addReaction: (id: string, reaction: string) => api.post(`/comments/${id}/reactions`, { reaction }),
   removeReaction: (id: string, reaction: string) => api.delete(`/comments/${id}/reactions`, { data: { reaction } }),
+  uploadImage: (file: File) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    return api.post('/comments/upload-image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
 };
 
 // Notifications API

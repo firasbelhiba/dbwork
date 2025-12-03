@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { issuesAPI, commentsAPI } from '@/lib/api';
 import { Issue } from '@/types/issue';
-import { Comment } from '@/types/comment';
+import { Comment, CommentImage } from '@/types/comment';
 import { UserRole } from '@/types/user';
 import { Button, Badge, Select, Breadcrumb, LogoLoader } from '@/components/common';
 import { MentionTextarea } from '@/components/common/MentionTextarea';
@@ -32,6 +32,9 @@ export default function IssueDetailPage() {
   const [deleting, setDeleting] = useState(false);
   const [archiving, setArchiving] = useState(false);
   const [unauthorized, setUnauthorized] = useState(false);
+  const [commentImages, setCommentImages] = useState<CommentImage[]>([]);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (issueId && !authLoading) {
@@ -87,13 +90,17 @@ export default function IssueDetailPage() {
 
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newComment.trim()) return;
+    if (!newComment.trim() && commentImages.length === 0) return;
 
     setSubmitting(true);
     try {
-      await commentsAPI.create(issueId, { content: newComment });
+      await commentsAPI.create(issueId, {
+        content: newComment || ' ', // Backend requires content, use space if empty but has images
+        images: commentImages.length > 0 ? commentImages : undefined
+      });
       toast.success('Comment added successfully!');
       setNewComment('');
+      setCommentImages([]);
       fetchIssueData();
     } catch (error) {
       console.error('Error adding comment:', error);
@@ -101,6 +108,76 @@ export default function IssueDetailPage() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Please upload an image file (JPEG, PNG, GIF, or WebP)');
+      return;
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be less than 5MB');
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const response = await commentsAPI.uploadImage(file);
+      setCommentImages([...commentImages, response.data]);
+      toast.success('Image uploaded successfully');
+    } catch (error: any) {
+      console.error('Error uploading image:', error);
+      toast.error(error.response?.data?.message || 'Failed to upload image');
+    } finally {
+      setUploadingImage(false);
+      // Reset the input
+      if (imageInputRef.current) {
+        imageInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handlePasteImage = async (e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        e.preventDefault();
+        const file = items[i].getAsFile();
+        if (file) {
+          // Validate file size (5MB max)
+          if (file.size > 5 * 1024 * 1024) {
+            toast.error('Image size must be less than 5MB');
+            return;
+          }
+
+          setUploadingImage(true);
+          try {
+            const response = await commentsAPI.uploadImage(file);
+            setCommentImages([...commentImages, response.data]);
+            toast.success('Image pasted successfully');
+          } catch (error: any) {
+            console.error('Error uploading pasted image:', error);
+            toast.error(error.response?.data?.message || 'Failed to upload image');
+          } finally {
+            setUploadingImage(false);
+          }
+        }
+        break;
+      }
+    }
+  };
+
+  const removeCommentImage = (index: number) => {
+    setCommentImages(commentImages.filter((_, i) => i !== index));
   };
 
   const handleStatusChange = async (newStatus: string) => {
@@ -390,14 +467,75 @@ export default function IssueDetailPage() {
                       </div>
                     )}
                     <div className="flex-1">
-                      <MentionTextarea
-                        value={newComment}
-                        onChange={setNewComment}
-                        placeholder="Add a comment... Use @ to mention someone"
-                        rows={3}
-                      />
-                      <div className="flex justify-end mt-2">
-                        <Button type="submit" loading={submitting} disabled={!newComment.trim()}>
+                      <div onPaste={handlePasteImage}>
+                        <MentionTextarea
+                          value={newComment}
+                          onChange={setNewComment}
+                          placeholder="Add a comment... Use @ to mention someone, paste or upload images"
+                          rows={3}
+                        />
+                      </div>
+
+                      {/* Image Preview */}
+                      {commentImages.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {commentImages.map((image, index) => (
+                            <div key={index} className="relative group">
+                              <img
+                                src={image.url}
+                                alt={image.fileName || 'Uploaded image'}
+                                className="w-20 h-20 object-cover rounded-lg border border-gray-200 dark:border-dark-400"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeCommentImage(index)}
+                                className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Upload indicator */}
+                      {uploadingImage && (
+                        <div className="flex items-center gap-2 mt-2 text-sm text-gray-500 dark:text-gray-400">
+                          <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                          Uploading image...
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="file"
+                            ref={imageInputRef}
+                            onChange={handleImageUpload}
+                            accept="image/jpeg,image/png,image/gif,image/webp"
+                            className="hidden"
+                            disabled={uploadingImage}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => imageInputRef.current?.click()}
+                            disabled={uploadingImage}
+                            className="flex items-center gap-1 px-2 py-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-500 rounded transition-colors disabled:opacity-50"
+                            title="Upload image"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span>Add image</span>
+                          </button>
+                          <span className="text-xs text-gray-400">or paste from clipboard</span>
+                        </div>
+                        <Button type="submit" loading={submitting} disabled={!newComment.trim() && commentImages.length === 0}>
                           Add Comment
                         </Button>
                       </div>
@@ -436,6 +574,26 @@ export default function IssueDetailPage() {
                                 </span>
                               </div>
                               <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{comment.content}</p>
+                              {/* Comment Images */}
+                              {comment.images && comment.images.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mt-3">
+                                  {comment.images.map((image, imgIndex) => (
+                                    <a
+                                      key={imgIndex}
+                                      href={image.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="block"
+                                    >
+                                      <img
+                                        src={image.url}
+                                        alt={image.fileName || 'Comment image'}
+                                        className="max-w-xs max-h-48 object-contain rounded-lg border border-gray-200 dark:border-dark-400 hover:opacity-90 transition-opacity"
+                                      />
+                                    </a>
+                                  ))}
+                                </div>
+                              )}
                               {comment.isEdited && (
                                 <span className="text-xs text-gray-500 dark:text-gray-400 mt-2 block">(edited)</span>
                               )}
