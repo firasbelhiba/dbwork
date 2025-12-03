@@ -71,20 +71,31 @@ export class Project {
     title: { type: String, required: true },
     description: { type: String, default: '' },
     date: { type: Date, required: true },
+    endDate: { type: Date, default: null }, // Optional end date/time
     location: { type: String, default: '' },
     createdBy: { type: Types.ObjectId, ref: 'User', required: true },
     createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+    updatedAt: { type: Date, default: Date.now },
+    // Google Calendar integration
+    googleEventId: { type: String, default: null },
+    googleMeetLink: { type: String, default: null },
+    googleMeetId: { type: String, default: null },
+    attendees: { type: [String], default: [] }, // Email addresses of attendees
   }], default: [] })
   demoEvents: {
     id: string;
     title: string;
     description: string;
     date: Date;
+    endDate: Date | null;
     location: string;
     createdBy: Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
+    googleEventId: string | null;
+    googleMeetLink: string | null;
+    googleMeetId: string | null;
+    attendees: string[];
   }[];
 
   @Prop({ default: false })

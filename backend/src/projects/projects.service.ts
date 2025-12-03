@@ -4,24 +4,31 @@ import {
   ConflictException,
   ForbiddenException,
   BadRequestException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Project, ProjectDocument } from './schemas/project.schema';
+import { User, UserDocument } from '../users/schemas/user.schema';
 import { CreateProjectDto, UpdateProjectDto, AddMemberDto, CreateCustomStatusDto, UpdateCustomStatusDto, ReorderCustomStatusesDto, CreateDemoEventDto, UpdateDemoEventDto } from './dto';
 import { ActivitiesService } from '../activities/activities.service';
 import { ActionType, EntityType } from '../activities/schemas/activity.schema';
 import { NotificationsService } from '../notifications/notifications.service';
 import { AchievementsService } from '../achievements/achievements.service';
+import { GoogleCalendarService } from '../google-calendar/google-calendar.service';
 import { getCloudinary } from '../attachments/cloudinary.config';
 
 @Injectable()
 export class ProjectsService {
   constructor(
     @InjectModel(Project.name) private projectModel: Model<ProjectDocument>,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
     private activitiesService: ActivitiesService,
     private notificationsService: NotificationsService,
     private achievementsService: AchievementsService,
+    @Inject(forwardRef(() => GoogleCalendarService))
+    private googleCalendarService: GoogleCalendarService,
   ) {}
 
   async create(createProjectDto: CreateProjectDto, userId: string): Promise<ProjectDocument> {
@@ -631,18 +638,103 @@ export class ProjectsService {
 
     const eventId = `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    const newEvent = {
+    // Calculate end date (default 1 hour after start if not provided)
+    const startDate = new Date(createDemoEventDto.date);
+    const endDate = createDemoEventDto.endDate
+      ? new Date(createDemoEventDto.endDate)
+      : new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour later
+
+    // Collect attendee emails
+    let attendeeEmails: string[] = createDemoEventDto.attendees || [];
+
+    // If inviteAllMembers is true, get all project members' emails
+    if (createDemoEventDto.inviteAllMembers && project.members.length > 0) {
+      const memberIds = project.members.map(m => m.userId);
+      const members = await this.userModel
+        .find({ _id: { $in: memberIds } })
+        .select('email')
+        .exec();
+      const memberEmails = members.map(m => m.email);
+      attendeeEmails = [...new Set([...attendeeEmails, ...memberEmails])];
+    }
+
+    const newEvent: any = {
       id: eventId,
       title: createDemoEventDto.title,
       description: createDemoEventDto.description || '',
-      date: new Date(createDemoEventDto.date),
+      date: startDate,
+      endDate: endDate,
       location: createDemoEventDto.location || '',
       createdBy: new Types.ObjectId(userId),
       createdAt: new Date(),
       updatedAt: new Date(),
+      googleEventId: null,
+      googleMeetLink: null,
+      googleMeetId: null,
+      attendees: attendeeEmails,
     };
 
-    project.demoEvents.push(newEvent as any);
+    // Create Google Calendar event with Meet link if requested
+    if (createDemoEventDto.createGoogleMeet) {
+      try {
+        const isConnected = await this.googleCalendarService.isConnected(userId);
+
+        if (!isConnected) {
+          throw new BadRequestException(
+            'Google Calendar not connected. Please connect your Google account in Profile settings first.'
+          );
+        }
+
+        const googleResult = await this.googleCalendarService.createEvent(userId, {
+          title: createDemoEventDto.title,
+          description: createDemoEventDto.description || `Project: ${project.name}`,
+          startDateTime: startDate,
+          endDateTime: endDate,
+          location: createDemoEventDto.location,
+          attendees: attendeeEmails,
+          createMeetLink: true,
+        });
+
+        newEvent.googleEventId = googleResult.eventId;
+        if (googleResult.meetInfo) {
+          newEvent.googleMeetLink = googleResult.meetInfo.meetLink;
+          newEvent.googleMeetId = googleResult.meetInfo.meetId;
+        }
+      } catch (error) {
+        console.error('[ProjectsService] Error creating Google Calendar event:', error);
+        // If it's our own BadRequestException, rethrow it
+        if (error instanceof BadRequestException) {
+          throw error;
+        }
+        // Otherwise, continue without Google integration but warn
+        console.warn('[ProjectsService] Creating event without Google Calendar integration');
+      }
+    }
+
+    project.demoEvents.push(newEvent);
+
+    // Notify all attendees about the new event
+    for (const email of attendeeEmails) {
+      try {
+        const attendee = await this.userModel.findOne({ email }).exec();
+        if (attendee && attendee._id.toString() !== userId) {
+          await this.notificationsService.create({
+            userId: attendee._id.toString(),
+            type: 'project_invitation' as any, // Reuse existing type
+            title: 'New Calendar Event',
+            message: `You've been invited to "${createDemoEventDto.title}" in project ${project.name}${newEvent.googleMeetLink ? ' (Google Meet link included)' : ''}`,
+            link: `/projects/${projectId}?tab=calendar`,
+            metadata: {
+              projectId,
+              eventId,
+              meetLink: newEvent.googleMeetLink,
+            },
+          });
+        }
+      } catch (error) {
+        console.error(`[ProjectsService] Error notifying attendee ${email}:`, error);
+      }
+    }
 
     return project.save();
   }
@@ -694,13 +786,25 @@ export class ProjectsService {
     return project.save();
   }
 
-  async deleteDemoEvent(projectId: string, eventId: string): Promise<ProjectDocument> {
+  async deleteDemoEvent(projectId: string, eventId: string, userId: string): Promise<ProjectDocument> {
     const project = await this.findOne(projectId);
 
     const eventIndex = project.demoEvents.findIndex(e => e.id === eventId);
 
     if (eventIndex === -1) {
       throw new NotFoundException('Demo event not found');
+    }
+
+    const event = project.demoEvents[eventIndex];
+
+    // Delete Google Calendar event if it exists
+    if (event.googleEventId) {
+      try {
+        await this.googleCalendarService.deleteEvent(userId, event.googleEventId);
+      } catch (error) {
+        console.error('[ProjectsService] Error deleting Google Calendar event:', error);
+        // Continue with local deletion even if Google deletion fails
+      }
     }
 
     project.demoEvents.splice(eventIndex, 1);

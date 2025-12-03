@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsDateString, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsDateString, IsOptional, IsBoolean, IsArray } from 'class-validator';
 
 export class CreateDemoEventDto {
   @IsString()
@@ -13,9 +13,25 @@ export class CreateDemoEventDto {
   @IsNotEmpty()
   date: string;
 
+  @IsDateString()
+  @IsOptional()
+  endDate?: string;
+
   @IsString()
   @IsOptional()
   location?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  createGoogleMeet?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  inviteAllMembers?: boolean;
+
+  @IsArray()
+  @IsOptional()
+  attendees?: string[]; // Additional email addresses
 }
 
 export class UpdateDemoEventDto {
@@ -31,7 +47,15 @@ export class UpdateDemoEventDto {
   @IsOptional()
   date?: string;
 
+  @IsDateString()
+  @IsOptional()
+  endDate?: string;
+
   @IsString()
   @IsOptional()
   location?: string;
+
+  @IsArray()
+  @IsOptional()
+  attendees?: string[];
 }

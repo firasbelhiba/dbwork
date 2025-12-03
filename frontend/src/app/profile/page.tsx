@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button, Input, Breadcrumb } from '@/components/common';
 import { useAuth } from '@/contexts/AuthContext';
-import { usersAPI, authAPI, adminAPI } from '@/lib/api';
+import { usersAPI, authAPI, adminAPI, googleCalendarAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { getInitials } from '@/lib/utils';
 
@@ -46,6 +46,12 @@ export default function ProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
+  // Google Calendar integration
+  const [googleCalendarConnected, setGoogleCalendarConnected] = useState(false);
+  const [loadingGoogleStatus, setLoadingGoogleStatus] = useState(false);
+  const [connectingGoogle, setConnectingGoogle] = useState(false);
+  const [disconnectingGoogle, setDisconnectingGoogle] = useState(false);
+
   useEffect(() => {
     if (user) {
       setProfileData({
@@ -54,6 +60,7 @@ export default function ProfilePage() {
         email: user.email || '',
       });
       loadNotificationPreferences();
+      loadGoogleCalendarStatus();
 
       // Load admin stats if user is admin
       if (user.role === 'admin') {
@@ -82,6 +89,45 @@ export default function ProfilePage() {
       console.error('Error loading database stats:', error);
     } finally {
       setLoadingStats(false);
+    }
+  };
+
+  const loadGoogleCalendarStatus = async () => {
+    setLoadingGoogleStatus(true);
+    try {
+      const response = await googleCalendarAPI.getStatus();
+      setGoogleCalendarConnected(response.data.isConnected);
+    } catch (error) {
+      console.error('Error loading Google Calendar status:', error);
+    } finally {
+      setLoadingGoogleStatus(false);
+    }
+  };
+
+  const handleConnectGoogle = async () => {
+    setConnectingGoogle(true);
+    try {
+      const response = await googleCalendarAPI.getAuthUrl();
+      // Redirect to Google OAuth
+      window.location.href = response.data.url;
+    } catch (error: any) {
+      console.error('Error connecting Google Calendar:', error);
+      toast.error(error.response?.data?.message || 'Failed to connect Google Calendar');
+      setConnectingGoogle(false);
+    }
+  };
+
+  const handleDisconnectGoogle = async () => {
+    setDisconnectingGoogle(true);
+    try {
+      await googleCalendarAPI.disconnect();
+      setGoogleCalendarConnected(false);
+      toast.success('Google Calendar disconnected successfully');
+    } catch (error: any) {
+      console.error('Error disconnecting Google Calendar:', error);
+      toast.error(error.response?.data?.message || 'Failed to disconnect Google Calendar');
+    } finally {
+      setDisconnectingGoogle(false);
     }
   };
 
@@ -673,6 +719,70 @@ export default function ProfilePage() {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
             </div>
           )}
+        </div>
+
+        {/* Connected Accounts */}
+        <div className="bg-white dark:bg-dark-600 rounded-lg shadow-sm border border-gray-200 dark:border-dark-400 p-4 md:p-6 lg:p-8 mt-4 md:mt-6">
+          <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white mb-2">Connected Accounts</h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+            Connect your accounts to enable additional features
+          </p>
+
+          {/* Google Calendar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-gray-50 dark:bg-dark-500 rounded-lg">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-lg bg-white dark:bg-dark-400 flex items-center justify-center shadow-sm">
+                <svg className="w-8 h-8" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+              </div>
+              <div>
+                <p className="font-medium text-gray-900 dark:text-white">Google Calendar</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {loadingGoogleStatus ? (
+                    'Loading...'
+                  ) : googleCalendarConnected ? (
+                    <span className="text-success-600 dark:text-success-400">Connected - You can create Google Meet links for calendar events</span>
+                  ) : (
+                    'Connect to create Google Meet links for project calendar events'
+                  )}
+                </p>
+              </div>
+            </div>
+            <div className="flex-shrink-0">
+              {loadingGoogleStatus ? (
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500"></div>
+              ) : googleCalendarConnected ? (
+                <Button
+                  onClick={handleDisconnectGoogle}
+                  loading={disconnectingGoogle}
+                  disabled={disconnectingGoogle}
+                  variant="secondary"
+                  className="w-full sm:w-auto"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  </svg>
+                  Disconnect
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleConnectGoogle}
+                  loading={connectingGoogle}
+                  disabled={connectingGoogle}
+                  className="w-full sm:w-auto"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  </svg>
+                  Connect
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Account Information */}

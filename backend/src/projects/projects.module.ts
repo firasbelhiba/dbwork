@@ -3,16 +3,22 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ProjectsService } from './projects.service';
 import { ProjectsController } from './projects.controller';
 import { Project, ProjectSchema } from './schemas/project.schema';
+import { User, UserSchema } from '../users/schemas/user.schema';
 import { ActivitiesModule } from '../activities/activities.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { AchievementsModule } from '../achievements/achievements.module';
+import { GoogleCalendarModule } from '../google-calendar/google-calendar.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Project.name, schema: ProjectSchema }]),
+    MongooseModule.forFeature([
+      { name: Project.name, schema: ProjectSchema },
+      { name: User.name, schema: UserSchema },
+    ]),
     ActivitiesModule,
     NotificationsModule,
     forwardRef(() => AchievementsModule),
+    forwardRef(() => GoogleCalendarModule),
   ],
   controllers: [ProjectsController],
   providers: [ProjectsService],

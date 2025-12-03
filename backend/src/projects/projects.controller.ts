@@ -244,7 +244,11 @@ export class ProjectsController {
   @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
   @ApiOperation({ summary: 'Delete demo event' })
   @ApiResponse({ status: 200, description: 'Demo event successfully deleted' })
-  deleteDemoEvent(@Param('id') id: string, @Param('eventId') eventId: string) {
-    return this.projectsService.deleteDemoEvent(id, eventId);
+  deleteDemoEvent(
+    @Param('id') id: string,
+    @Param('eventId') eventId: string,
+    @CurrentUser() user,
+  ) {
+    return this.projectsService.deleteDemoEvent(id, eventId, user._id.toString());
   }
 }

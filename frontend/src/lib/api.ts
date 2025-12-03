@@ -340,4 +340,11 @@ export const adminAPI = {
     api.get(`/admin/export/collection/${collectionName}`, { responseType: 'blob' }),
 };
 
+// Google Calendar API
+export const googleCalendarAPI = {
+  getAuthUrl: () => api.get('/google-calendar/auth'),
+  getStatus: () => api.get('/google-calendar/status'),
+  disconnect: () => api.post('/google-calendar/disconnect'),
+};
+
 export default api;

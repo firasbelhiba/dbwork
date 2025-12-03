@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DemoEvent } from '@/types/project';
 import { Button, Input, Textarea } from '@/components/common';
 import { User } from '@/types/user';
+import { googleCalendarAPI } from '@/lib/api';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { formatDateTime, getInitials } from '@/lib/utils';
@@ -29,10 +30,34 @@ export const DemoEventModal: React.FC<DemoEventModalProps> = ({
     title: '',
     description: '',
     date: '',
+    endDate: '',
     location: '',
+    createGoogleMeet: false,
+    inviteAllMembers: false,
   });
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [googleCalendarConnected, setGoogleCalendarConnected] = useState(false);
+  const [checkingGoogleStatus, setCheckingGoogleStatus] = useState(false);
+
+  // Check Google Calendar connection status
+  useEffect(() => {
+    const checkGoogleStatus = async () => {
+      setCheckingGoogleStatus(true);
+      try {
+        const response = await googleCalendarAPI.getStatus();
+        setGoogleCalendarConnected(response.data.isConnected);
+      } catch (error) {
+        setGoogleCalendarConnected(false);
+      } finally {
+        setCheckingGoogleStatus(false);
+      }
+    };
+
+    if (isOpen && canEdit) {
+      checkGoogleStatus();
+    }
+  }, [isOpen, canEdit]);
 
   useEffect(() => {
     if (event) {
@@ -41,11 +66,21 @@ export const DemoEventModal: React.FC<DemoEventModalProps> = ({
       const localDate = new Date(eventDate.getTime() - eventDate.getTimezoneOffset() * 60000);
       const dateString = localDate.toISOString().slice(0, 16);
 
+      let endDateString = '';
+      if (event.endDate) {
+        const endEventDate = new Date(event.endDate);
+        const localEndDate = new Date(endEventDate.getTime() - endEventDate.getTimezoneOffset() * 60000);
+        endDateString = localEndDate.toISOString().slice(0, 16);
+      }
+
       setFormData({
         title: event.title,
         description: event.description || '',
         date: dateString,
+        endDate: endDateString,
         location: event.location || '',
+        createGoogleMeet: false,
+        inviteAllMembers: false,
       });
       setIsEditing(false);
     } else {
@@ -53,7 +88,10 @@ export const DemoEventModal: React.FC<DemoEventModalProps> = ({
         title: '',
         description: '',
         date: '',
+        endDate: '',
         location: '',
+        createGoogleMeet: false,
+        inviteAllMembers: true, // Default to invite all for new events
       });
       setIsEditing(true);
     }
@@ -72,15 +110,31 @@ export const DemoEventModal: React.FC<DemoEventModalProps> = ({
       return;
     }
 
+    // Validate Google Meet option
+    if (formData.createGoogleMeet && !googleCalendarConnected) {
+      toast.error('Please connect your Google Calendar first in Profile settings');
+      return;
+    }
+
     setLoading(true);
     try {
       const token = localStorage.getItem('accessToken');
-      const payload = {
+      const payload: any = {
         title: formData.title.trim(),
         description: formData.description.trim(),
         date: new Date(formData.date).toISOString(),
         location: formData.location.trim(),
       };
+
+      if (formData.endDate) {
+        payload.endDate = new Date(formData.endDate).toISOString();
+      }
+
+      // Only include Google Meet options for new events
+      if (!event) {
+        payload.createGoogleMeet = formData.createGoogleMeet;
+        payload.inviteAllMembers = formData.inviteAllMembers;
+      }
 
       if (event) {
         // Update existing event
@@ -97,7 +151,11 @@ export const DemoEventModal: React.FC<DemoEventModalProps> = ({
           payload,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        toast.success('Event created successfully!');
+        toast.success(
+          formData.createGoogleMeet
+            ? 'Event created with Google Meet link! Attendees will receive calendar invites.'
+            : 'Event created successfully!'
+        );
       }
 
       onSuccess();
@@ -128,6 +186,16 @@ export const DemoEventModal: React.FC<DemoEventModalProps> = ({
       toast.error(error.response?.data?.message || 'Failed to delete event');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleConnectGoogle = async () => {
+    try {
+      const response = await googleCalendarAPI.getAuthUrl();
+      // Redirect to Google OAuth
+      window.location.href = response.data.url;
+    } catch (error) {
+      toast.error('Failed to get Google authorization URL');
     }
   };
 
@@ -178,7 +246,15 @@ export const DemoEventModal: React.FC<DemoEventModalProps> = ({
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">
                     Date & Time
                   </label>
-                  <p className="text-gray-900 dark:text-gray-100">📅 {formatDateTime(event.date)}</p>
+                  <p className="text-gray-900 dark:text-gray-100">
+                    <span className="mr-2">📅</span>
+                    {formatDateTime(event.date)}
+                    {event.endDate && (
+                      <span className="text-gray-500 dark:text-gray-400">
+                        {' → '}{formatDateTime(event.endDate)}
+                      </span>
+                    )}
+                  </p>
                 </div>
 
                 {event.location && (
@@ -187,6 +263,48 @@ export const DemoEventModal: React.FC<DemoEventModalProps> = ({
                       Location
                     </label>
                     <p className="text-gray-900 dark:text-gray-100">📍 {event.location}</p>
+                  </div>
+                )}
+
+                {/* Google Meet Link */}
+                {event.googleMeetLink && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">
+                      Google Meet
+                    </label>
+                    <a
+                      href={event.googleMeetLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                    >
+                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 12.75c1.63 0 3.07.39 4.24.9 1.08.48 1.76 1.56 1.76 2.73V18H6v-1.62c0-1.17.68-2.25 1.76-2.73 1.17-.51 2.61-.9 4.24-.9zM12 12c1.93 0 3.5-1.57 3.5-3.5S13.93 5 12 5 8.5 6.57 8.5 8.5 10.07 12 12 12z"/>
+                      </svg>
+                      Join Google Meet
+                    </a>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {event.googleMeetLink}
+                    </p>
+                  </div>
+                )}
+
+                {/* Attendees */}
+                {event.attendees && event.attendees.length > 0 && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">
+                      Attendees ({event.attendees.length})
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {event.attendees.map((email, idx) => (
+                        <span
+                          key={idx}
+                          className="px-2 py-1 bg-gray-100 dark:bg-dark-300 text-gray-700 dark:text-gray-300 rounded text-sm"
+                        >
+                          {email}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 )}
 
@@ -244,18 +362,32 @@ export const DemoEventModal: React.FC<DemoEventModalProps> = ({
                   />
                 </div>
 
-                <div>
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">
-                    Date & Time <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="datetime-local"
-                    value={formData.date}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-dark-200 rounded-md bg-white dark:bg-dark-300 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    disabled={loading}
-                    required
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">
+                      Start Date & Time <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={formData.date}
+                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-dark-200 rounded-md bg-white dark:bg-dark-300 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      disabled={loading}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">
+                      End Date & Time
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={formData.endDate}
+                      onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-dark-200 rounded-md bg-white dark:bg-dark-300 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      disabled={loading}
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -265,7 +397,7 @@ export const DemoEventModal: React.FC<DemoEventModalProps> = ({
                   <Input
                     value={formData.location}
                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    placeholder="e.g., Zoom, Conference Room A"
+                    placeholder="e.g., Conference Room A, Building 1"
                     disabled={loading}
                   />
                 </div>
@@ -282,6 +414,95 @@ export const DemoEventModal: React.FC<DemoEventModalProps> = ({
                     disabled={loading}
                   />
                 </div>
+
+                {/* Google Meet Integration - Only for new events */}
+                {!event && (
+                  <div className="border-t border-gray-200 dark:border-dark-300 pt-4">
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm0 4c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm6 12H6v-1.4c0-2 4-3.1 6-3.1s6 1.1 6 3.1V19z"/>
+                      </svg>
+                      Google Calendar Integration
+                    </h3>
+
+                    {checkingGoogleStatus ? (
+                      <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Checking connection status...
+                      </div>
+                    ) : googleCalendarConnected ? (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-green-600 dark:text-green-400 text-sm">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          Google Calendar connected
+                        </div>
+
+                        <label className="flex items-center gap-3 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formData.createGoogleMeet}
+                            onChange={(e) => setFormData({ ...formData, createGoogleMeet: e.target.checked })}
+                            className="w-5 h-5 rounded border-gray-300 dark:border-dark-200 text-blue-600 focus:ring-blue-500"
+                            disabled={loading}
+                          />
+                          <div>
+                            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              Create Google Meet link
+                            </span>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              A video call link will be generated and shared with attendees
+                            </p>
+                          </div>
+                        </label>
+
+                        {formData.createGoogleMeet && (
+                          <label className="flex items-center gap-3 cursor-pointer ml-8">
+                            <input
+                              type="checkbox"
+                              checked={formData.inviteAllMembers}
+                              onChange={(e) => setFormData({ ...formData, inviteAllMembers: e.target.checked })}
+                              className="w-5 h-5 rounded border-gray-300 dark:border-dark-200 text-blue-600 focus:ring-blue-500"
+                              disabled={loading}
+                            />
+                            <div>
+                              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                Invite all project members
+                              </span>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                All team members will receive calendar invitations
+                              </p>
+                            </div>
+                          </label>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="bg-gray-50 dark:bg-dark-300 rounded-lg p-4">
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                          Connect your Google account to create events with Google Meet links and send calendar invites.
+                        </p>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={handleConnectGoogle}
+                          className="flex items-center gap-2"
+                        >
+                          <svg className="w-5 h-5" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                          </svg>
+                          Connect Google Calendar
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </form>
             )}
           </div>

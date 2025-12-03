@@ -132,6 +132,20 @@ export class User {
   // Track the last changelog version the user has seen
   @Prop({ default: null })
   lastSeenChangelogVersion: string;
+
+  // Google Calendar integration
+  @Prop({ type: Object, default: {
+    isConnected: false,
+    accessToken: null,
+    refreshToken: null,
+    expiryDate: null,
+  }})
+  googleCalendar: {
+    isConnected: boolean;
+    accessToken: string | null;
+    refreshToken: string | null;
+    expiryDate: number | null;
+  };
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
@@ -152,6 +166,10 @@ UserSchema.set('toJSON', {
   transform: function(doc, ret) {
     delete ret.password;
     delete ret.refreshToken;
+    // Don't expose Google tokens, only connection status
+    if (ret.googleCalendar) {
+      ret.googleCalendar = { isConnected: ret.googleCalendar.isConnected } as any;
+    }
     return ret;
   },
 });

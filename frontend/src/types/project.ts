@@ -42,8 +42,25 @@ export interface DemoEvent {
   title: string;
   description: string;
   date: Date | string;
+  endDate?: Date | string | null;
   location: string;
   createdBy: User | string;
   createdAt: Date | string;
   updatedAt: Date | string;
+  // Google Calendar integration
+  googleEventId?: string | null;
+  googleMeetLink?: string | null;
+  googleMeetId?: string | null;
+  attendees?: string[];
+}
+
+export interface CreateDemoEventDto {
+  title: string;
+  description?: string;
+  date: string;
+  endDate?: string;
+  location?: string;
+  createGoogleMeet?: boolean;
+  inviteAllMembers?: boolean;
+  attendees?: string[];
 }
