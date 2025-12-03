@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import { attachmentsAPI } from '@/lib/api';
 import { Attachment, formatFileSize, getFileIcon, isImageFile } from '@/types/attachment';
 import { Button } from '@/components/common';
@@ -16,9 +17,13 @@ export function AttachmentSection({ issueId }: AttachmentSectionProps) {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewImageIndex, setPreviewImageIndex] = useState<number | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Separate images from other files
+  const imageAttachments = attachments.filter(a => isImageFile(a.mimeType));
+  const otherAttachments = attachments.filter(a => !isImageFile(a.mimeType));
 
   const fetchAttachments = useCallback(async () => {
     try {
@@ -95,6 +100,37 @@ export function AttachmentSection({ issueId }: AttachmentSectionProps) {
     setDragActive(false);
     handleFileUpload(e.dataTransfer.files);
   };
+
+  // Lightbox navigation
+  const goToPreviousImage = useCallback(() => {
+    if (previewImageIndex !== null && previewImageIndex > 0) {
+      setPreviewImageIndex(previewImageIndex - 1);
+    }
+  }, [previewImageIndex]);
+
+  const goToNextImage = useCallback(() => {
+    if (previewImageIndex !== null && previewImageIndex < imageAttachments.length - 1) {
+      setPreviewImageIndex(previewImageIndex + 1);
+    }
+  }, [previewImageIndex, imageAttachments.length]);
+
+  // Keyboard navigation for lightbox
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (previewImageIndex === null) return;
+
+      if (e.key === 'Escape') {
+        setPreviewImageIndex(null);
+      } else if (e.key === 'ArrowLeft') {
+        goToPreviousImage();
+      } else if (e.key === 'ArrowRight') {
+        goToNextImage();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [previewImageIndex, goToPreviousImage, goToNextImage]);
 
   const getFileIconSvg = (type: string) => {
     switch (type) {
@@ -197,7 +233,7 @@ export function AttachmentSection({ issueId }: AttachmentSectionProps) {
         accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.zip"
       />
 
-      {/* Attachments List */}
+      {/* Attachments Content */}
       {loading ? (
         <div className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto"></div>
@@ -206,132 +242,251 @@ export function AttachmentSection({ issueId }: AttachmentSectionProps) {
       ) : attachments.length === 0 ? (
         <p className="text-center text-gray-500 dark:text-gray-400 py-4">No attachments yet</p>
       ) : (
-        <div className="space-y-3">
-          {attachments.map((attachment) => {
-            const fileType = getFileIcon(attachment.mimeType);
-            const isImage = isImageFile(attachment.mimeType);
-
-            return (
-              <div
-                key={attachment._id}
-                className="flex items-center gap-4 p-3 bg-gray-50 dark:bg-dark-500 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors"
-              >
-                {/* Thumbnail or Icon */}
-                <div className="flex-shrink-0">
-                  {isImage && attachment.thumbnail ? (
+        <div className="space-y-6">
+          {/* Image Gallery */}
+          {imageAttachments.length > 0 && (
+            <div>
+              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Images ({imageAttachments.length})
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {imageAttachments.map((attachment, index) => (
+                  <div key={attachment._id} className="group relative">
                     <button
-                      onClick={() => setPreviewImage(attachment.url)}
-                      className="block w-12 h-12 rounded overflow-hidden hover:opacity-80 transition-opacity"
+                      onClick={() => setPreviewImageIndex(index)}
+                      className="w-full aspect-video relative rounded-lg overflow-hidden border border-gray-200 dark:border-dark-400 hover:border-primary-500 dark:hover:border-primary-400 transition-all hover:shadow-md"
                     >
-                      <img
-                        src={attachment.thumbnail}
+                      <Image
+                        src={attachment.thumbnail || attachment.url}
                         alt={attachment.originalName}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                       />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                        <svg
+                          className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                        </svg>
+                      </div>
                     </button>
-                  ) : isImage ? (
-                    <button
-                      onClick={() => setPreviewImage(attachment.url)}
-                      className="block w-12 h-12 rounded overflow-hidden hover:opacity-80 transition-opacity"
-                    >
-                      <img
-                        src={attachment.url}
-                        alt={attachment.originalName}
-                        className="w-full h-full object-cover"
-                      />
-                    </button>
-                  ) : (
-                    <div className="w-12 h-12 flex items-center justify-center">
-                      {getFileIconSvg(fileType)}
+                    {/* Image info overlay */}
+                    <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-b-lg">
+                      <p className="text-xs text-white truncate">{attachment.originalName}</p>
+                      <p className="text-xs text-white/70">{formatFileSize(attachment.size)}</p>
                     </div>
-                  )}
-                </div>
-
-                {/* File Info */}
-                <div className="flex-1 min-w-0">
-                  <a
-                    href={attachment.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm font-medium text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 truncate block"
-                  >
-                    {attachment.originalName}
-                  </a>
-                  <div className="flex items-center gap-2 mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    <span>{formatFileSize(attachment.size)}</span>
-                    <span>-</span>
-                    <span>{getRelativeTime(attachment.createdAt)}</span>
-                    {attachment.userId && (
-                      <>
-                        <span>-</span>
-                        <span className="flex items-center gap-1">
-                          {attachment.userId.avatar ? (
-                            <img
-                              src={attachment.userId.avatar}
-                              alt={`${attachment.userId.firstName} ${attachment.userId.lastName}`}
-                              className="w-4 h-4 rounded-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-4 h-4 rounded-full bg-primary-500 text-white flex items-center justify-center text-[8px] font-medium">
-                              {getInitials(attachment.userId.firstName, attachment.userId.lastName)}
-                            </div>
-                          )}
-                          {attachment.userId.firstName}
-                        </span>
-                      </>
-                    )}
+                    {/* Delete button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteConfirm(attachment._id);
+                      }}
+                      className="absolute top-2 right-2 p-1.5 bg-black/50 hover:bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all"
+                      title="Delete"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
                   </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-2">
-                  <a
-                    href={attachment.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors"
-                    title="Download"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                  </a>
-                  <button
-                    onClick={() => setDeleteConfirm(attachment._id)}
-                    className="p-2 text-gray-500 hover:text-danger-600 dark:text-gray-400 dark:hover:text-danger-400 transition-colors"
-                    title="Delete"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
+                ))}
               </div>
-            );
-          })}
+            </div>
+          )}
+
+          {/* Other Files List */}
+          {otherAttachments.length > 0 && (
+            <div>
+              {imageAttachments.length > 0 && (
+                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                  Files ({otherAttachments.length})
+                </h3>
+              )}
+              <div className="space-y-2">
+                {otherAttachments.map((attachment) => {
+                  const fileType = getFileIcon(attachment.mimeType);
+
+                  return (
+                    <div
+                      key={attachment._id}
+                      className="flex items-center gap-4 p-3 bg-gray-50 dark:bg-dark-500 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors"
+                    >
+                      {/* Icon */}
+                      <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center">
+                        {getFileIconSvg(fileType)}
+                      </div>
+
+                      {/* File Info */}
+                      <div className="flex-1 min-w-0">
+                        <a
+                          href={attachment.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm font-medium text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 truncate block"
+                        >
+                          {attachment.originalName}
+                        </a>
+                        <div className="flex items-center gap-2 mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          <span>{formatFileSize(attachment.size)}</span>
+                          <span>-</span>
+                          <span>{getRelativeTime(attachment.createdAt)}</span>
+                          {attachment.userId && (
+                            <>
+                              <span>-</span>
+                              <span className="flex items-center gap-1">
+                                {attachment.userId.avatar ? (
+                                  <img
+                                    src={attachment.userId.avatar}
+                                    alt={`${attachment.userId.firstName} ${attachment.userId.lastName}`}
+                                    className="w-4 h-4 rounded-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-4 h-4 rounded-full bg-primary-500 text-white flex items-center justify-center text-[8px] font-medium">
+                                    {getInitials(attachment.userId.firstName, attachment.userId.lastName)}
+                                  </div>
+                                )}
+                                {attachment.userId.firstName}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-2">
+                        <a
+                          href={attachment.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors"
+                          title="Download"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
+                        </a>
+                        <button
+                          onClick={() => setDeleteConfirm(attachment._id)}
+                          className="p-2 text-gray-500 hover:text-danger-600 dark:text-gray-400 dark:hover:text-danger-400 transition-colors"
+                          title="Delete"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Image Preview Modal */}
-      {previewImage && (
+      {/* Image Preview Modal with Navigation */}
+      {previewImageIndex !== null && imageAttachments[previewImageIndex] && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75"
-          onClick={() => setPreviewImage(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
+          onClick={() => setPreviewImageIndex(null)}
         >
+          {/* Close button */}
           <button
-            className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors"
-            onClick={() => setPreviewImage(null)}
+            className="absolute top-4 right-4 p-2 text-white/70 hover:text-white transition-colors z-10"
+            onClick={() => setPreviewImageIndex(null)}
           >
             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-          <img
-            src={previewImage}
-            alt="Preview"
-            className="max-w-[90vw] max-h-[90vh] object-contain"
-            onClick={(e) => e.stopPropagation()}
-          />
+
+          {/* Image counter */}
+          <div className="absolute top-4 left-4 text-white/70 text-sm">
+            {previewImageIndex + 1} / {imageAttachments.length}
+          </div>
+
+          {/* Previous button */}
+          {previewImageIndex > 0 && (
+            <button
+              className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                goToPreviousImage();
+              }}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+
+          {/* Next button */}
+          {previewImageIndex < imageAttachments.length - 1 && (
+            <button
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                goToNextImage();
+              }}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
+
+          {/* Main image */}
+          <div className="relative max-w-[90vw] max-h-[80vh]" onClick={(e) => e.stopPropagation()}>
+            <img
+              src={imageAttachments[previewImageIndex].url}
+              alt={imageAttachments[previewImageIndex].originalName}
+              className="max-w-full max-h-[80vh] object-contain"
+            />
+          </div>
+
+          {/* Image info */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-center text-white/80">
+            <p className="text-sm font-medium">{imageAttachments[previewImageIndex].originalName}</p>
+            <p className="text-xs text-white/60 mt-1">
+              {formatFileSize(imageAttachments[previewImageIndex].size)} - Press ESC to close, ← → to navigate
+            </p>
+          </div>
+
+          {/* Thumbnail strip */}
+          {imageAttachments.length > 1 && (
+            <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-black/50 rounded-lg max-w-[80vw] overflow-x-auto">
+              {imageAttachments.map((img, idx) => (
+                <button
+                  key={img._id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPreviewImageIndex(idx);
+                  }}
+                  className={`flex-shrink-0 w-16 h-12 rounded overflow-hidden border-2 transition-all ${
+                    idx === previewImageIndex
+                      ? 'border-white opacity-100'
+                      : 'border-transparent opacity-60 hover:opacity-100'
+                  }`}
+                >
+                  <img
+                    src={img.thumbnail || img.url}
+                    alt={img.originalName}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
