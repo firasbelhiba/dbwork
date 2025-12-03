@@ -378,9 +378,17 @@ export default function IssueDetailPage() {
                 {/* Add Comment */}
                 <form onSubmit={handleAddComment} className="mb-6">
                   <div className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium flex-shrink-0">
-                      {user && getInitials(user.firstName, user.lastName)}
-                    </div>
+                    {user?.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt={`${user.firstName} ${user.lastName}`}
+                        className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium flex-shrink-0">
+                        {user && getInitials(user.firstName, user.lastName)}
+                      </div>
+                    )}
                     <div className="flex-1">
                       <MentionTextarea
                         value={newComment}
@@ -406,9 +414,17 @@ export default function IssueDetailPage() {
                       const commentUser = typeof comment.userId === 'object' ? comment.userId : null;
                       return (
                         <div key={comment._id} className="flex gap-3">
-                          <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium flex-shrink-0">
-                            {commentUser && getInitials(commentUser.firstName, commentUser.lastName)}
-                          </div>
+                          {commentUser?.avatar ? (
+                            <img
+                              src={commentUser.avatar}
+                              alt={`${commentUser.firstName} ${commentUser.lastName}`}
+                              className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                            />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium flex-shrink-0">
+                              {commentUser && getInitials(commentUser.firstName, commentUser.lastName)}
+                            </div>
+                          )}
                           <div className="flex-1">
                             <div className="bg-gray-50 dark:bg-dark-500 rounded-lg p-4">
                               <div className="flex items-center justify-between mb-2">
@@ -482,9 +498,17 @@ export default function IssueDetailPage() {
                       <div className="flex flex-wrap gap-2">
                         {assignees.map((assignee: any) => (
                           <div key={assignee._id} className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md">
-                            <div className="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center text-xs font-medium">
-                              {getInitials(assignee.firstName, assignee.lastName)}
-                            </div>
+                            {assignee.avatar ? (
+                              <img
+                                src={assignee.avatar}
+                                alt={`${assignee.firstName} ${assignee.lastName}`}
+                                className="w-5 h-5 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center text-xs font-medium">
+                                {getInitials(assignee.firstName, assignee.lastName)}
+                              </div>
+                            )}
                             <span className="text-xs text-gray-900 dark:text-white">
                               {assignee.firstName} {assignee.lastName}
                             </span>
@@ -500,9 +524,17 @@ export default function IssueDetailPage() {
                     <span className="text-xs text-gray-600 dark:text-gray-400 block mb-1">Reporter</span>
                     {reporter && (
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-secondary text-white flex items-center justify-center text-xs font-medium">
-                          {getInitials(reporter.firstName, reporter.lastName)}
-                        </div>
+                        {reporter.avatar ? (
+                          <img
+                            src={reporter.avatar}
+                            alt={`${reporter.firstName} ${reporter.lastName}`}
+                            className="w-6 h-6 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-6 h-6 rounded-full bg-secondary text-white flex items-center justify-center text-xs font-medium">
+                            {getInitials(reporter.firstName, reporter.lastName)}
+                          </div>
+                        )}
                         <span className="text-sm text-gray-900 dark:text-white">
                           {reporter.firstName} {reporter.lastName}
                         </span>

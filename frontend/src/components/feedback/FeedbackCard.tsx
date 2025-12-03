@@ -113,12 +113,20 @@ export const FeedbackCard: React.FC<FeedbackCardProps> = ({
           {/* User Avatar */}
           {feedback.userId && (
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center text-xs font-medium">
-                {getInitials(
-                  feedback.userId.firstName,
-                  feedback.userId.lastName
-                )}
-              </div>
+              {feedback.userId.avatar ? (
+                <img
+                  src={feedback.userId.avatar}
+                  alt={`${feedback.userId.firstName} ${feedback.userId.lastName}`}
+                  className="w-6 h-6 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center text-xs font-medium">
+                  {getInitials(
+                    feedback.userId.firstName,
+                    feedback.userId.lastName
+                  )}
+                </div>
+              )}
               <span>
                 {feedback.userId.firstName} {feedback.userId.lastName}
               </span>

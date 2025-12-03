@@ -462,9 +462,17 @@ export default function ProjectSettingsPage() {
                         return (
                           <div key={memberUser._id} className="p-6 flex items-center justify-between">
                             <div className="flex items-center">
-                              <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium">
-                                {getInitials(memberUser.firstName, memberUser.lastName)}
-                              </div>
+                              {memberUser.avatar ? (
+                                <img
+                                  src={memberUser.avatar}
+                                  alt={`${memberUser.firstName} ${memberUser.lastName}`}
+                                  className="w-10 h-10 rounded-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium">
+                                  {getInitials(memberUser.firstName, memberUser.lastName)}
+                                </div>
+                              )}
                               <div className="ml-4">
                                 <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                   {memberUser.firstName} {memberUser.lastName}
@@ -740,9 +748,17 @@ function AddMemberModal({ isOpen, onClose, projectId, allUsers, currentMembers, 
                       className="w-4 h-4 text-primary-600 focus:ring-primary-500"
                       disabled={adding}
                     />
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 text-white flex items-center justify-center text-sm font-semibold flex-shrink-0">
-                      {getInitials(user.firstName, user.lastName)}
-                    </div>
+                    {user.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt={`${user.firstName} ${user.lastName}`}
+                        className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 text-white flex items-center justify-center text-sm font-semibold flex-shrink-0">
+                        {getInitials(user.firstName, user.lastName)}
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
@@ -764,9 +780,17 @@ function AddMemberModal({ isOpen, onClose, projectId, allUsers, currentMembers, 
           {selectedUser && (
             <div className="p-4 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 text-white flex items-center justify-center text-base font-semibold">
-                  {getInitials(selectedUser.firstName, selectedUser.lastName)}
-                </div>
+                {selectedUser.avatar ? (
+                  <img
+                    src={selectedUser.avatar}
+                    alt={`${selectedUser.firstName} ${selectedUser.lastName}`}
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 text-white flex items-center justify-center text-base font-semibold">
+                    {getInitials(selectedUser.firstName, selectedUser.lastName)}
+                  </div>
+                )}
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                     {selectedUser.firstName} {selectedUser.lastName}

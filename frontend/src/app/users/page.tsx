@@ -215,9 +215,17 @@ export default function UsersPage() {
                       <tr key={user._id} className="hover:bg-gray-50 dark:hover:bg-dark-300 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
-                            <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium flex-shrink-0">
-                              {getInitials(user.firstName, user.lastName)}
-                            </div>
+                            {user.avatar ? (
+                              <img
+                                src={user.avatar}
+                                alt={`${user.firstName} ${user.lastName}`}
+                                className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium flex-shrink-0">
+                                {getInitials(user.firstName, user.lastName)}
+                              </div>
+                            )}
                             <div className="ml-4">
                               <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                 {user.firstName} {user.lastName}

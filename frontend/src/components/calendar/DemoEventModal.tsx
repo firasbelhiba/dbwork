@@ -205,9 +205,17 @@ export const DemoEventModal: React.FC<DemoEventModalProps> = ({
                       Created By
                     </label>
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center text-sm font-medium">
-                        {getInitials(creator.firstName, creator.lastName)}
-                      </div>
+                      {creator.avatar ? (
+                        <img
+                          src={creator.avatar}
+                          alt={`${creator.firstName} ${creator.lastName}`}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center text-sm font-medium">
+                          {getInitials(creator.firstName, creator.lastName)}
+                        </div>
+                      )}
                       <div>
                         <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                           {creator.firstName} {creator.lastName}

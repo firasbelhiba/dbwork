@@ -145,9 +145,17 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ feedbackId }) =>
         <div className="flex items-start gap-3">
           {user && (
             <div className="flex-shrink-0">
-              <div className="w-10 h-10 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center text-sm font-medium">
-                {getInitials(user.firstName, user.lastName)}
-              </div>
+              {user.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={`${user.firstName} ${user.lastName}`}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center text-sm font-medium">
+                  {getInitials(user.firstName, user.lastName)}
+                </div>
+              )}
             </div>
           )}
           <div className="flex-1">
@@ -184,9 +192,17 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ feedbackId }) =>
           comments.map((comment) => (
             <div key={comment._id} className="flex items-start gap-3 bg-gray-50 dark:bg-dark-300 p-4 rounded-lg">
               <div className="flex-shrink-0">
-                <div className="w-10 h-10 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center text-sm font-medium">
-                  {getInitials(comment.userId.firstName, comment.userId.lastName)}
-                </div>
+                {comment.userId.avatar ? (
+                  <img
+                    src={comment.userId.avatar}
+                    alt={`${comment.userId.firstName} ${comment.userId.lastName}`}
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center text-sm font-medium">
+                    {getInitials(comment.userId.firstName, comment.userId.lastName)}
+                  </div>
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-1">

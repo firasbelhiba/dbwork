@@ -288,23 +288,35 @@ export default function ProjectDetailPage() {
               <span className="text-sm text-gray-600 dark:text-gray-400">Team:</span>
               <div className="flex gap-2">
                 {project.members?.slice(0, 5).map((member, index) => {
-                  const user = typeof member.userId === 'object' ? member.userId : null;
-                  return user ? (
+                  const memberUser = typeof member.userId === 'object' ? member.userId : null;
+                  return memberUser ? (
                     <div key={index} className="relative group">
-                      <div
-                        className="w-9 h-9 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center text-xs font-medium shadow-sm border-2 border-white dark:border-gray-700 cursor-pointer transition-transform hover:scale-110"
-                        onClick={() => {
-                          setSelectedUser(user);
-                          setIsProfileSidebarOpen(true);
-                        }}
-                      >
-                        {getInitials(user.firstName, user.lastName)}
-                      </div>
+                      {memberUser.avatar ? (
+                        <img
+                          src={memberUser.avatar}
+                          alt={`${memberUser.firstName} ${memberUser.lastName}`}
+                          className="w-9 h-9 rounded-full object-cover shadow-sm border-2 border-white dark:border-gray-700 cursor-pointer transition-transform hover:scale-110"
+                          onClick={() => {
+                            setSelectedUser(memberUser);
+                            setIsProfileSidebarOpen(true);
+                          }}
+                        />
+                      ) : (
+                        <div
+                          className="w-9 h-9 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center text-xs font-medium shadow-sm border-2 border-white dark:border-gray-700 cursor-pointer transition-transform hover:scale-110"
+                          onClick={() => {
+                            setSelectedUser(memberUser);
+                            setIsProfileSidebarOpen(true);
+                          }}
+                        >
+                          {getInitials(memberUser.firstName, memberUser.lastName)}
+                        </div>
+                      )}
                       {/* Tooltip */}
                       <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50 pointer-events-none">
                         <div className="bg-gray-900 dark:bg-gray-800 text-white px-3 py-2 rounded-lg shadow-lg whitespace-nowrap">
-                          <p className="text-sm font-medium">{user.firstName} {user.lastName}</p>
-                          <p className="text-xs text-gray-300 dark:text-gray-400 capitalize">{user.role}</p>
+                          <p className="text-sm font-medium">{memberUser.firstName} {memberUser.lastName}</p>
+                          <p className="text-xs text-gray-300 dark:text-gray-400 capitalize">{memberUser.role}</p>
                           {/* Arrow */}
                           <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-px">
                             <div className="border-4 border-transparent border-t-gray-900 dark:border-t-gray-800"></div>

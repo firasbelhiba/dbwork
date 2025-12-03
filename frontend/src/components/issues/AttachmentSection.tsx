@@ -265,9 +265,17 @@ export function AttachmentSection({ issueId }: AttachmentSectionProps) {
                       <>
                         <span>-</span>
                         <span className="flex items-center gap-1">
-                          <div className="w-4 h-4 rounded-full bg-primary-500 text-white flex items-center justify-center text-[8px] font-medium">
-                            {getInitials(attachment.userId.firstName, attachment.userId.lastName)}
-                          </div>
+                          {attachment.userId.avatar ? (
+                            <img
+                              src={attachment.userId.avatar}
+                              alt={`${attachment.userId.firstName} ${attachment.userId.lastName}`}
+                              className="w-4 h-4 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-4 h-4 rounded-full bg-primary-500 text-white flex items-center justify-center text-[8px] font-medium">
+                              {getInitials(attachment.userId.firstName, attachment.userId.lastName)}
+                            </div>
+                          )}
                           {attachment.userId.firstName}
                         </span>
                       </>
