@@ -187,7 +187,7 @@ export class CommentsService {
 
   async findByIssue(issueId: string): Promise<CommentDocument[]> {
     return this.commentModel
-      .find({ issueId })
+      .find({ issueId: new Types.ObjectId(issueId) })
       .populate('userId', 'firstName lastName email avatar role')
       .populate('parentCommentId')
       .populate('reactions.userId', 'firstName lastName avatar')
@@ -308,6 +308,6 @@ export class CommentsService {
   }
 
   async getCommentCount(issueId: string): Promise<number> {
-    return this.commentModel.countDocuments({ issueId }).exec();
+    return this.commentModel.countDocuments({ issueId: new Types.ObjectId(issueId) }).exec();
   }
 }
