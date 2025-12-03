@@ -640,9 +640,28 @@ export class ProjectsService {
 
     // Calculate end date (default 1 hour after start if not provided)
     const startDate = new Date(createDemoEventDto.date);
-    const endDate = createDemoEventDto.endDate
-      ? new Date(createDemoEventDto.endDate)
-      : new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour later
+    let endDate: Date;
+
+    if (createDemoEventDto.endDate) {
+      endDate = new Date(createDemoEventDto.endDate);
+    } else {
+      // Default to 1 hour after start
+      endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+    }
+
+    // Validate dates
+    if (isNaN(startDate.getTime())) {
+      throw new BadRequestException('Invalid start date');
+    }
+    if (isNaN(endDate.getTime())) {
+      throw new BadRequestException('Invalid end date');
+    }
+    // Ensure end is after start
+    if (endDate <= startDate) {
+      endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // Default 1 hour
+    }
+
+    console.log('[DemoEvent] Creating event with dates:', { startDate, endDate });
 
     // Collect attendee emails
     let attendeeEmails: string[] = createDemoEventDto.attendees || [];
