@@ -141,9 +141,17 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
               onClick={() => setShowUserMenu(!showUserMenu)}
               className="flex items-center gap-2 p-1 rounded-md hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors"
             >
-              <div className="w-8 h-8 rounded-full bg-primary-500 text-white flex items-center justify-center text-sm font-bold shadow-sm">
-                {getInitials(user.firstName, user.lastName)}
-              </div>
+              {user.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={`${user.firstName} ${user.lastName}`}
+                  className="w-8 h-8 rounded-full object-cover shadow-sm"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-primary-500 text-white flex items-center justify-center text-sm font-bold shadow-sm">
+                  {getInitials(user.firstName, user.lastName)}
+                </div>
+              )}
             </button>
 
             {/* Dropdown */}
