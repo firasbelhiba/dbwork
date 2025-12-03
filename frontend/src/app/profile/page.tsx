@@ -806,9 +806,9 @@ export default function ProfilePage() {
                   {loadingGoogleStatus ? (
                     'Loading...'
                   ) : googleCalendarConnected ? (
-                    <span className="text-success-600 dark:text-success-400">Connected - You can create Google Meet links for calendar events</span>
+                    <span className="text-success-600 dark:text-success-400">Connected - You can create events with Google Meet links and send calendar invites</span>
                   ) : (
-                    'Connect to create Google Meet links for project calendar events'
+                    'Connect to create events with Google Meet links and send calendar invites to attendees'
                   )}
                 </p>
               </div>
