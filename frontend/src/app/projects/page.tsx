@@ -133,9 +133,17 @@ export default function ProjectsPage() {
               >
                 <div className="p-4 md:p-6">
                   <div className="flex items-start justify-between mb-3 md:mb-4">
-                    <div className="w-10 h-10 md:w-12 md:h-12 rounded bg-primary/20 dark:bg-primary/30 flex items-center justify-center">
-                      <span className="text-base md:text-lg font-bold text-primary dark:text-primary-400">{project.key}</span>
-                    </div>
+                    {project.logo ? (
+                      <img
+                        src={project.logo}
+                        alt={`${project.name} logo`}
+                        className="w-10 h-10 md:w-12 md:h-12 rounded object-cover"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 md:w-12 md:h-12 rounded bg-primary/20 dark:bg-primary/30 flex items-center justify-center">
+                        <span className="text-base md:text-lg font-bold text-primary dark:text-primary-400">{project.key}</span>
+                      </div>
+                    )}
                     {project.isArchived && (
                       <Badge variant="default">Archived</Badge>
                     )}

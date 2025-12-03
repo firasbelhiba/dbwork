@@ -5,6 +5,7 @@ export interface Project {
   name: string;
   key: string;
   description: string;
+  logo?: string;
   lead: User | string;
   members: ProjectMember[];
   settings: ProjectSettings;

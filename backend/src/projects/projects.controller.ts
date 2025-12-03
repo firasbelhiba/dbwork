@@ -8,12 +8,18 @@ import {
   Delete,
   UseGuards,
   Query,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiConsumes,
 } from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto, UpdateProjectDto, AddMemberDto, CreateCustomStatusDto, UpdateCustomStatusDto, ReorderCustomStatusesDto, CreateDemoEventDto, UpdateDemoEventDto } from './dto';
@@ -98,6 +104,44 @@ export class ProjectsController {
   @ApiResponse({ status: 200, description: 'Project successfully restored' })
   restore(@Param('id') id: string, @CurrentUser() user) {
     return this.projectsService.restore(id, user._id);
+  }
+
+  @Post(':id/logo')
+  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Upload project logo' })
+  @ApiResponse({ status: 200, description: 'Logo successfully uploaded' })
+  @ApiResponse({ status: 404, description: 'Project not found' })
+  @UseInterceptors(
+    FileInterceptor('logo', {
+      storage: memoryStorage(),
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp|svg\+xml)$/)) {
+          return cb(new BadRequestException('Only image files are allowed'), false);
+        }
+        cb(null, true);
+      },
+      limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    }),
+  )
+  uploadLogo(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() user,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+    return this.projectsService.uploadLogo(id, file, user._id);
+  }
+
+  @Delete(':id/logo')
+  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
+  @ApiOperation({ summary: 'Remove project logo' })
+  @ApiResponse({ status: 200, description: 'Logo successfully removed' })
+  @ApiResponse({ status: 404, description: 'Project not found' })
+  removeLogo(@Param('id') id: string, @CurrentUser() user) {
+    return this.projectsService.removeLogo(id, user._id);
   }
 
   @Delete(':id')

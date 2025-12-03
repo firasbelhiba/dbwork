@@ -18,6 +18,12 @@ export class Project {
   @Prop({ trim: true })
   description: string;
 
+  @Prop({ default: null })
+  logo: string;
+
+  @Prop({ default: null })
+  logoCloudinaryId: string;
+
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   lead: Types.ObjectId;
 

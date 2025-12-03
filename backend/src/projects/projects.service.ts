@@ -13,6 +13,7 @@ import { ActivitiesService } from '../activities/activities.service';
 import { ActionType, EntityType } from '../activities/schemas/activity.schema';
 import { NotificationsService } from '../notifications/notifications.service';
 import { AchievementsService } from '../achievements/achievements.service';
+import { getCloudinary } from '../attachments/cloudinary.config';
 
 @Injectable()
 export class ProjectsService {
@@ -283,6 +284,112 @@ export class ProjectsService {
     }
 
     return project;
+  }
+
+  async uploadLogo(id: string, file: Express.Multer.File, userId?: string): Promise<ProjectDocument> {
+    const project = await this.projectModel.findById(id).exec();
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+
+    const cloudinary = getCloudinary();
+
+    // Delete old logo from Cloudinary if it exists
+    if (project.logoCloudinaryId) {
+      try {
+        await cloudinary.uploader.destroy(project.logoCloudinaryId);
+      } catch (error) {
+        console.error('Error deleting old logo from Cloudinary:', error);
+      }
+    }
+
+    // Upload new logo to Cloudinary
+    const result = await new Promise<any>((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'project-logos',
+          resource_type: 'image',
+          transformation: [
+            { width: 400, height: 400, crop: 'fill' },
+          ],
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        },
+      );
+      uploadStream.end(file.buffer);
+    });
+
+    // Update project with new logo URL and Cloudinary ID
+    const updatedProject = await this.projectModel
+      .findByIdAndUpdate(
+        id,
+        { logo: result.secure_url, logoCloudinaryId: result.public_id },
+        { new: true },
+      )
+      .populate('lead', 'firstName lastName email avatar')
+      .populate('members.userId', 'firstName lastName email avatar')
+      .exec();
+
+    // Log activity
+    if (userId) {
+      await this.activitiesService.logActivity(
+        userId,
+        ActionType.UPDATED,
+        EntityType.PROJECT,
+        updatedProject._id.toString(),
+        updatedProject.name,
+        updatedProject._id.toString(),
+        { field: 'logo', action: 'uploaded' },
+      );
+    }
+
+    return updatedProject;
+  }
+
+  async removeLogo(id: string, userId?: string): Promise<ProjectDocument> {
+    const project = await this.projectModel.findById(id).exec();
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+
+    const cloudinary = getCloudinary();
+
+    // Delete logo from Cloudinary if it exists
+    if (project.logoCloudinaryId) {
+      try {
+        await cloudinary.uploader.destroy(project.logoCloudinaryId);
+      } catch (error) {
+        console.error('Error deleting logo from Cloudinary:', error);
+      }
+    }
+
+    // Remove logo from project
+    const updatedProject = await this.projectModel
+      .findByIdAndUpdate(
+        id,
+        { logo: null, logoCloudinaryId: null },
+        { new: true },
+      )
+      .populate('lead', 'firstName lastName email avatar')
+      .populate('members.userId', 'firstName lastName email avatar')
+      .exec();
+
+    // Log activity
+    if (userId) {
+      await this.activitiesService.logActivity(
+        userId,
+        ActionType.UPDATED,
+        EntityType.PROJECT,
+        updatedProject._id.toString(),
+        updatedProject.name,
+        updatedProject._id.toString(),
+        { field: 'logo', action: 'removed' },
+      );
+    }
+
+    return updatedProject;
   }
 
   async addMember(

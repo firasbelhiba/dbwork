@@ -262,9 +262,17 @@ export default function ProjectDetailPage() {
           />
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded bg-primary/20 flex items-center justify-center">
-                <span className="text-lg font-bold text-primary">{project.key}</span>
-              </div>
+              {project.logo ? (
+                <img
+                  src={project.logo}
+                  alt={`${project.name} logo`}
+                  className="w-12 h-12 rounded object-cover"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded bg-primary/20 flex items-center justify-center">
+                  <span className="text-lg font-bold text-primary">{project.key}</span>
+                </div>
+              )}
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{project.name}</h1>
                 <p className="text-gray-600 dark:text-gray-400 text-sm">{project.description}</p>

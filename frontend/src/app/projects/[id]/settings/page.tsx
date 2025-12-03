@@ -55,6 +55,10 @@ export default function ProjectSettingsPage() {
     maxAttachmentSize: 10,
   });
 
+  // Logo upload
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const logoInputRef = React.useRef<HTMLInputElement>(null);
+
   // Members management
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
@@ -215,6 +219,60 @@ export default function ProjectSettingsPage() {
     }
   };
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Please upload an image file (JPEG, PNG, GIF, WebP, or SVG)');
+      return;
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be less than 5MB');
+      return;
+    }
+
+    setUploadingLogo(true);
+    try {
+      await projectsAPI.uploadLogo(projectId, file);
+      toast.success('Project logo updated successfully');
+      fetchProjectData();
+    } catch (error: any) {
+      console.error('Error uploading logo:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to upload logo';
+      toast.error(errorMessage);
+    } finally {
+      setUploadingLogo(false);
+      // Reset the input
+      if (logoInputRef.current) {
+        logoInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleRemoveLogo = async () => {
+    if (!confirm('Are you sure you want to remove the project logo?')) {
+      return;
+    }
+
+    setUploadingLogo(true);
+    try {
+      await projectsAPI.removeLogo(projectId);
+      toast.success('Project logo removed successfully');
+      fetchProjectData();
+    } catch (error: any) {
+      console.error('Error removing logo:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to remove logo';
+      toast.error(errorMessage);
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
   if (loading) {
     return (
       <DashboardLayout>
@@ -354,6 +412,80 @@ export default function ProjectSettingsPage() {
           {/* Tab Content */}
           {activeTab === 'general' && (
             <div className="space-y-6">
+              {/* Project Logo */}
+              <div className="bg-white dark:bg-dark-400 rounded-lg shadow-sm border border-gray-200 dark:border-dark-300 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Project Logo</h2>
+                <div className="flex items-start gap-6">
+                  {/* Logo Preview */}
+                  <div className="flex-shrink-0">
+                    {project.logo ? (
+                      <img
+                        src={project.logo}
+                        alt={`${project.name} logo`}
+                        className="w-24 h-24 rounded-lg object-cover border border-gray-200 dark:border-dark-300"
+                      />
+                    ) : (
+                      <div className="w-24 h-24 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 text-white flex items-center justify-center text-3xl font-bold">
+                        {project.key?.substring(0, 2).toUpperCase() || project.name?.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Upload Controls */}
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      Upload a logo for your project. This will be displayed in project lists and headers.
+                      <br />
+                      <span className="text-xs">Recommended: Square image, at least 200x200px. Max 5MB.</span>
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="file"
+                        ref={logoInputRef}
+                        onChange={handleLogoUpload}
+                        accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
+                        className="hidden"
+                        disabled={uploadingLogo}
+                      />
+                      <Button
+                        variant="outline"
+                        onClick={() => logoInputRef.current?.click()}
+                        disabled={uploadingLogo}
+                      >
+                        {uploadingLogo ? (
+                          <>
+                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                            Uploading...
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            {project.logo ? 'Change Logo' : 'Upload Logo'}
+                          </>
+                        )}
+                      </Button>
+                      {project.logo && (
+                        <Button
+                          variant="danger"
+                          onClick={handleRemoveLogo}
+                          disabled={uploadingLogo}
+                        >
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          Remove Logo
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* General Info */}
               <div className="bg-white dark:bg-dark-400 rounded-lg shadow-sm border border-gray-200 dark:border-dark-300 p-6">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Project Information</h2>

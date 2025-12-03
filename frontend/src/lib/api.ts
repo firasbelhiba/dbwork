@@ -116,6 +116,14 @@ export const projectsAPI = {
   addMember: (id: string, data: any) => api.post(`/projects/${id}/members`, data),
   removeMember: (id: string, userId: string) => api.delete(`/projects/${id}/members/${userId}`),
   reorderColumns: (id: string, data: any) => api.post(`/projects/${id}/statuses/reorder`, data),
+  uploadLogo: (id: string, file: File) => {
+    const formData = new FormData();
+    formData.append('logo', file);
+    return api.post(`/projects/${id}/logo`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  removeLogo: (id: string) => api.delete(`/projects/${id}/logo`),
 };
 
 // Issues API
