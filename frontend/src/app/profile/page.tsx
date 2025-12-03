@@ -765,7 +765,7 @@ export default function ProfilePage() {
               <div>
                 <p className="font-medium text-gray-900 dark:text-white">Gmail Email</p>
                 <p className="text-xs text-gray-600 dark:text-gray-400">
-                  Enter your Gmail address for Google Calendar integration (must be added as a test user in Google Cloud Console)
+                  If your account email is not a Gmail address, please save your Gmail here as a secondary email. This is required for calendar invites and other Google integrations.
                 </p>
               </div>
             </div>
