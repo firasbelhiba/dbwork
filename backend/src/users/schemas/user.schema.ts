@@ -128,6 +128,10 @@ export class User {
   // Track which issues user helped complete (not assigned to them)
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Issue' }], default: [] })
   helpedIssues: Types.ObjectId[];
+
+  // Track the last changelog version the user has seen
+  @Prop({ default: null })
+  lastSeenChangelogVersion: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

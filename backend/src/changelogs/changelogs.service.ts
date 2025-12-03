@@ -234,4 +234,43 @@ export class ChangelogsService {
 
     return this.findOne(id);
   }
+
+  /**
+   * Check if there's a new changelog the user hasn't seen yet
+   */
+  async checkForNewChangelog(userId: string): Promise<{ hasNew: boolean; changelog: ChangelogDocument | null }> {
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Get the latest published changelog
+    const latestChangelog = await this.changelogModel
+      .findOne({ isPublished: true })
+      .sort({ releaseDate: -1 })
+      .populate('createdBy', 'firstName lastName email')
+      .exec();
+
+    if (!latestChangelog) {
+      return { hasNew: false, changelog: null };
+    }
+
+    // Compare versions - if user hasn't seen any changelog or their last seen is different
+    const userLastSeen = user.lastSeenChangelogVersion;
+    const hasNew = !userLastSeen || userLastSeen !== latestChangelog.version;
+
+    return {
+      hasNew,
+      changelog: hasNew ? latestChangelog : null,
+    };
+  }
+
+  /**
+   * Mark the latest changelog as seen by the user
+   */
+  async markChangelogAsSeen(userId: string, version: string): Promise<void> {
+    await this.userModel.findByIdAndUpdate(userId, {
+      lastSeenChangelogVersion: version,
+    }).exec();
+  }
 }

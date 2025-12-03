@@ -3,12 +3,14 @@
 import React from 'react';
 import { Toaster } from 'react-hot-toast';
 import { AchievementNotifier } from '@/components/achievements/AchievementNotifier';
+import { UpdateNotifier } from '@/components/changelog/UpdateNotifier';
 
 export const RootLayoutClient: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <>
       {children}
       <AchievementNotifier />
+      <UpdateNotifier />
       <Toaster
         position="top-right"
         toastOptions={{

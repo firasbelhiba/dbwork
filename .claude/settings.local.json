@@ -10,7 +10,9 @@
       "Bash(git push:*)",
       "Bash(git commit -m \"$(cat <<''EOF''\nfeat: Add mobile responsiveness across the application\n\n- Update DashboardLayout with mobile overlay drawer navigation\n- Add hamburger menu and responsive controls to Header\n- Make Sidebar mobile-friendly with close button and auto-close on nav\n- Add responsive padding, typography, and grids to Dashboard, Projects, Issues, Profile pages\n- Update Modal with full-width on mobile and stacked footer buttons\n- Increase touch targets for Input and Select components (h-11 on mobile)\n- Add snap scrolling and horizontal scroll to Kanban board for mobile\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git commit:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(node scripts/add-changelog-v1.2.0.js:*)",
+      "Bash(node scripts/publish-changelog-v1.2.0.js:*)"
     ],
     "deny": [],
     "ask": []

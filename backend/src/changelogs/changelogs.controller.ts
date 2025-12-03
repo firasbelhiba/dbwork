@@ -59,6 +59,24 @@ export class ChangelogsController {
     return this.changelogsService.findLatest();
   }
 
+  @Get('check/new')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Check if there is a new changelog the user has not seen' })
+  @ApiResponse({ status: 200, description: 'Returns whether there is a new changelog' })
+  checkForNew(@CurrentUser() user) {
+    return this.changelogsService.checkForNewChangelog(user._id);
+  }
+
+  @Post('mark-seen/:version')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Mark a changelog version as seen by the user' })
+  @ApiResponse({ status: 200, description: 'Changelog marked as seen' })
+  markAsSeen(@Param('version') version: string, @CurrentUser() user) {
+    return this.changelogsService.markChangelogAsSeen(user._id, version);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get changelog by ID (Public)' })
   @ApiResponse({ status: 200, description: 'Changelog details' })

@@ -10,8 +10,15 @@ export interface IChangelog {
   improvements: string[];
   bugFixes: string[];
   createdBy: User | string;
+  isPublished: boolean;
+  publishedAt?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface CheckNewChangelogResponse {
+  hasNew: boolean;
+  changelog: IChangelog | null;
 }
 
 export interface CreateChangelogDto {

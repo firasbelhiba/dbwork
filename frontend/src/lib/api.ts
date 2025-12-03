@@ -308,9 +308,13 @@ export const changelogsAPI = {
   getAll: (params?: any) => api.get('/changelogs', { params }),
   getById: (id: string) => api.get(`/changelogs/${id}`),
   getLatest: () => api.get('/changelogs/latest'),
+  checkForNew: () => api.get('/changelogs/check/new'),
+  markAsSeen: (version: string) => api.post(`/changelogs/mark-seen/${version}`),
   create: (data: any) => api.post('/changelogs', data),
   update: (id: string, data: any) => api.patch(`/changelogs/${id}`, data),
   delete: (id: string) => api.delete(`/changelogs/${id}`),
+  publish: (id: string) => api.post(`/changelogs/${id}/publish`),
+  unpublish: (id: string) => api.post(`/changelogs/${id}/unpublish`),
 };
 
 // Achievements API
