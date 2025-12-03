@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Attachment, AttachmentDocument } from './schemas/attachment.schema';
-import cloudinary from './cloudinary.config';
+import { getCloudinary } from './cloudinary.config';
 
 @Injectable()
 export class AttachmentsService {
@@ -17,6 +17,8 @@ export class AttachmentsService {
     file: Express.Multer.File,
   ): Promise<AttachmentDocument> {
     try {
+      const cloudinary = getCloudinary();
+
       // Upload to Cloudinary
       const result = await new Promise<any>((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
@@ -86,6 +88,7 @@ export class AttachmentsService {
 
   async remove(id: string): Promise<void> {
     const attachment = await this.findOne(id);
+    const cloudinary = getCloudinary();
 
     try {
       // Delete from Cloudinary

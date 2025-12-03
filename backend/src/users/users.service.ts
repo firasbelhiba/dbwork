@@ -9,7 +9,7 @@ import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { User, UserDocument } from './schemas/user.schema';
 import { CreateUserDto, UpdateUserDto } from './dto';
-import cloudinary from '../attachments/cloudinary.config';
+import { getCloudinary } from '../attachments/cloudinary.config';
 
 @Injectable()
 export class UsersService {
@@ -77,6 +77,8 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
+
+    const cloudinary = getCloudinary();
 
     // Delete old avatar from Cloudinary if it exists
     if (user.avatarCloudinaryId) {
