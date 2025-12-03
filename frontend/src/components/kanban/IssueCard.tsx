@@ -150,14 +150,25 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
         {assignees.length > 0 && (
           <div className="flex items-center -space-x-2">
             {assignees.slice(0, 3).map((assignee: any, index: number) => (
-              <div
-                key={assignee._id}
-                className="w-6 h-6 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center text-xs font-medium border-2 border-white dark:border-gray-800 shadow-sm"
-                title={`${assignee.firstName} ${assignee.lastName}`}
-                style={{ zIndex: assignees.length - index }}
-              >
-                {getInitials(assignee.firstName, assignee.lastName)}
-              </div>
+              assignee.avatar ? (
+                <img
+                  key={assignee._id}
+                  src={assignee.avatar}
+                  alt={`${assignee.firstName} ${assignee.lastName}`}
+                  className="w-6 h-6 rounded-full object-cover border-2 border-white dark:border-gray-800 shadow-sm"
+                  title={`${assignee.firstName} ${assignee.lastName}`}
+                  style={{ zIndex: assignees.length - index }}
+                />
+              ) : (
+                <div
+                  key={assignee._id}
+                  className="w-6 h-6 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center text-xs font-medium border-2 border-white dark:border-gray-800 shadow-sm"
+                  title={`${assignee.firstName} ${assignee.lastName}`}
+                  style={{ zIndex: assignees.length - index }}
+                >
+                  {getInitials(assignee.firstName, assignee.lastName)}
+                </div>
+              )
             ))}
             {assignees.length > 3 && (
               <div
