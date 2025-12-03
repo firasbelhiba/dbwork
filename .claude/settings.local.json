@@ -12,7 +12,9 @@
       "Bash(git commit:*)",
       "Bash(find:*)",
       "Bash(node scripts/add-changelog-v1.2.0.js:*)",
-      "Bash(node scripts/publish-changelog-v1.2.0.js:*)"
+      "Bash(node scripts/publish-changelog-v1.2.0.js:*)",
+      "Bash(cd:*)",
+      "Bash(npm audit:*)"
     ],
     "deny": [],
     "ask": []

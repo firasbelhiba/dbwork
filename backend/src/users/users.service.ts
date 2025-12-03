@@ -11,6 +11,9 @@ import { User, UserDocument } from './schemas/user.schema';
 import { CreateUserDto, UpdateUserDto } from './dto';
 import { getCloudinary } from '../attachments/cloudinary.config';
 
+const MAX_LIMIT = 100;
+const DEFAULT_LIMIT = 20;
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -34,11 +37,51 @@ export class UsersService {
     return user.save();
   }
 
-  async findAll(filters: any = {}): Promise<UserDocument[]> {
+  async findAll(
+    filters: any = {},
+    options: { page?: number; limit?: number } = {},
+  ): Promise<{
+    items: UserDocument[];
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+  }> {
+    const page = options.page || 1;
+    const limit = Math.min(options.limit || DEFAULT_LIMIT, MAX_LIMIT);
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await Promise.all([
+      this.userModel
+        .find(filters)
+        .select('-password -refreshToken')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      this.userModel.countDocuments(filters),
+    ]);
+
+    return {
+      items,
+      total,
+      page,
+      limit,
+      pages: Math.ceil(total / limit),
+    };
+  }
+
+  /**
+   * Internal method to get all users without pagination.
+   * Use sparingly - only for internal operations like mention matching.
+   * Still has a safety cap of 1000 users.
+   */
+  async findAllInternal(filters: any = {}): Promise<UserDocument[]> {
     return this.userModel
       .find(filters)
       .select('-password -refreshToken')
       .sort({ createdAt: -1 })
+      .limit(1000) // Safety cap
       .exec();
   }
 

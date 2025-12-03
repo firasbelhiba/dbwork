@@ -13,6 +13,8 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { ActionType, EntityType } from '../activities/schemas/activity.schema';
 import { getCloudinary } from '../attachments/cloudinary.config';
 
+const MAX_LIMIT = 100;
+
 @Injectable()
 export class FeedbackService {
   constructor(
@@ -66,7 +68,9 @@ export class FeedbackService {
       userId,
     } = query;
 
-    const skip = (page - 1) * limit;
+    // Cap limit at MAX_LIMIT to prevent DoS
+    const cappedLimit = Math.min(limit, MAX_LIMIT);
+    const skip = (page - 1) * cappedLimit;
     const filter: any = {};
 
     if (type) {
@@ -104,7 +108,7 @@ export class FeedbackService {
         .populate('closedBy', 'firstName lastName email')
         .sort(sort)
         .skip(skip)
-        .limit(limit)
+        .limit(cappedLimit)
         .exec(),
       this.feedbackModel.countDocuments(filter),
     ]);
@@ -113,8 +117,8 @@ export class FeedbackService {
       data,
       total,
       page,
-      limit,
-      totalPages: Math.ceil(total / limit),
+      limit: cappedLimit,
+      totalPages: Math.ceil(total / cappedLimit),
     };
   }
 

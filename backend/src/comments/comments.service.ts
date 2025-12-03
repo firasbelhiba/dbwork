@@ -59,7 +59,7 @@ export class CommentsService {
       // Fetch all users ONCE before processing mentions (fixes N+1 query problem)
       let allUsers: any[] = [];
       if (mentions.length > 0) {
-        allUsers = await this.usersService.findAll();
+        allUsers = await this.usersService.findAllInternal();
       }
 
       // 1. Notify mentioned users

@@ -16,6 +16,8 @@ import { AchievementsService } from '../achievements/achievements.service';
 import { ActionType, EntityType } from '../activities/schemas/activity.schema';
 import { ProjectsService } from '../projects/projects.service';
 
+const MAX_LIMIT = 100;
+
 @Injectable()
 export class IssuesService {
   constructor(
@@ -143,6 +145,8 @@ export class IssuesService {
       sortOrder = 'desc',
     } = filterDto;
 
+    // Cap limit at MAX_LIMIT to prevent DoS
+    const cappedLimit = Math.min(limit, MAX_LIMIT);
 
     const query: any = {};
 
@@ -168,7 +172,7 @@ export class IssuesService {
       query.$text = { $search: search };
     }
 
-    const skip = (page - 1) * limit;
+    const skip = (page - 1) * cappedLimit;
     const sort: any = {};
     sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
 
@@ -181,7 +185,7 @@ export class IssuesService {
         .populate('sprintId', 'name status')
         .sort(sort)
         .skip(skip)
-        .limit(limit)
+        .limit(cappedLimit)
         .exec(),
       this.issueModel.countDocuments(query).exec(),
     ]);
@@ -190,8 +194,8 @@ export class IssuesService {
       items: issues,
       total,
       page,
-      limit,
-      pages: Math.ceil(total / limit),
+      limit: cappedLimit,
+      pages: Math.ceil(total / cappedLimit),
     };
   }
 

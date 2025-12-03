@@ -4,6 +4,8 @@ import { Model, Types } from 'mongoose';
 import { Activity, ActivityDocument } from './schemas/activity.schema';
 import { CreateActivityDto, QueryActivitiesDto } from './dto';
 
+const MAX_LIMIT = 100;
+
 @Injectable()
 export class ActivitiesService {
   constructor(
@@ -48,6 +50,9 @@ export class ActivitiesService {
       endDate,
     } = query;
 
+    // Cap limit at MAX_LIMIT to prevent DoS
+    const cappedLimit = Math.min(limit, MAX_LIMIT);
+
     // Build filter object
     const filter: any = {};
 
@@ -83,7 +88,7 @@ export class ActivitiesService {
     }
 
     // Execute query with pagination
-    const skip = (page - 1) * limit;
+    const skip = (page - 1) * cappedLimit;
 
     const [data, total] = await Promise.all([
       this.activityModel
@@ -92,7 +97,7 @@ export class ActivitiesService {
         .populate('projectId', 'name key')
         .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(limit)
+        .limit(cappedLimit)
         .exec(),
       this.activityModel.countDocuments(filter),
     ]);
@@ -101,19 +106,20 @@ export class ActivitiesService {
       data,
       total,
       page,
-      limit,
-      totalPages: Math.ceil(total / limit),
+      limit: cappedLimit,
+      totalPages: Math.ceil(total / cappedLimit),
     };
   }
 
   async findRecent(limit: number = 10): Promise<ActivityDocument[]> {
-    console.log('[ActivitiesService] Finding recent activities, limit:', limit);
+    const cappedLimit = Math.min(limit, MAX_LIMIT);
+    console.log('[ActivitiesService] Finding recent activities, limit:', cappedLimit);
     const activities = await this.activityModel
       .find()
       .populate('userId', 'firstName lastName email avatar')
       .populate('projectId', 'name key')
       .sort({ createdAt: -1 })
-      .limit(limit)
+      .limit(cappedLimit)
       .exec();
 
     console.log('[ActivitiesService] Found', activities.length, 'activities');

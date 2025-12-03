@@ -46,8 +46,19 @@ export class UsersController {
   @Get()
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'List of all users' })
-  findAll(@Query() filters: any) {
-    return this.usersService.findAll(filters);
+  findAll(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('isActive') isActive?: string,
+  ) {
+    const filters: any = {};
+    if (isActive !== undefined) {
+      filters.isActive = isActive === 'true';
+    }
+    return this.usersService.findAll(filters, {
+      page: page ? parseInt(page, 10) : 1,
+      limit: limit ? parseInt(limit, 10) : undefined,
+    });
   }
 
   @Get('search')
