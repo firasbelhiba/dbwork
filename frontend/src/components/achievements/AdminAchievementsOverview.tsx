@@ -28,11 +28,12 @@ export const AdminAchievementsOverview: React.FC = () => {
     try {
       setLoading(true);
       const [usersRes, achievementsRes] = await Promise.all([
-        usersAPI.getAll(),
+        usersAPI.getAll({ limit: 100 }),
         achievementsAPI.getAll(),
       ]);
 
-      const allUsers: User[] = usersRes.data;
+      // Handle paginated response - items contains the user array
+      const allUsers: User[] = usersRes.data.items || usersRes.data;
       const allAchievements: Achievement[] = achievementsRes.data;
       setAchievements(allAchievements);
 

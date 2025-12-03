@@ -117,8 +117,9 @@ export default function ProjectSettingsPage() {
 
   const fetchUsers = async () => {
     try {
-      const response = await usersAPI.getAll();
-      setAllUsers(response.data);
+      const response = await usersAPI.getAll({ limit: 100 });
+      // Handle paginated response - items contains the user array
+      setAllUsers(response.data.items || response.data);
     } catch (error) {
       console.error('Error fetching users:', error);
     }

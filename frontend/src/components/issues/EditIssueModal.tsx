@@ -64,8 +64,9 @@ export const EditIssueModal: React.FC<EditIssueModalProps> = ({
 
   const fetchData = async () => {
     try {
-      const usersRes = await usersAPI.getAll();
-      setUsers(usersRes.data);
+      const usersRes = await usersAPI.getAll({ limit: 100 });
+      // Handle paginated response - items contains the user array
+      setUsers(usersRes.data.items || usersRes.data);
     } catch (error) {
       console.error('Error fetching data:', error);
     }

@@ -75,10 +75,11 @@ function NewIssueForm() {
     try {
       const [projectsRes, usersRes] = await Promise.all([
         projectsAPI.getAll(),
-        usersAPI.getAll(),
+        usersAPI.getAll({ limit: 100 }),
       ]);
       setProjects(projectsRes.data);
-      setUsers(usersRes.data);
+      // Handle paginated response - items contains the user array
+      setUsers(usersRes.data.items || usersRes.data);
     } catch (error) {
       console.error('Error fetching data:', error);
     }

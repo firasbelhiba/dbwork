@@ -14,7 +14,8 @@
       "Bash(node scripts/add-changelog-v1.2.0.js:*)",
       "Bash(node scripts/publish-changelog-v1.2.0.js:*)",
       "Bash(cd:*)",
-      "Bash(npm audit:*)"
+      "Bash(npm audit:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []
