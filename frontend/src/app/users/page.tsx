@@ -48,18 +48,18 @@ export default function UsersPage() {
     }
   };
 
-  const handleDeleteUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+  const handleDeactivateUser = async (userId: string) => {
+    if (!confirm('Are you sure you want to deactivate this user? They will no longer be able to log in, but their data will be preserved.')) {
       return;
     }
 
     try {
       await usersAPI.delete(userId);
-      toast.success('User deleted successfully');
+      toast.success('User deactivated successfully');
       fetchUsers();
     } catch (error: any) {
-      console.error('Error deleting user:', error);
-      const errorMessage = error.response?.data?.message || 'Failed to delete user';
+      console.error('Error deactivating user:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to deactivate user';
       toast.error(errorMessage);
     }
   };
@@ -269,13 +269,14 @@ export default function UsersPage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                               </svg>
                             </button>
-                            {user._id !== currentUser?._id && (
+                            {user._id !== currentUser?._id && user.isActive && (
                               <button
-                                onClick={() => handleDeleteUser(user._id)}
+                                onClick={() => handleDeactivateUser(user._id)}
                                 className="text-danger-600 hover:text-danger-900 dark:text-danger-400 dark:hover:text-danger-300"
+                                title="Deactivate user"
                               >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                                 </svg>
                               </button>
                             )}

@@ -109,11 +109,13 @@ export class UsersController {
 
   @Delete(':id')
   @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Delete user (Admin only)' })
-  @ApiResponse({ status: 200, description: 'User successfully deleted' })
+  @ApiOperation({ summary: 'Deactivate user (Admin only) - Soft delete' })
+  @ApiResponse({ status: 200, description: 'User successfully deactivated' })
   @ApiResponse({ status: 404, description: 'User not found' })
   remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
+    // Soft delete - deactivate user instead of hard delete
+    // This preserves data integrity for tickets, comments, etc.
+    return this.usersService.deactivate(id);
   }
 
   @Get(':id/notification-preferences')

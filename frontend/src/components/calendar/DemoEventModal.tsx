@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DemoEvent, ProjectMember } from '@/types/project';
 import { Button, Input, Textarea, MultiUserSelect } from '@/components/common';
 import { User } from '@/types/user';
-import { googleCalendarAPI } from '@/lib/api';
+import { googleCalendarAPI, usersAPI } from '@/lib/api';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { formatDateTime, getInitials } from '@/lib/utils';
@@ -44,6 +44,8 @@ export const DemoEventModal: React.FC<DemoEventModalProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [googleCalendarConnected, setGoogleCalendarConnected] = useState(false);
   const [checkingGoogleStatus, setCheckingGoogleStatus] = useState(false);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
   // Check Google Calendar connection status
   useEffect(() => {
@@ -61,6 +63,27 @@ export const DemoEventModal: React.FC<DemoEventModalProps> = ({
 
     if (isOpen && canEdit) {
       checkGoogleStatus();
+    }
+  }, [isOpen, canEdit]);
+
+  // Fetch all users for attendee selection
+  useEffect(() => {
+    const fetchAllUsers = async () => {
+      setLoadingUsers(true);
+      try {
+        const response = await usersAPI.getAll({ limit: 100, isActive: true });
+        // Handle paginated response
+        const users = response.data.items || response.data;
+        setAllUsers(users.filter((u: User) => u.isActive !== false));
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      } finally {
+        setLoadingUsers(false);
+      }
+    };
+
+    if (isOpen && canEdit) {
+      fetchAllUsers();
     }
   }, [isOpen, canEdit]);
 
@@ -148,18 +171,11 @@ export const DemoEventModal: React.FC<DemoEventModalProps> = ({
         payload.createGoogleMeet = true;
         payload.inviteAllMembers = inviteOption === 'all';
 
-        // If selecting specific attendees, get their emails
+        // If selecting specific attendees, get their emails from all users
         if (inviteOption === 'select' && selectedAttendeeIds.length > 0) {
-          const selectedEmails = projectMembers
-            .filter(m => {
-              const user = typeof m.userId === 'object' ? m.userId : null;
-              return user && selectedAttendeeIds.includes(user._id);
-            })
-            .map(m => {
-              const user = m.userId as User;
-              // Prefer gmailEmail for calendar invites, fall back to regular email
-              return user.gmailEmail || user.email;
-            });
+          const selectedEmails = allUsers
+            .filter(user => selectedAttendeeIds.includes(user._id))
+            .map(user => user.gmailEmail || user.email);
           payload.attendees = selectedEmails;
         }
       }
@@ -557,16 +573,24 @@ export const DemoEventModal: React.FC<DemoEventModalProps> = ({
                             {/* Multi-select for specific attendees */}
                             {inviteOption === 'select' && (
                               <div className="ml-7 mt-2">
-                                <MultiUserSelect
-                                  users={projectMembers
-                                    .map(m => typeof m.userId === 'object' ? m.userId : null)
-                                    .filter((u): u is User => u !== null)}
-                                  selectedUserIds={selectedAttendeeIds}
-                                  onChange={setSelectedAttendeeIds}
-                                  placeholder="Select attendees..."
-                                  disabled={loading}
-                                />
-                                {selectedAttendeeIds.length === 0 && (
+                                {loadingUsers ? (
+                                  <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm py-2">
+                                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Loading users...
+                                  </div>
+                                ) : (
+                                  <MultiUserSelect
+                                    users={allUsers}
+                                    selectedUserIds={selectedAttendeeIds}
+                                    onChange={setSelectedAttendeeIds}
+                                    placeholder="Select attendees from all users..."
+                                    disabled={loading}
+                                  />
+                                )}
+                                {selectedAttendeeIds.length === 0 && !loadingUsers && (
                                   <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
                                     Please select at least one attendee
                                   </p>
