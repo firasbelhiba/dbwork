@@ -168,6 +168,17 @@ export const issuesAPI = {
   removeBlocker: (id: string, blockerIssueId: string) => api.delete(`/issues/${id}/blockers/${blockerIssueId}`),
   archive: (id: string) => api.patch(`/issues/${id}/archive`),
   restore: (id: string) => api.patch(`/issues/${id}/restore`),
+  // Time Tracking
+  startTimer: (id: string) => api.post(`/issues/${id}/timer/start`),
+  stopTimer: (id: string, description?: string) => api.post(`/issues/${id}/timer/stop`, { description }),
+  pauseTimer: (id: string) => api.post(`/issues/${id}/timer/pause`),
+  resumeTimer: (id: string) => api.post(`/issues/${id}/timer/resume`),
+  getTimerStatus: (id: string) => api.get(`/issues/${id}/timer/status`),
+  addManualTimeEntry: (id: string, duration: number, description?: string) =>
+    api.post(`/issues/${id}/time-entries`, { duration, description }),
+  deleteTimeEntry: (id: string, entryId: string) => api.delete(`/issues/${id}/time-entries/${entryId}`),
+  getAggregatedTime: (id: string) => api.get(`/issues/${id}/time/aggregated`),
+  updateActivity: (id: string) => api.post(`/issues/${id}/timer/activity`),
 };
 
 // Sprints API

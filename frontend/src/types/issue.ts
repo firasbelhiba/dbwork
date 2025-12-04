@@ -60,6 +60,9 @@ export interface TimeTracking {
   estimatedHours?: number;
   loggedHours: number;
   timeLogs: TimeLog[];
+  timeEntries: TimeEntry[];
+  activeTimeEntry?: ActiveTimeEntry | null;
+  totalTimeSpent: number;
 }
 
 export interface TimeLog {
@@ -67,4 +70,26 @@ export interface TimeLog {
   hours: number;
   description?: string;
   date: Date;
+}
+
+export interface TimeEntry {
+  id: string;
+  userId: string;
+  startTime: string;
+  endTime: string;
+  duration: number;
+  source: 'automatic' | 'manual';
+  description?: string;
+  pausedDuration?: number;
+  createdAt: string;
+}
+
+export interface ActiveTimeEntry {
+  id: string;
+  userId: string;
+  startTime: string;
+  lastActivityAt: string;
+  isPaused: boolean;
+  pausedAt?: string;
+  accumulatedPausedTime: number;
 }

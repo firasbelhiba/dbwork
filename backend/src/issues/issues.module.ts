@@ -1,6 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { IssuesService } from './issues.service';
+import { TimeTrackingService } from './time-tracking.service';
 import { IssuesController } from './issues.controller';
 import { Issue, IssueSchema } from './schemas/issue.schema';
 import { UsersModule } from '../users/users.module';
@@ -19,7 +20,7 @@ import { ProjectsModule } from '../projects/projects.module';
     forwardRef(() => ProjectsModule),
   ],
   controllers: [IssuesController],
-  providers: [IssuesService],
-  exports: [IssuesService],
+  providers: [IssuesService, TimeTrackingService],
+  exports: [IssuesService, TimeTrackingService],
 })
 export class IssuesModule {}

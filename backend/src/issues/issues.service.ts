@@ -15,6 +15,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { AchievementsService } from '../achievements/achievements.service';
 import { ActionType, EntityType } from '../activities/schemas/activity.schema';
 import { ProjectsService } from '../projects/projects.service';
+import { TimeTrackingService } from './time-tracking.service';
 
 const MAX_LIMIT = 100;
 
@@ -28,6 +29,8 @@ export class IssuesService {
     private achievementsService: AchievementsService,
     @Inject(forwardRef(() => ProjectsService))
     private projectsService: ProjectsService,
+    @Inject(forwardRef(() => TimeTrackingService))
+    private timeTrackingService: TimeTrackingService,
   ) {}
 
   async create(createIssueDto: CreateIssueDto, reporterId: string): Promise<IssueDocument> {
@@ -412,6 +415,31 @@ export class IssuesService {
                 console.error(`[ACHIEVEMENTS] Error checking achievements for user ${assigneeId}:`, error);
               }
             }
+          }
+        }
+
+        // Auto-trigger time tracking based on status change
+        // Start timer when moving TO in_progress
+        if (changes.status.to === 'in_progress' && changes.status.from !== 'in_progress') {
+          try {
+            await this.timeTrackingService.startTimer(id, userId);
+          } catch (error) {
+            // Timer might already be running, that's okay
+            console.log(`[TIME_TRACKING] Could not auto-start timer: ${error.message}`);
+          }
+        }
+
+        // Stop timer when moving AWAY from in_progress
+        if (changes.status.from === 'in_progress' && changes.status.to !== 'in_progress') {
+          try {
+            await this.timeTrackingService.stopTimer(
+              id,
+              userId,
+              `Auto-stopped: Status changed from ${changes.status.from} to ${changes.status.to}`,
+            );
+          } catch (error) {
+            // Timer might not be running, that's okay
+            console.log(`[TIME_TRACKING] Could not auto-stop timer: ${error.message}`);
           }
         }
       }

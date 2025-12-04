@@ -16,7 +16,8 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { IssuesService } from './issues.service';
-import { CreateIssueDto, UpdateIssueDto, FilterIssuesDto, AddTimeLogDto } from './dto';
+import { TimeTrackingService } from './time-tracking.service';
+import { CreateIssueDto, UpdateIssueDto, FilterIssuesDto, AddTimeLogDto, StopTimerDto, AddManualTimeDto } from './dto';
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@auth/guards/roles.guard';
 import { Roles, CurrentUser } from '@common/decorators';
@@ -27,7 +28,10 @@ import { UserRole } from '@common/enums';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('issues')
 export class IssuesController {
-  constructor(private readonly issuesService: IssuesService) {}
+  constructor(
+    private readonly issuesService: IssuesService,
+    private readonly timeTrackingService: TimeTrackingService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new issue' })
@@ -203,5 +207,93 @@ export class IssuesController {
   @ApiResponse({ status: 404, description: 'Issue not found' })
   restore(@Param('id') id: string, @CurrentUser() user) {
     return this.issuesService.restore(id, user._id);
+  }
+
+  // ==================== TIME TRACKING ENDPOINTS ====================
+
+  @Post(':id/timer/start')
+  @ApiOperation({ summary: 'Start time tracking for an issue' })
+  @ApiResponse({ status: 200, description: 'Timer started successfully' })
+  @ApiResponse({ status: 400, description: 'Timer already running' })
+  startTimer(@Param('id') id: string, @CurrentUser() user) {
+    return this.timeTrackingService.startTimer(id, user._id);
+  }
+
+  @Post(':id/timer/stop')
+  @ApiOperation({ summary: 'Stop time tracking for an issue' })
+  @ApiResponse({ status: 200, description: 'Timer stopped successfully' })
+  @ApiResponse({ status: 400, description: 'No active timer' })
+  stopTimer(
+    @Param('id') id: string,
+    @Body() stopTimerDto: StopTimerDto,
+    @CurrentUser() user,
+  ) {
+    return this.timeTrackingService.stopTimer(id, user._id, stopTimerDto.description);
+  }
+
+  @Post(':id/timer/pause')
+  @ApiOperation({ summary: 'Pause time tracking for an issue' })
+  @ApiResponse({ status: 200, description: 'Timer paused successfully' })
+  @ApiResponse({ status: 400, description: 'Timer not running or already paused' })
+  pauseTimer(@Param('id') id: string, @CurrentUser() user) {
+    return this.timeTrackingService.pauseTimer(id, user._id);
+  }
+
+  @Post(':id/timer/resume')
+  @ApiOperation({ summary: 'Resume time tracking for an issue' })
+  @ApiResponse({ status: 200, description: 'Timer resumed successfully' })
+  @ApiResponse({ status: 400, description: 'Timer not paused' })
+  resumeTimer(@Param('id') id: string, @CurrentUser() user) {
+    return this.timeTrackingService.resumeTimer(id, user._id);
+  }
+
+  @Get(':id/timer/status')
+  @ApiOperation({ summary: 'Get timer status for an issue' })
+  @ApiResponse({ status: 200, description: 'Timer status' })
+  getTimerStatus(@Param('id') id: string, @CurrentUser() user) {
+    return this.timeTrackingService.getTimerStatus(id, user._id);
+  }
+
+  @Post(':id/time-entries')
+  @ApiOperation({ summary: 'Add manual time entry to an issue' })
+  @ApiResponse({ status: 200, description: 'Time entry added successfully' })
+  addManualTimeEntry(
+    @Param('id') id: string,
+    @Body() addManualTimeDto: AddManualTimeDto,
+    @CurrentUser() user,
+  ) {
+    return this.timeTrackingService.addManualTimeEntry(
+      id,
+      user._id,
+      addManualTimeDto.duration,
+      addManualTimeDto.description,
+    );
+  }
+
+  @Delete(':id/time-entries/:entryId')
+  @ApiOperation({ summary: 'Delete a time entry' })
+  @ApiResponse({ status: 200, description: 'Time entry deleted successfully' })
+  @ApiResponse({ status: 403, description: 'Not authorized to delete this entry' })
+  deleteTimeEntry(
+    @Param('id') id: string,
+    @Param('entryId') entryId: string,
+    @CurrentUser() user,
+  ) {
+    const isAdmin = user.role === UserRole.ADMIN;
+    return this.timeTrackingService.deleteTimeEntry(id, entryId, user._id, isAdmin);
+  }
+
+  @Get(':id/time/aggregated')
+  @ApiOperation({ summary: 'Get aggregated time for an issue (including sub-issues)' })
+  @ApiResponse({ status: 200, description: 'Aggregated time data' })
+  getAggregatedTime(@Param('id') id: string) {
+    return this.timeTrackingService.getAggregatedTime(id);
+  }
+
+  @Post(':id/timer/activity')
+  @ApiOperation({ summary: 'Update last activity timestamp for timer' })
+  @ApiResponse({ status: 200, description: 'Activity updated' })
+  updateActivity(@Param('id') id: string, @CurrentUser() user) {
+    return this.timeTrackingService.updateActivity(id, user._id);
   }
 }

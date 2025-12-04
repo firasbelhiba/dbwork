@@ -54,7 +54,10 @@ export class Issue {
   @Prop({ type: Object, default: {
     estimatedHours: null,
     loggedHours: 0,
-    timeLogs: []
+    timeLogs: [],
+    timeEntries: [],
+    activeTimeEntry: null,
+    totalTimeSpent: 0
   }})
   timeTracking: TimeTracking;
 

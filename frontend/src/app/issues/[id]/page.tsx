@@ -9,7 +9,7 @@ import { Comment, CommentImage } from '@/types/comment';
 import { UserRole } from '@/types/user';
 import { Button, Badge, Select, Breadcrumb, LogoLoader } from '@/components/common';
 import { MentionTextarea } from '@/components/common/MentionTextarea';
-import { SubIssues, SubIssueModal, EditIssueModal, AttachmentSection } from '@/components/issues';
+import { SubIssues, SubIssueModal, EditIssueModal, AttachmentSection, TimeTracker } from '@/components/issues';
 import { useAuth } from '@/contexts/AuthContext';
 import { getInitials, formatDateTime, getRelativeTime } from '@/lib/utils';
 import Link from 'next/link';
@@ -743,40 +743,12 @@ export default function IssueDetailPage() {
               </div>
 
               {/* Time Tracking */}
-              {issue.timeTracking && (
-                <div className="bg-white dark:bg-dark-600 rounded-lg border border-gray-200 dark:border-dark-400 p-4">
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Time Tracking</h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Estimated:</span>
-                      <span className="text-gray-900 dark:text-white">{issue.timeTracking.estimatedHours}h</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Logged:</span>
-                      <span className="text-gray-900 dark:text-white">{issue.timeTracking.loggedHours}h</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Remaining:</span>
-                      <span className="text-gray-900 dark:text-white">
-                        {Math.max((issue.timeTracking.estimatedHours || 0) - issue.timeTracking.loggedHours, 0)}h
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 dark:bg-dark-400 rounded-full h-2 mt-2">
-                      <div
-                        className="bg-primary h-2 rounded-full"
-                        style={{
-                          width: `${Math.min(
-                            issue.timeTracking.estimatedHours
-                              ? (issue.timeTracking.loggedHours / issue.timeTracking.estimatedHours) * 100
-                              : 0,
-                            100
-                          )}%`,
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-              )}
+              <TimeTracker
+                issueId={issue._id}
+                timeTracking={issue.timeTracking}
+                onUpdate={fetchIssueData}
+                hasSubIssues={!issue.parentIssue && (issue.subIssueCount || 0) > 0}
+              />
             </div>
           </div>
         </div>
