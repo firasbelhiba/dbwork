@@ -22,21 +22,23 @@ export class TimeTrackingService {
       throw new NotFoundException('Issue not found');
     }
 
+    const userIdStr = userId.toString();
+
     // Check if there's already an active timer for this user on this issue
-    if (issue.timeTracking?.activeTimeEntry?.userId === userId) {
+    if (issue.timeTracking?.activeTimeEntry?.userId === userIdStr) {
       throw new BadRequestException('Timer is already running for this issue');
     }
 
     // If another user has an active timer, that's fine - each user can track their own time
     // But if THIS user has an active timer, stop it first
-    if (issue.timeTracking?.activeTimeEntry && issue.timeTracking.activeTimeEntry.userId !== userId) {
+    if (issue.timeTracking?.activeTimeEntry && issue.timeTracking.activeTimeEntry.userId !== userIdStr) {
       // Another user is tracking - allow this user to start their own timer
     }
 
     const now = new Date();
     const activeTimeEntry: ActiveTimeEntry = {
       id: new Types.ObjectId().toString(),
-      userId,
+      userId: userIdStr,
       startTime: now,
       lastActivityAt: now,
       isPaused: false,
@@ -65,12 +67,13 @@ export class TimeTrackingService {
       throw new NotFoundException('Issue not found');
     }
 
+    const userIdStr = userId.toString();
     const activeEntry = issue.timeTracking?.activeTimeEntry;
     if (!activeEntry) {
       throw new BadRequestException('No active timer found for this issue');
     }
 
-    if (activeEntry.userId !== userId) {
+    if (activeEntry.userId !== userIdStr) {
       throw new BadRequestException('You can only stop your own timer');
     }
 
@@ -132,12 +135,13 @@ export class TimeTrackingService {
       throw new NotFoundException('Issue not found');
     }
 
+    const userIdStr = userId.toString();
     const activeEntry = issue.timeTracking?.activeTimeEntry;
     if (!activeEntry) {
       throw new BadRequestException('No active timer found');
     }
 
-    if (activeEntry.userId !== userId) {
+    if (activeEntry.userId !== userIdStr) {
       throw new BadRequestException('You can only pause your own timer');
     }
 
@@ -168,12 +172,13 @@ export class TimeTrackingService {
       throw new NotFoundException('Issue not found');
     }
 
+    const userIdStr = userId.toString();
     const activeEntry = issue.timeTracking?.activeTimeEntry;
     if (!activeEntry) {
       throw new BadRequestException('No active timer found');
     }
 
-    if (activeEntry.userId !== userId) {
+    if (activeEntry.userId !== userIdStr) {
       throw new BadRequestException('You can only resume your own timer');
     }
 
@@ -210,8 +215,9 @@ export class TimeTrackingService {
     const issue = await this.issueModel.findById(issueId).exec();
     if (!issue) return;
 
+    const userIdStr = userId.toString();
     const activeEntry = issue.timeTracking?.activeTimeEntry;
-    if (!activeEntry || activeEntry.userId !== userId || activeEntry.isPaused) {
+    if (!activeEntry || activeEntry.userId !== userIdStr || activeEntry.isPaused) {
       return;
     }
 
@@ -260,10 +266,11 @@ export class TimeTrackingService {
       throw new NotFoundException('Issue not found');
     }
 
+    const userIdStr = userId.toString();
     const now = new Date();
     const timeEntry: TimeEntry = {
       id: new Types.ObjectId().toString(),
-      userId,
+      userId: userIdStr,
       startTime: now,
       endTime: now,
       duration: durationSeconds,
@@ -436,9 +443,10 @@ export class TimeTrackingService {
       throw new NotFoundException('Issue not found');
     }
 
+    const userIdStr = userId.toString();
     const activeEntry = issue.timeTracking?.activeTimeEntry;
 
-    if (!activeEntry || activeEntry.userId !== userId) {
+    if (!activeEntry || activeEntry.userId !== userIdStr) {
       return {
         isRunning: false,
         isPaused: false,
