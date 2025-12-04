@@ -419,24 +419,44 @@ export class IssuesService {
         }
 
         // Auto-trigger time tracking based on status change
-        // Start timer when moving TO in_progress
+        // Start or resume timer when moving TO in_progress
         if (changes.status.to === 'in_progress' && changes.status.from !== 'in_progress') {
           try {
-            await this.timeTrackingService.startTimer(id, userId);
-          } catch (error) {
-            // Timer might already be running, that's okay
-            console.log(`[TIME_TRACKING] Could not auto-start timer: ${error.message}`);
+            // First try to resume if there's a paused timer
+            await this.timeTrackingService.resumeTimer(id, userId);
+            console.log(`[TIME_TRACKING] Auto-resumed timer for issue ${id}`);
+          } catch {
+            // No paused timer, try to start a new one
+            try {
+              await this.timeTrackingService.startTimer(id, userId);
+              console.log(`[TIME_TRACKING] Auto-started timer for issue ${id}`);
+            } catch (error) {
+              // Timer might already be running, that's okay
+              console.log(`[TIME_TRACKING] Could not auto-start timer: ${error.message}`);
+            }
           }
         }
 
-        // Stop timer when moving AWAY from in_progress
-        if (changes.status.from === 'in_progress' && changes.status.to !== 'in_progress') {
+        // Pause timer when moving AWAY from in_progress (but not to done)
+        if (changes.status.from === 'in_progress' && changes.status.to !== 'in_progress' && changes.status.to !== 'done') {
+          try {
+            await this.timeTrackingService.pauseTimer(id, userId);
+            console.log(`[TIME_TRACKING] Auto-paused timer for issue ${id}`);
+          } catch (error) {
+            // Timer might not be running or already paused, that's okay
+            console.log(`[TIME_TRACKING] Could not auto-pause timer: ${error.message}`);
+          }
+        }
+
+        // Stop timer completely when moving to done
+        if (changes.status.to === 'done') {
           try {
             await this.timeTrackingService.stopTimer(
               id,
               userId,
-              `Auto-stopped: Status changed from ${changes.status.from} to ${changes.status.to}`,
+              `Auto-stopped: Issue completed`,
             );
+            console.log(`[TIME_TRACKING] Auto-stopped timer for completed issue ${id}`);
           } catch (error) {
             // Timer might not be running, that's okay
             console.log(`[TIME_TRACKING] Could not auto-stop timer: ${error.message}`);
