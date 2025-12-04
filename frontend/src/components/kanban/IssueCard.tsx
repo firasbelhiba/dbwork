@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Issue } from '@/types/issue';
 import { Badge, Dropdown, DropdownItem } from '@/components/common';
 import { getInitials } from '@/lib/utils';
@@ -6,6 +6,18 @@ import { SprintStatus } from '@/types/sprint';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserRole } from '@/types/user';
+
+// Format seconds to short timer display
+const formatTimerDisplay = (seconds: number): string => {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+  return `${minutes}:${secs.toString().padStart(2, '0')}`;
+};
 
 interface IssueCardProps {
   issue: Issue;
@@ -28,12 +40,51 @@ const getSprintStatusVariant = (status: SprintStatus) => {
 
 export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete }) => {
   const { user } = useAuth();
+  const [timerSeconds, setTimerSeconds] = useState(0);
 
   const assignees = issue.assignees?.filter(a => typeof a === 'object' && a !== null).map(a => a as any) || [];
   const sprint = typeof issue.sprintId === 'object' ? issue.sprintId : null;
 
   // Check if user can archive/delete (Admin or PM only)
   const canManage = user?.role === UserRole.ADMIN || user?.role === UserRole.PROJECT_MANAGER;
+
+  // Check if current user has an active timer on this issue
+  const activeEntry = issue.timeTracking?.activeTimeEntry;
+  const isTimerRunning = activeEntry && activeEntry.userId === user?._id && !activeEntry.isPaused;
+  const isTimerPaused = activeEntry && activeEntry.userId === user?._id && activeEntry.isPaused;
+
+  // Calculate and update timer display
+  useEffect(() => {
+    if (!activeEntry || activeEntry.userId !== user?._id) {
+      setTimerSeconds(0);
+      return;
+    }
+
+    const calculateDuration = () => {
+      const now = new Date();
+      const startTime = new Date(activeEntry.startTime);
+      let duration = Math.floor((now.getTime() - startTime.getTime()) / 1000);
+
+      if (activeEntry.isPaused && activeEntry.pausedAt) {
+        const pausedAt = new Date(activeEntry.pausedAt);
+        const currentPauseDuration = Math.floor((now.getTime() - pausedAt.getTime()) / 1000);
+        duration -= (activeEntry.accumulatedPausedTime + currentPauseDuration);
+      } else {
+        duration -= activeEntry.accumulatedPausedTime;
+      }
+
+      return Math.max(0, duration);
+    };
+
+    setTimerSeconds(calculateDuration());
+
+    if (!activeEntry.isPaused) {
+      const interval = setInterval(() => {
+        setTimerSeconds(calculateDuration());
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [activeEntry, user?._id]);
 
   const handleArchive = () => {
     if (onArchive) {
@@ -92,6 +143,19 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
           <Badge variant={issue.priority as any}>{issue.priority}</Badge>
           {issue.isArchived && (
             <Badge variant="warning">ARCHIVED</Badge>
+          )}
+          {/* Timer Badge */}
+          {(isTimerRunning || isTimerPaused) && (
+            <div
+              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-mono font-medium ${
+                isTimerRunning
+                  ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                  : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+              }`}
+            >
+              <div className={`w-1.5 h-1.5 rounded-full ${isTimerRunning ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'}`} />
+              {formatTimerDisplay(timerSeconds)}
+            </div>
           )}
         </div>
 
