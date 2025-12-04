@@ -215,8 +215,15 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
 
       // Update on backend
       try {
-        await issuesAPI.update(issueId, { status: newStatus as any });
+        const updatedIssue = await issuesAPI.update(issueId, { status: newStatus as any });
         toast.success('Issue moved successfully');
+
+        // Update the issue with full data from backend (includes timeTracking updates)
+        setIssues((prevIssues) =>
+          prevIssues.map((issue) =>
+            issue._id === issueId ? updatedIssue.data : issue
+          )
+        );
       } catch (error) {
         console.error('Error updating issue:', error);
         toast.error('Failed to move issue');
