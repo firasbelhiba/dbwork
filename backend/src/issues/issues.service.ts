@@ -419,17 +419,21 @@ export class IssuesService {
         }
 
         // Auto-trigger time tracking based on status change
+        let timeTrackingModified = false;
+
         // Start or resume timer when moving TO in_progress
         if (changes.status.to === 'in_progress' && changes.status.from !== 'in_progress') {
           try {
             // First try to resume if there's a paused timer
             await this.timeTrackingService.resumeTimer(id, userId);
             console.log(`[TIME_TRACKING] Auto-resumed timer for issue ${id}`);
+            timeTrackingModified = true;
           } catch {
             // No paused timer, try to start a new one
             try {
               await this.timeTrackingService.startTimer(id, userId);
               console.log(`[TIME_TRACKING] Auto-started timer for issue ${id}`);
+              timeTrackingModified = true;
             } catch (error) {
               // Timer might already be running, that's okay
               console.log(`[TIME_TRACKING] Could not auto-start timer: ${error.message}`);
@@ -442,6 +446,7 @@ export class IssuesService {
           try {
             await this.timeTrackingService.pauseTimer(id, userId);
             console.log(`[TIME_TRACKING] Auto-paused timer for issue ${id}`);
+            timeTrackingModified = true;
           } catch (error) {
             // Timer might not be running or already paused, that's okay
             console.log(`[TIME_TRACKING] Could not auto-pause timer: ${error.message}`);
@@ -457,9 +462,24 @@ export class IssuesService {
               `Auto-stopped: Issue completed`,
             );
             console.log(`[TIME_TRACKING] Auto-stopped timer for completed issue ${id}`);
+            timeTrackingModified = true;
           } catch (error) {
             // Timer might not be running, that's okay
             console.log(`[TIME_TRACKING] Could not auto-stop timer: ${error.message}`);
+          }
+        }
+
+        // If time tracking was modified, re-fetch the issue to get updated data
+        if (timeTrackingModified) {
+          const updatedIssue = await this.issueModel
+            .findById(id)
+            .populate({ path: 'assignees', select: 'firstName lastName email avatar', model: 'User' })
+            .populate({ path: 'reporter', select: 'firstName lastName email avatar', model: 'User' })
+            .populate('projectId', 'name key')
+            .populate('sprintId', 'name status')
+            .exec();
+          if (updatedIssue) {
+            return updatedIssue;
           }
         }
       }
