@@ -50,8 +50,13 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
 
   // Check if current user has an active timer on this issue
   const activeEntry = issue.timeTracking?.activeTimeEntry;
-  const isTimerRunning = activeEntry && activeEntry.userId === user?._id && !activeEntry.isPaused;
-  const isTimerPaused = activeEntry && activeEntry.userId === user?._id && activeEntry.isPaused;
+  const hasActiveTimer = activeEntry && activeEntry.userId === user?._id;
+
+  // Timer should only be "running" (green) when issue is in_progress AND not paused
+  // Timer should be "paused" (yellow) when there's an active timer but issue is NOT in_progress OR isPaused is true
+  const isInProgress = issue.status === 'in_progress';
+  const isTimerRunning = hasActiveTimer && isInProgress && !activeEntry.isPaused;
+  const isTimerPaused = hasActiveTimer && (!isInProgress || activeEntry.isPaused);
 
   // Calculate and update timer display
   useEffect(() => {
@@ -65,6 +70,7 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
       const startTime = new Date(activeEntry.startTime);
       let duration = Math.floor((now.getTime() - startTime.getTime()) / 1000);
 
+      // If paused (either by isPaused flag OR not in_progress), calculate paused time
       if (activeEntry.isPaused && activeEntry.pausedAt) {
         const pausedAt = new Date(activeEntry.pausedAt);
         const currentPauseDuration = Math.floor((now.getTime() - pausedAt.getTime()) / 1000);
@@ -78,13 +84,14 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
 
     setTimerSeconds(calculateDuration());
 
-    if (!activeEntry.isPaused) {
+    // Only tick when issue is in_progress AND timer is not paused
+    if (isInProgress && !activeEntry.isPaused) {
       const interval = setInterval(() => {
         setTimerSeconds(calculateDuration());
       }, 1000);
       return () => clearInterval(interval);
     }
-  }, [activeEntry, user?._id]);
+  }, [activeEntry, user?._id, isInProgress]);
 
   const handleArchive = () => {
     if (onArchive) {
