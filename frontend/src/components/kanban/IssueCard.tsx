@@ -58,25 +58,37 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
   const isTimerRunning = hasActiveTimer && isInProgress && !activeEntry.isPaused;
   const isTimerPaused = hasActiveTimer && (!isInProgress || activeEntry.isPaused);
 
+  // Serialize activeTimeEntry for dependency comparison (ensures re-run on any nested change)
+  const activeEntryJson = activeEntry ? JSON.stringify({
+    isPaused: activeEntry.isPaused,
+    startTime: activeEntry.startTime,
+    accumulatedPausedTime: activeEntry.accumulatedPausedTime,
+    pausedAt: activeEntry.pausedAt,
+  }) : null;
+
   // Calculate and update timer display
   useEffect(() => {
-    if (!activeEntry || activeEntry.userId !== user?._id) {
+    // Get fresh values from issue prop to avoid stale closure issues
+    const currentActiveEntry = issue.timeTracking?.activeTimeEntry;
+    const currentIsInProgress = issue.status === 'in_progress';
+
+    if (!currentActiveEntry || currentActiveEntry.userId !== user?._id) {
       setTimerSeconds(0);
       return;
     }
 
     const calculateDuration = () => {
       const now = new Date();
-      const startTime = new Date(activeEntry.startTime);
+      const startTime = new Date(currentActiveEntry.startTime);
       let duration = Math.floor((now.getTime() - startTime.getTime()) / 1000);
 
       // If paused (either by isPaused flag OR not in_progress), calculate paused time
-      if (activeEntry.isPaused && activeEntry.pausedAt) {
-        const pausedAt = new Date(activeEntry.pausedAt);
+      if (currentActiveEntry.isPaused && currentActiveEntry.pausedAt) {
+        const pausedAt = new Date(currentActiveEntry.pausedAt);
         const currentPauseDuration = Math.floor((now.getTime() - pausedAt.getTime()) / 1000);
-        duration -= (activeEntry.accumulatedPausedTime + currentPauseDuration);
+        duration -= (currentActiveEntry.accumulatedPausedTime + currentPauseDuration);
       } else {
-        duration -= activeEntry.accumulatedPausedTime;
+        duration -= currentActiveEntry.accumulatedPausedTime;
       }
 
       return Math.max(0, duration);
@@ -85,13 +97,13 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
     setTimerSeconds(calculateDuration());
 
     // Only tick when issue is in_progress AND timer is not paused
-    if (isInProgress && !activeEntry.isPaused) {
+    if (currentIsInProgress && !currentActiveEntry.isPaused) {
       const interval = setInterval(() => {
         setTimerSeconds(calculateDuration());
       }, 1000);
       return () => clearInterval(interval);
     }
-  }, [activeEntry, user?._id, isInProgress]);
+  }, [activeEntryJson, issue.status, user?._id, issue.timeTracking?.activeTimeEntry]);
 
   const handleArchive = () => {
     if (onArchive) {
