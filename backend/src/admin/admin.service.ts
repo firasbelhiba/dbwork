@@ -1,6 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectConnection } from '@nestjs/mongoose';
-import { Connection } from 'mongoose';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
+import { Connection, Model } from 'mongoose';
+import { AppSettings, AppSettingsDocument } from './schemas/app-settings.schema';
+
+export interface TimerSettings {
+  timerAutoStopHour: number;
+  timerAutoStopMinute: number;
+  timerAutoStopEnabled: boolean;
+  timerAutoStopTimezone: string;
+  timerAutoStopWeekdaysOnly: boolean;
+}
 
 @Injectable()
 export class AdminService {
@@ -26,6 +35,7 @@ export class AdminService {
 
   constructor(
     @InjectConnection() private readonly connection: Connection,
+    @InjectModel(AppSettings.name) private appSettingsModel: Model<AppSettingsDocument>,
   ) {}
 
   /**
@@ -168,6 +178,79 @@ export class AdminService {
       totalDocuments,
       collections,
       databaseSize,
+    };
+  }
+
+  /**
+   * Get or create app settings (singleton pattern)
+   */
+  private async getOrCreateSettings(): Promise<AppSettingsDocument> {
+    let settings = await this.appSettingsModel.findOne({ key: 'app_settings' }).exec();
+
+    if (!settings) {
+      this.logger.log('Creating default app settings...');
+      settings = await this.appSettingsModel.create({
+        key: 'app_settings',
+        timerAutoStopHour: 17,
+        timerAutoStopMinute: 30,
+        timerAutoStopEnabled: true,
+        timerAutoStopTimezone: 'Africa/Tunis',
+        timerAutoStopWeekdaysOnly: true,
+      });
+    }
+
+    return settings;
+  }
+
+  /**
+   * Get timer auto-stop settings
+   */
+  async getTimerSettings(): Promise<TimerSettings> {
+    const settings = await this.getOrCreateSettings();
+
+    return {
+      timerAutoStopHour: settings.timerAutoStopHour,
+      timerAutoStopMinute: settings.timerAutoStopMinute,
+      timerAutoStopEnabled: settings.timerAutoStopEnabled,
+      timerAutoStopTimezone: settings.timerAutoStopTimezone,
+      timerAutoStopWeekdaysOnly: settings.timerAutoStopWeekdaysOnly,
+    };
+  }
+
+  /**
+   * Update timer auto-stop settings
+   */
+  async updateTimerSettings(updates: Partial<TimerSettings>): Promise<TimerSettings> {
+    this.logger.log('Updating timer settings:', updates);
+
+    // Validate hour (0-23)
+    if (updates.timerAutoStopHour !== undefined) {
+      if (updates.timerAutoStopHour < 0 || updates.timerAutoStopHour > 23) {
+        throw new Error('Hour must be between 0 and 23');
+      }
+    }
+
+    // Validate minute (0-59)
+    if (updates.timerAutoStopMinute !== undefined) {
+      if (updates.timerAutoStopMinute < 0 || updates.timerAutoStopMinute > 59) {
+        throw new Error('Minute must be between 0 and 59');
+      }
+    }
+
+    const settings = await this.appSettingsModel.findOneAndUpdate(
+      { key: 'app_settings' },
+      { $set: updates },
+      { new: true, upsert: true },
+    ).exec();
+
+    this.logger.log(`Timer settings updated: ${settings.timerAutoStopHour}:${settings.timerAutoStopMinute.toString().padStart(2, '0')}`);
+
+    return {
+      timerAutoStopHour: settings.timerAutoStopHour,
+      timerAutoStopMinute: settings.timerAutoStopMinute,
+      timerAutoStopEnabled: settings.timerAutoStopEnabled,
+      timerAutoStopTimezone: settings.timerAutoStopTimezone,
+      timerAutoStopWeekdaysOnly: settings.timerAutoStopWeekdaysOnly,
     };
   }
 }

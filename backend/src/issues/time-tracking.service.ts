@@ -6,9 +6,6 @@ import { TimeEntry, ActiveTimeEntry } from '@common/interfaces';
 
 const INACTIVITY_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
 const MAX_SESSION_DURATION_MS = 10 * 60 * 60 * 1000; // 10 hours
-// FOR TESTING: Changed to 13:00 PM - change back to 17:30 after testing
-const END_OF_WORK_HOUR = 13; // 13 PM (TEST MODE - normally 17)
-const END_OF_WORK_MINUTE = 0; // 0 minutes (TEST MODE - normally 30)
 
 @Injectable()
 export class TimeTrackingService {
@@ -478,10 +475,12 @@ export class TimeTrackingService {
   }
 
   /**
-   * Stop all active timers at end of work day (5:30 PM)
+   * Stop all active timers at end of work day
    * This is called by a scheduled task
+   * @param hour - The hour to use for end of work day (0-23)
+   * @param minute - The minute to use for end of work day (0-59)
    */
-  async stopAllTimersEndOfDay(): Promise<{
+  async stopAllTimersEndOfDay(hour: number = 17, minute: number = 30): Promise<{
     stoppedCount: number;
     errors: string[];
     stoppedTimers: Array<{ issueId: string; issueKey: string; userId: string; projectId: string }>;
@@ -491,7 +490,7 @@ export class TimeTrackingService {
     let stoppedCount = 0;
     const stoppedTimers: Array<{ issueId: string; issueKey: string; userId: string; projectId: string }> = [];
 
-    console.log(`[TIME_TRACKING] Running end-of-day timer stop at ${now.toISOString()}`);
+    console.log(`[TIME_TRACKING] Running end-of-day timer stop at ${now.toISOString()} (configured for ${hour}:${minute.toString().padStart(2, '0')})`);
 
     // Find all issues with active timers (both running and paused)
     const issuesWithActiveTimers = await this.issueModel.find({
@@ -507,7 +506,7 @@ export class TimeTrackingService {
       try {
         // Calculate the end time as end of work day
         const endOfWorkDay = new Date(now);
-        endOfWorkDay.setHours(END_OF_WORK_HOUR, END_OF_WORK_MINUTE, 0, 0);
+        endOfWorkDay.setHours(hour, minute, 0, 0);
 
         const startTime = new Date(activeEntry.startTime);
 

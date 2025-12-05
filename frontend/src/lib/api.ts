@@ -349,6 +349,14 @@ export const adminAPI = {
   exportDatabase: () => api.get('/admin/export/database', { responseType: 'blob' }),
   exportCollection: (collectionName: string) =>
     api.get(`/admin/export/collection/${collectionName}`, { responseType: 'blob' }),
+  // Timer settings
+  getTimerSettings: () => api.get('/admin/settings/timer'),
+  updateTimerSettings: (settings: {
+    timerAutoStopHour?: number;
+    timerAutoStopMinute?: number;
+    timerAutoStopEnabled?: boolean;
+    timerAutoStopWeekdaysOnly?: boolean;
+  }) => api.put('/admin/settings/timer', settings),
 };
 
 // Google Calendar API

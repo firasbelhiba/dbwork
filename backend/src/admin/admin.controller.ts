@@ -1,6 +1,8 @@
 import {
   Controller,
   Get,
+  Put,
+  Body,
   Param,
   Res,
   UseGuards,
@@ -8,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Response } from 'express';
-import { AdminService } from './admin.service';
+import { AdminService, TimerSettings } from './admin.service';
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@auth/guards/roles.guard';
 import { Roles, CurrentUser } from '@common/decorators';
@@ -96,5 +98,28 @@ export class AdminController {
   @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
   async getDatabaseStats() {
     return this.adminService.getDatabaseStats();
+  }
+
+  @Get('settings/timer')
+  @ApiOperation({ summary: 'Get timer auto-stop settings (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Timer settings retrieved successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
+  async getTimerSettings(): Promise<TimerSettings> {
+    return this.adminService.getTimerSettings();
+  }
+
+  @Put('settings/timer')
+  @ApiOperation({ summary: 'Update timer auto-stop settings (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Timer settings updated successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid settings values' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
+  async updateTimerSettings(
+    @Body() updates: Partial<TimerSettings>,
+  ): Promise<TimerSettings> {
+    try {
+      return await this.adminService.updateTimerSettings(updates);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 }

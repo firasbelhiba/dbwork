@@ -42,6 +42,16 @@ export default function ProfilePage() {
   const [dbStats, setDbStats] = useState<any>(null);
   const [loadingStats, setLoadingStats] = useState(false);
 
+  // Timer settings state
+  const [timerSettings, setTimerSettings] = useState<{
+    timerAutoStopHour: number;
+    timerAutoStopMinute: number;
+    timerAutoStopEnabled: boolean;
+    timerAutoStopWeekdaysOnly: boolean;
+  } | null>(null);
+  const [loadingTimerSettings, setLoadingTimerSettings] = useState(false);
+  const [savingTimerSettings, setSavingTimerSettings] = useState(false);
+
   // Avatar upload
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -70,6 +80,7 @@ export default function ProfilePage() {
       // Load admin stats if user is admin
       if (user.role === 'admin') {
         loadDatabaseStats();
+        loadTimerSettings();
       }
     }
   }, [user]);
@@ -94,6 +105,39 @@ export default function ProfilePage() {
       console.error('Error loading database stats:', error);
     } finally {
       setLoadingStats(false);
+    }
+  };
+
+  const loadTimerSettings = async () => {
+    setLoadingTimerSettings(true);
+    try {
+      const response = await adminAPI.getTimerSettings();
+      setTimerSettings(response.data);
+    } catch (error) {
+      console.error('Error loading timer settings:', error);
+    } finally {
+      setLoadingTimerSettings(false);
+    }
+  };
+
+  const handleSaveTimerSettings = async () => {
+    if (!timerSettings) return;
+
+    setSavingTimerSettings(true);
+    try {
+      const response = await adminAPI.updateTimerSettings({
+        timerAutoStopHour: timerSettings.timerAutoStopHour,
+        timerAutoStopMinute: timerSettings.timerAutoStopMinute,
+        timerAutoStopEnabled: timerSettings.timerAutoStopEnabled,
+        timerAutoStopWeekdaysOnly: timerSettings.timerAutoStopWeekdaysOnly,
+      });
+      setTimerSettings(response.data);
+      toast.success('Timer settings saved successfully!');
+    } catch (error: any) {
+      console.error('Error saving timer settings:', error);
+      toast.error(error.response?.data?.message || 'Failed to save timer settings');
+    } finally {
+      setSavingTimerSettings(false);
     }
   };
 
@@ -964,6 +1008,112 @@ export default function ProfilePage() {
                 </div>
               </div>
             )}
+
+            {/* Timer Auto-Stop Settings */}
+            <div className="border-t border-gray-200 dark:border-dark-400 pt-4 md:pt-6 mt-4 md:mt-6">
+              <h3 className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">
+                Timer Auto-Stop Settings
+              </h3>
+              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-4">
+                Configure when active timers should automatically stop at the end of the work day
+              </p>
+
+              {loadingTimerSettings ? (
+                <div className="flex items-center justify-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500"></div>
+                </div>
+              ) : timerSettings ? (
+                <div className="space-y-4">
+                  {/* Enable/Disable Toggle */}
+                  <div className="flex items-center justify-between p-3 md:p-4 bg-gray-50 dark:bg-dark-500 rounded-lg">
+                    <div>
+                      <p className="font-medium text-sm md:text-base text-gray-900 dark:text-white">Enable Auto-Stop</p>
+                      <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
+                        Automatically stop all running timers at the specified time
+                      </p>
+                    </div>
+                    <div className="relative inline-block w-11 h-6">
+                      <input
+                        type="checkbox"
+                        checked={timerSettings.timerAutoStopEnabled}
+                        onChange={(e) => setTimerSettings({ ...timerSettings, timerAutoStopEnabled: e.target.checked })}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                    </div>
+                  </div>
+
+                  {/* Weekdays Only Toggle */}
+                  <div className="flex items-center justify-between p-3 md:p-4 bg-gray-50 dark:bg-dark-500 rounded-lg">
+                    <div>
+                      <p className="font-medium text-sm md:text-base text-gray-900 dark:text-white">Weekdays Only</p>
+                      <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
+                        Only auto-stop timers on weekdays (Monday - Friday)
+                      </p>
+                    </div>
+                    <div className="relative inline-block w-11 h-6">
+                      <input
+                        type="checkbox"
+                        checked={timerSettings.timerAutoStopWeekdaysOnly}
+                        onChange={(e) => setTimerSettings({ ...timerSettings, timerAutoStopWeekdaysOnly: e.target.checked })}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                    </div>
+                  </div>
+
+                  {/* Time Picker */}
+                  <div className="p-3 md:p-4 bg-gray-50 dark:bg-dark-500 rounded-lg">
+                    <p className="font-medium text-sm md:text-base text-gray-900 dark:text-white mb-3">Auto-Stop Time</p>
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={timerSettings.timerAutoStopHour}
+                        onChange={(e) => setTimerSettings({ ...timerSettings, timerAutoStopHour: parseInt(e.target.value) })}
+                        className="h-10 px-3 rounded-md border-2 border-gray-300 dark:border-dark-400 bg-white dark:bg-dark-600 text-gray-900 dark:text-white text-sm focus:border-primary-500 dark:focus:border-primary-500 focus:outline-none"
+                      >
+                        {Array.from({ length: 24 }, (_, i) => (
+                          <option key={i} value={i}>
+                            {i.toString().padStart(2, '0')}
+                          </option>
+                        ))}
+                      </select>
+                      <span className="text-xl font-bold text-gray-700 dark:text-gray-300">:</span>
+                      <select
+                        value={timerSettings.timerAutoStopMinute}
+                        onChange={(e) => setTimerSettings({ ...timerSettings, timerAutoStopMinute: parseInt(e.target.value) })}
+                        className="h-10 px-3 rounded-md border-2 border-gray-300 dark:border-dark-400 bg-white dark:bg-dark-600 text-gray-900 dark:text-white text-sm focus:border-primary-500 dark:focus:border-primary-500 focus:outline-none"
+                      >
+                        {Array.from({ length: 60 }, (_, i) => (
+                          <option key={i} value={i}>
+                            {i.toString().padStart(2, '0')}
+                          </option>
+                        ))}
+                      </select>
+                      <span className="text-sm text-gray-600 dark:text-gray-400 ml-2">(Tunisia Time)</span>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                      Current setting: {timerSettings.timerAutoStopHour.toString().padStart(2, '0')}:{timerSettings.timerAutoStopMinute.toString().padStart(2, '0')}
+                    </p>
+                  </div>
+
+                  {/* Save Button */}
+                  <div className="flex justify-end">
+                    <Button
+                      onClick={handleSaveTimerSettings}
+                      loading={savingTimerSettings}
+                      disabled={savingTimerSettings}
+                    >
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      {savingTimerSettings ? 'Saving...' : 'Save Timer Settings'}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-gray-500 dark:text-gray-400 text-sm">Unable to load timer settings</p>
+              )}
+            </div>
           </div>
         )}
       </div>

@@ -11,6 +11,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
 import { AchievementsModule } from '../achievements/achievements.module';
 import { ProjectsModule } from '../projects/projects.module';
 import { WebSocketModule } from '../websocket/websocket.module';
+import { AdminModule } from '../admin/admin.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { WebSocketModule } from '../websocket/websocket.module';
     AchievementsModule,
     forwardRef(() => ProjectsModule),
     WebSocketModule,
+    AdminModule,
   ],
   controllers: [IssuesController],
   providers: [IssuesService, TimeTrackingService, TimeTrackingSchedulerService],

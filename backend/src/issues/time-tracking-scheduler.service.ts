@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { TimeTrackingService } from './time-tracking.service';
 import { AppWebSocketGateway } from '../websocket/websocket.gateway';
+import { AdminService } from '../admin/admin.service';
 
 @Injectable()
 export class TimeTrackingSchedulerService {
@@ -10,47 +11,69 @@ export class TimeTrackingSchedulerService {
   constructor(
     private readonly timeTrackingService: TimeTrackingService,
     private readonly webSocketGateway: AppWebSocketGateway,
+    private readonly adminService: AdminService,
   ) {}
 
   /**
-   * Stop all active timers at 5:30 PM every weekday (Monday-Friday)
-   * Cron format: second minute hour day-of-month month day-of-week
-   * 0 30 17 * * 1-5 = At 17:30:00 on every day-of-week from Monday through Friday
-   *
-   * FOR TESTING: Changed to 13:00 PM - change back to '0 30 17 * * 1-5' after testing
+   * Check every minute if it's time to stop timers based on admin settings
+   * This allows dynamic configuration of the auto-stop time
    */
-  @Cron('0 0 13 * * *', {
-    name: 'end-of-day-timer-stop',
-    timeZone: 'Africa/Tunis', // Tunisia timezone (UTC+1)
+  @Cron('0 * * * * *', {
+    name: 'timer-auto-stop-check',
+    timeZone: 'Africa/Tunis',
   })
-  async handleEndOfDayTimerStop() {
-    this.logger.log('Running scheduled end-of-day timer stop (13:00 PM - TEST MODE)');
-
+  async handleTimerAutoStopCheck() {
     try {
-      const result = await this.timeTrackingService.stopAllTimersEndOfDay();
+      const settings = await this.adminService.getTimerSettings();
 
-      if (result.stoppedCount > 0) {
-        this.logger.log(`Successfully stopped ${result.stoppedCount} timer(s)`);
-
-        // Emit WebSocket events for each stopped timer
-        for (const stoppedTimer of result.stoppedTimers) {
-          this.webSocketGateway.emitTimerAutoStopped(
-            stoppedTimer.userId,
-            stoppedTimer.projectId,
-            stoppedTimer.issueId,
-            stoppedTimer.issueKey,
-          );
-        }
-      } else {
-        this.logger.log('No active timers to stop');
+      // Skip if auto-stop is disabled
+      if (!settings.timerAutoStopEnabled) {
+        return;
       }
 
-      if (result.errors.length > 0) {
-        this.logger.warn(`Encountered ${result.errors.length} error(s) while stopping timers`);
-        result.errors.forEach((err) => this.logger.error(err));
+      const now = new Date();
+
+      // Check if it's a weekday (if weekdays only is enabled)
+      const dayOfWeek = now.getDay(); // 0 = Sunday, 6 = Saturday
+      if (settings.timerAutoStopWeekdaysOnly && (dayOfWeek === 0 || dayOfWeek === 6)) {
+        return;
+      }
+
+      // Check if current time matches the configured auto-stop time
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+
+      if (currentHour === settings.timerAutoStopHour && currentMinute === settings.timerAutoStopMinute) {
+        this.logger.log(`Running scheduled end-of-day timer stop (${settings.timerAutoStopHour}:${settings.timerAutoStopMinute.toString().padStart(2, '0')})`);
+
+        const result = await this.timeTrackingService.stopAllTimersEndOfDay(
+          settings.timerAutoStopHour,
+          settings.timerAutoStopMinute,
+        );
+
+        if (result.stoppedCount > 0) {
+          this.logger.log(`Successfully stopped ${result.stoppedCount} timer(s)`);
+
+          // Emit WebSocket events for each stopped timer
+          for (const stoppedTimer of result.stoppedTimers) {
+            this.webSocketGateway.emitTimerAutoStopped(
+              stoppedTimer.userId,
+              stoppedTimer.projectId,
+              stoppedTimer.issueId,
+              stoppedTimer.issueKey,
+            );
+          }
+        } else {
+          this.logger.log('No active timers to stop');
+        }
+
+        if (result.errors.length > 0) {
+          this.logger.warn(`Encountered ${result.errors.length} error(s) while stopping timers`);
+          result.errors.forEach((err) => this.logger.error(err));
+        }
       }
     } catch (error) {
-      this.logger.error('Failed to run end-of-day timer stop', error.stack);
+      this.logger.error('Failed to check timer auto-stop', error.stack);
     }
   }
 
