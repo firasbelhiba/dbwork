@@ -51,6 +51,8 @@ export class AppWebSocketGateway
   server: Server;
 
   private connectedUsers: Map<string, string> = new Map(); // userId -> socketId
+  // Track which rooms each socket has joined to prevent duplicate joins
+  private socketRooms: Map<string, Set<string>> = new Map(); // socketId -> Set of room names
 
   constructor(private jwtService: JwtService) {}
 
@@ -88,8 +90,27 @@ export class AppWebSocketGateway
   handleDisconnect(client: AuthenticatedSocket) {
     if (client.userId) {
       this.connectedUsers.delete(client.userId);
+      this.socketRooms.delete(client.id);
       console.log(`Client disconnected: ${client.id} (User: ${client.userId})`);
     }
+  }
+
+  // Helper to check if socket is already in a room
+  private isInRoom(socketId: string, room: string): boolean {
+    return this.socketRooms.get(socketId)?.has(room) ?? false;
+  }
+
+  // Helper to add socket to room tracking
+  private addToRoom(socketId: string, room: string): void {
+    if (!this.socketRooms.has(socketId)) {
+      this.socketRooms.set(socketId, new Set());
+    }
+    this.socketRooms.get(socketId)!.add(room);
+  }
+
+  // Helper to remove socket from room tracking
+  private removeFromRoom(socketId: string, room: string): void {
+    this.socketRooms.get(socketId)?.delete(room);
   }
 
   @SubscribeMessage('join:project')
@@ -97,7 +118,13 @@ export class AppWebSocketGateway
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() projectId: string,
   ) {
-    client.join(`project:${projectId}`);
+    const room = `project:${projectId}`;
+    // Prevent duplicate joins - silently ignore if already in room
+    if (this.isInRoom(client.id, room)) {
+      return { event: 'joined:project', data: { projectId } };
+    }
+    client.join(room);
+    this.addToRoom(client.id, room);
     console.log(`User ${client.userId} joined project:${projectId}`);
     return { event: 'joined:project', data: { projectId } };
   }
@@ -107,7 +134,13 @@ export class AppWebSocketGateway
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() projectId: string,
   ) {
-    client.leave(`project:${projectId}`);
+    const room = `project:${projectId}`;
+    // Prevent duplicate leaves - silently ignore if not in room
+    if (!this.isInRoom(client.id, room)) {
+      return { event: 'left:project', data: { projectId } };
+    }
+    client.leave(room);
+    this.removeFromRoom(client.id, room);
     console.log(`User ${client.userId} left project:${projectId}`);
     return { event: 'left:project', data: { projectId } };
   }
@@ -117,7 +150,12 @@ export class AppWebSocketGateway
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() sprintId: string,
   ) {
-    client.join(`sprint:${sprintId}`);
+    const room = `sprint:${sprintId}`;
+    if (this.isInRoom(client.id, room)) {
+      return { event: 'joined:sprint', data: { sprintId } };
+    }
+    client.join(room);
+    this.addToRoom(client.id, room);
     console.log(`User ${client.userId} joined sprint:${sprintId}`);
     return { event: 'joined:sprint', data: { sprintId } };
   }
@@ -127,7 +165,12 @@ export class AppWebSocketGateway
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() sprintId: string,
   ) {
-    client.leave(`sprint:${sprintId}`);
+    const room = `sprint:${sprintId}`;
+    if (!this.isInRoom(client.id, room)) {
+      return { event: 'left:sprint', data: { sprintId } };
+    }
+    client.leave(room);
+    this.removeFromRoom(client.id, room);
     console.log(`User ${client.userId} left sprint:${sprintId}`);
     return { event: 'left:sprint', data: { sprintId } };
   }
@@ -137,7 +180,12 @@ export class AppWebSocketGateway
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() issueId: string,
   ) {
-    client.join(`issue:${issueId}`);
+    const room = `issue:${issueId}`;
+    if (this.isInRoom(client.id, room)) {
+      return { event: 'joined:issue', data: { issueId } };
+    }
+    client.join(room);
+    this.addToRoom(client.id, room);
     console.log(`User ${client.userId} joined issue:${issueId}`);
     return { event: 'joined:issue', data: { issueId } };
   }
@@ -147,7 +195,12 @@ export class AppWebSocketGateway
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() issueId: string,
   ) {
-    client.leave(`issue:${issueId}`);
+    const room = `issue:${issueId}`;
+    if (!this.isInRoom(client.id, room)) {
+      return { event: 'left:issue', data: { issueId } };
+    }
+    client.leave(room);
+    this.removeFromRoom(client.id, room);
     console.log(`User ${client.userId} left issue:${issueId}`);
     return { event: 'left:issue', data: { issueId } };
   }
