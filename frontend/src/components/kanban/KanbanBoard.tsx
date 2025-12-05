@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
   DndContext,
@@ -47,7 +47,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
   const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [issueToDelete, setIssueToDelete] = useState<string | null>(null);
   const [issueToArchive, setIssueToArchive] = useState<string | null>(null);
-  const { socket, joinProject, leaveProject, onTimerAutoStopped } = useWebSocket();
+  const { socket, connected, joinProject, leaveProject, onTimerAutoStopped } = useWebSocket();
+  const joinedProjectRef = useRef<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -63,16 +64,28 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
   }, [projectId, sprintId, showArchived, myTasksOnly]);
 
   // Join project room for WebSocket updates
+  // Re-run when projectId or connected state changes (to join when connection is established)
   useEffect(() => {
-    if (projectId) {
-      joinProject(projectId);
+    if (projectId && connected) {
+      // Only join if we haven't joined this project yet or if projectId changed
+      if (joinedProjectRef.current !== projectId) {
+        // Leave previous project if any
+        if (joinedProjectRef.current) {
+          leaveProject(joinedProjectRef.current);
+        }
+        joinProject(projectId);
+        joinedProjectRef.current = projectId;
+      }
     }
     return () => {
-      if (projectId) {
-        leaveProject(projectId);
+      // Only leave on unmount, not on every re-render
+      if (joinedProjectRef.current) {
+        leaveProject(joinedProjectRef.current);
+        joinedProjectRef.current = null;
       }
     };
-  }, [projectId, joinProject, leaveProject]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId, connected]);
 
   // Listen for timer:auto-stopped WebSocket events via context callback
   useEffect(() => {

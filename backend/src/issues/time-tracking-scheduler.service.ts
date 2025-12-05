@@ -1,11 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { TimeTrackingService } from './time-tracking.service';
 import { AppWebSocketGateway } from '../websocket/websocket.gateway';
 import { AdminService } from '../admin/admin.service';
 
 @Injectable()
-export class TimeTrackingSchedulerService {
+export class TimeTrackingSchedulerService implements OnModuleInit {
   private readonly logger = new Logger(TimeTrackingSchedulerService.name);
 
   constructor(
@@ -13,6 +13,17 @@ export class TimeTrackingSchedulerService {
     private readonly webSocketGateway: AppWebSocketGateway,
     private readonly adminService: AdminService,
   ) {}
+
+  async onModuleInit() {
+    this.logger.log('TimeTrackingSchedulerService initialized - cron jobs are registered');
+    // Log initial settings on startup
+    try {
+      const settings = await this.adminService.getTimerSettings();
+      this.logger.log(`Timer auto-stop configured for ${settings.timerAutoStopHour.toString().padStart(2, '0')}:${settings.timerAutoStopMinute.toString().padStart(2, '0')} ${settings.timerAutoStopTimezone} (enabled: ${settings.timerAutoStopEnabled})`);
+    } catch (error) {
+      this.logger.warn('Could not load timer settings on startup:', error.message);
+    }
+  }
 
   /**
    * Get current time in a specific timezone

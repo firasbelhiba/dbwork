@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef, useCallback, ReactNode } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 import toast from 'react-hot-toast';
@@ -29,16 +29,34 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [connected, setConnected] = useState(false);
   const { user } = useAuth();
-  const [timerAutoStoppedCallbacks, setTimerAutoStoppedCallbacks] = useState<Set<(data: TimerAutoStoppedData) => void>>(new Set());
+
+  // Use refs to avoid stale closures and unnecessary re-renders
+  const socketRef = useRef<Socket | null>(null);
+  const connectedRef = useRef(false);
+  const timerAutoStoppedCallbacksRef = useRef<Set<(data: TimerAutoStoppedData) => void>>(new Set());
+
+  // Keep refs in sync with state
+  useEffect(() => {
+    socketRef.current = socket;
+  }, [socket]);
+
+  useEffect(() => {
+    connectedRef.current = connected;
+  }, [connected]);
 
   useEffect(() => {
     if (!user) {
       // User not logged in, disconnect socket if exists
-      if (socket) {
-        socket.disconnect();
+      if (socketRef.current) {
+        socketRef.current.disconnect();
         setSocket(null);
         setConnected(false);
       }
+      return;
+    }
+
+    // Prevent creating multiple connections
+    if (socketRef.current?.connected) {
       return;
     }
 
@@ -76,8 +94,8 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
         icon: '⏱️',
         duration: 5000,
       });
-      // Notify all registered callbacks
-      timerAutoStoppedCallbacks.forEach(callback => callback(data));
+      // Notify all registered callbacks using ref to avoid stale closure
+      timerAutoStoppedCallbacksRef.current.forEach(callback => callback(data));
     });
 
     setSocket(newSocket);
@@ -88,53 +106,51 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     };
   }, [user]);
 
-  const joinProject = (projectId: string) => {
-    if (socket && connected) {
-      socket.emit('join:project', projectId);
+  // Use refs in callbacks to avoid dependency on socket/connected state
+  // This prevents unnecessary re-renders and callback recreations
+  const joinProject = useCallback((projectId: string) => {
+    if (socketRef.current && connectedRef.current) {
+      socketRef.current.emit('join:project', projectId);
     }
-  };
+  }, []);
 
-  const leaveProject = (projectId: string) => {
-    if (socket && connected) {
-      socket.emit('leave:project', projectId);
+  const leaveProject = useCallback((projectId: string) => {
+    if (socketRef.current && connectedRef.current) {
+      socketRef.current.emit('leave:project', projectId);
     }
-  };
+  }, []);
 
-  const joinSprint = (sprintId: string) => {
-    if (socket && connected) {
-      socket.emit('join:sprint', sprintId);
+  const joinSprint = useCallback((sprintId: string) => {
+    if (socketRef.current && connectedRef.current) {
+      socketRef.current.emit('join:sprint', sprintId);
     }
-  };
+  }, []);
 
-  const leaveSprint = (sprintId: string) => {
-    if (socket && connected) {
-      socket.emit('leave:sprint', sprintId);
+  const leaveSprint = useCallback((sprintId: string) => {
+    if (socketRef.current && connectedRef.current) {
+      socketRef.current.emit('leave:sprint', sprintId);
     }
-  };
+  }, []);
 
-  const joinIssue = (issueId: string) => {
-    if (socket && connected) {
-      socket.emit('join:issue', issueId);
+  const joinIssue = useCallback((issueId: string) => {
+    if (socketRef.current && connectedRef.current) {
+      socketRef.current.emit('join:issue', issueId);
     }
-  };
+  }, []);
 
-  const leaveIssue = (issueId: string) => {
-    if (socket && connected) {
-      socket.emit('leave:issue', issueId);
+  const leaveIssue = useCallback((issueId: string) => {
+    if (socketRef.current && connectedRef.current) {
+      socketRef.current.emit('leave:issue', issueId);
     }
-  };
+  }, []);
 
-  const onTimerAutoStopped = (callback: (data: TimerAutoStoppedData) => void) => {
-    setTimerAutoStoppedCallbacks(prev => new Set(prev).add(callback));
+  const onTimerAutoStopped = useCallback((callback: (data: TimerAutoStoppedData) => void) => {
+    timerAutoStoppedCallbacksRef.current.add(callback);
     // Return unsubscribe function
     return () => {
-      setTimerAutoStoppedCallbacks(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(callback);
-        return newSet;
-      });
+      timerAutoStoppedCallbacksRef.current.delete(callback);
     };
-  };
+  }, []);
 
   return (
     <WebSocketContext.Provider
