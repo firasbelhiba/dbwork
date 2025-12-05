@@ -82,7 +82,7 @@ export class TimeTrackingSchedulerService implements OnModuleInit {
       this.logger.log(`Timer check - ${timezone} time: ${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}, Target: ${settings.timerAutoStopHour.toString().padStart(2, '0')}:${settings.timerAutoStopMinute.toString().padStart(2, '0')}`);
 
       if (currentHour === settings.timerAutoStopHour && currentMinute === settings.timerAutoStopMinute) {
-        this.logger.log(`Running scheduled end-of-day timer stop (${settings.timerAutoStopHour}:${settings.timerAutoStopMinute.toString().padStart(2, '0')})`);
+        this.logger.log(`Running scheduled end-of-day timer pause (${settings.timerAutoStopHour}:${settings.timerAutoStopMinute.toString().padStart(2, '0')})`);
 
         const result = await this.timeTrackingService.stopAllTimersEndOfDay(
           settings.timerAutoStopHour,
@@ -90,7 +90,7 @@ export class TimeTrackingSchedulerService implements OnModuleInit {
         );
 
         if (result.stoppedCount > 0) {
-          this.logger.log(`Successfully stopped ${result.stoppedCount} timer(s)`);
+          this.logger.log(`Successfully paused ${result.stoppedCount} timer(s)`);
 
           // Emit WebSocket events for each stopped timer
           for (const stoppedTimer of result.stoppedTimers) {
@@ -102,11 +102,11 @@ export class TimeTrackingSchedulerService implements OnModuleInit {
             );
           }
         } else {
-          this.logger.log('No active timers to stop');
+          this.logger.log('No running timers to pause');
         }
 
         if (result.errors.length > 0) {
-          this.logger.warn(`Encountered ${result.errors.length} error(s) while stopping timers`);
+          this.logger.warn(`Encountered ${result.errors.length} error(s) while pausing timers`);
           result.errors.forEach((err) => this.logger.error(err));
         }
       }

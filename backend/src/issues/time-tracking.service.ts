@@ -475,8 +475,8 @@ export class TimeTrackingService {
   }
 
   /**
-   * Stop all active timers at end of work day
-   * This is called by a scheduled task
+   * Pause all active timers at end of work day (instead of stopping them)
+   * This allows users to resume their timers if they want to work extra hours
    * @param hour - The hour to use for end of work day (0-23)
    * @param minute - The minute to use for end of work day (0-59)
    */
@@ -490,71 +490,29 @@ export class TimeTrackingService {
     let stoppedCount = 0;
     const stoppedTimers: Array<{ issueId: string; issueKey: string; userId: string; projectId: string }> = [];
 
-    console.log(`[TIME_TRACKING] Running end-of-day timer stop at ${now.toISOString()} (configured for ${hour}:${minute.toString().padStart(2, '0')})`);
+    console.log(`[TIME_TRACKING] Running end-of-day timer pause at ${now.toISOString()} (configured for ${hour}:${minute.toString().padStart(2, '0')})`);
 
-    // Find all issues with active timers (both running and paused)
+    // Find all issues with active timers that are NOT already paused
     const issuesWithActiveTimers = await this.issueModel.find({
       'timeTracking.activeTimeEntry': { $ne: null },
+      'timeTracking.activeTimeEntry.isPaused': { $ne: true },
     }).exec();
 
-    console.log(`[TIME_TRACKING] Found ${issuesWithActiveTimers.length} issues with active timers`);
+    console.log(`[TIME_TRACKING] Found ${issuesWithActiveTimers.length} running timers to pause`);
 
     for (const issue of issuesWithActiveTimers) {
       const activeEntry = issue.timeTracking?.activeTimeEntry;
-      if (!activeEntry) continue;
+      if (!activeEntry || activeEntry.isPaused) continue;
 
       try {
-        // Calculate the end time as end of work day
-        const endOfWorkDay = new Date(now);
-        endOfWorkDay.setHours(hour, minute, 0, 0);
-
-        const startTime = new Date(activeEntry.startTime);
-
-        // Calculate duration excluding paused time, capped at end of work day
-        let effectiveEndTime = endOfWorkDay;
-        let totalDuration = Math.floor((effectiveEndTime.getTime() - startTime.getTime()) / 1000);
-
-        // If currently paused, account for pause time
-        if (activeEntry.isPaused && activeEntry.pausedAt) {
-          const pausedAt = new Date(activeEntry.pausedAt);
-          // If paused before end of day, use the pause time to calculate
-          if (pausedAt < effectiveEndTime) {
-            const currentPauseDuration = Math.floor((effectiveEndTime.getTime() - pausedAt.getTime()) / 1000);
-            totalDuration -= (activeEntry.accumulatedPausedTime + currentPauseDuration);
-          } else {
-            totalDuration -= activeEntry.accumulatedPausedTime;
-          }
-        } else {
-          totalDuration -= activeEntry.accumulatedPausedTime;
-        }
-
-        // Ensure duration is not negative
-        totalDuration = Math.max(0, totalDuration);
-
-        // Create completed time entry
-        const timeEntry: TimeEntry = {
-          id: activeEntry.id,
-          userId: activeEntry.userId,
-          startTime: startTime,
-          endTime: effectiveEndTime,
-          duration: totalDuration,
-          source: 'automatic',
-          description: 'Auto-stopped: End of work day',
-          pausedDuration: activeEntry.accumulatedPausedTime,
-          createdAt: now,
-        };
-
-        // Update issue with new time entry and clear active entry
-        const currentTimeEntries = issue.timeTracking?.timeEntries || [];
-        const currentTotalTime = issue.timeTracking?.totalTimeSpent || 0;
-
+        // Pause the timer instead of stopping it
+        // This keeps the activeTimeEntry but sets isPaused to true
         await this.issueModel.findByIdAndUpdate(
           issue._id,
           {
             $set: {
-              'timeTracking.activeTimeEntry': null,
-              'timeTracking.timeEntries': [...currentTimeEntries, timeEntry],
-              'timeTracking.totalTimeSpent': currentTotalTime + totalDuration,
+              'timeTracking.activeTimeEntry.isPaused': true,
+              'timeTracking.activeTimeEntry.pausedAt': now,
             },
           },
         ).exec();
@@ -566,15 +524,15 @@ export class TimeTrackingService {
           userId: activeEntry.userId.toString(),
           projectId: issue.projectId.toString(),
         });
-        console.log(`[TIME_TRACKING] Stopped timer for issue ${issue.key} (user: ${activeEntry.userId}, duration: ${totalDuration}s)`);
+        console.log(`[TIME_TRACKING] Paused timer for issue ${issue.key} (user: ${activeEntry.userId})`);
       } catch (error) {
-        const errorMsg = `Failed to stop timer for issue ${issue._id}: ${error.message}`;
+        const errorMsg = `Failed to pause timer for issue ${issue._id}: ${error.message}`;
         errors.push(errorMsg);
         console.error(`[TIME_TRACKING] ${errorMsg}`);
       }
     }
 
-    console.log(`[TIME_TRACKING] End-of-day timer stop complete. Stopped: ${stoppedCount}, Errors: ${errors.length}`);
+    console.log(`[TIME_TRACKING] End-of-day timer pause complete. Paused: ${stoppedCount}, Errors: ${errors.length}`);
 
     return { stoppedCount, errors, stoppedTimers };
   }

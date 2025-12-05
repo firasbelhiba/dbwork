@@ -313,15 +313,16 @@ export class AppWebSocketGateway
     }
   }
 
-  // Emit timer auto-stopped event to user and project
+  // Emit timer auto-paused event to user and project
   emitTimerAutoStopped(userId: string, projectId: string, issueId: string, issueKey: string) {
     const data = { issueId, issueKey, reason: 'end-of-day' };
     const isUserOnline = this.isUserOnline(userId);
-    console.log(`[WEBSOCKET] Emitting timer:auto-stopped for ${issueKey}`);
+    console.log(`[WEBSOCKET] Emitting timer:auto-paused for ${issueKey}`);
     console.log(`[WEBSOCKET]   -> user:${userId} (online: ${isUserOnline})`);
     console.log(`[WEBSOCKET]   -> project:${projectId}`);
     console.log(`[WEBSOCKET]   -> data:`, JSON.stringify(data));
-    this.server.to(`user:${userId}`).emit('timer:auto-stopped', data);
-    this.server.to(`project:${projectId}`).emit('timer:auto-stopped', data);
+    // Emit as timer:auto-paused since we now pause instead of stop
+    this.server.to(`user:${userId}`).emit('timer:auto-paused', data);
+    this.server.to(`project:${projectId}`).emit('timer:auto-paused', data);
   }
 }

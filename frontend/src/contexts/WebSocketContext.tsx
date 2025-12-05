@@ -87,12 +87,13 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
       console.error('WebSocket error:', error);
     });
 
-    // Global listener for timer auto-stopped events (works from any page)
-    newSocket.on('timer:auto-stopped', (data: TimerAutoStoppedData) => {
-      console.log('[WebSocket] Timer auto-stopped event received:', data);
-      toast(`Timer auto-stopped for ${data.issueKey} (end of day)`, {
-        icon: '⏱️',
-        duration: 5000,
+    // Global listener for timer auto-paused events (works from any page)
+    // Timer is paused at end of day so user can resume if they want to work extra hours
+    newSocket.on('timer:auto-paused', (data: TimerAutoStoppedData) => {
+      console.log('[WebSocket] Timer auto-paused event received:', data);
+      toast(`Timer paused for ${data.issueKey} (end of day) - Click play to resume`, {
+        icon: '⏸️',
+        duration: 6000,
       });
       // Notify all registered callbacks using ref to avoid stale closure
       timerAutoStoppedCallbacksRef.current.forEach(callback => callback(data));
