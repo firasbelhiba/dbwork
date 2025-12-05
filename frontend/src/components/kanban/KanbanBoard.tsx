@@ -47,7 +47,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
   const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [issueToDelete, setIssueToDelete] = useState<string | null>(null);
   const [issueToArchive, setIssueToArchive] = useState<string | null>(null);
-  const { socket, joinProject, leaveProject } = useWebSocket();
+  const { socket, joinProject, leaveProject, onTimerAutoStopped } = useWebSocket();
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -74,17 +74,10 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
     };
   }, [projectId, joinProject, leaveProject]);
 
-  // Listen for timer:auto-stopped WebSocket events
+  // Listen for timer:auto-stopped WebSocket events via context callback
   useEffect(() => {
-    if (!socket) return;
-
-    const handleTimerAutoStopped = (data: { issueId: string; issueKey: string; reason: string }) => {
-      console.log('[KanbanBoard] Received timer:auto-stopped event:', data);
-      toast(`Timer auto-stopped for ${data.issueKey} (end of day)`, {
-        icon: '⏱️',
-        duration: 5000,
-      });
-
+    const unsubscribe = onTimerAutoStopped((data) => {
+      console.log('[KanbanBoard] Timer auto-stopped callback:', data);
       // Update the issue to clear the active timer
       setIssues((prevIssues) =>
         prevIssues.map((issue) =>
@@ -101,14 +94,10 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
             : issue
         )
       );
-    };
+    });
 
-    socket.on('timer:auto-stopped', handleTimerAutoStopped);
-
-    return () => {
-      socket.off('timer:auto-stopped', handleTimerAutoStopped);
-    };
-  }, [socket]);
+    return unsubscribe;
+  }, [onTimerAutoStopped]);
 
   const fetchProject = async () => {
     try {

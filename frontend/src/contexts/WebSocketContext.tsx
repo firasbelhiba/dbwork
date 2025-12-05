@@ -3,6 +3,13 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from './AuthContext';
+import toast from 'react-hot-toast';
+
+interface TimerAutoStoppedData {
+  issueId: string;
+  issueKey: string;
+  reason: string;
+}
 
 interface WebSocketContextType {
   socket: Socket | null;
@@ -13,6 +20,7 @@ interface WebSocketContextType {
   leaveSprint: (sprintId: string) => void;
   joinIssue: (issueId: string) => void;
   leaveIssue: (issueId: string) => void;
+  onTimerAutoStopped: (callback: (data: TimerAutoStoppedData) => void) => () => void;
 }
 
 const WebSocketContext = createContext<WebSocketContextType | undefined>(undefined);
@@ -21,6 +29,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [connected, setConnected] = useState(false);
   const { user } = useAuth();
+  const [timerAutoStoppedCallbacks, setTimerAutoStoppedCallbacks] = useState<Set<(data: TimerAutoStoppedData) => void>>(new Set());
 
   useEffect(() => {
     if (!user) {
@@ -47,15 +56,28 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     });
 
     newSocket.on('connect', () => {
+      console.log('[WebSocket] Connected');
       setConnected(true);
     });
 
     newSocket.on('disconnect', () => {
+      console.log('[WebSocket] Disconnected');
       setConnected(false);
     });
 
     newSocket.on('error', (error) => {
       console.error('WebSocket error:', error);
+    });
+
+    // Global listener for timer auto-stopped events (works from any page)
+    newSocket.on('timer:auto-stopped', (data: TimerAutoStoppedData) => {
+      console.log('[WebSocket] Timer auto-stopped event received:', data);
+      toast(`Timer auto-stopped for ${data.issueKey} (end of day)`, {
+        icon: '⏱️',
+        duration: 5000,
+      });
+      // Notify all registered callbacks
+      timerAutoStoppedCallbacks.forEach(callback => callback(data));
     });
 
     setSocket(newSocket);
@@ -102,6 +124,18 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const onTimerAutoStopped = (callback: (data: TimerAutoStoppedData) => void) => {
+    setTimerAutoStoppedCallbacks(prev => new Set(prev).add(callback));
+    // Return unsubscribe function
+    return () => {
+      setTimerAutoStoppedCallbacks(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(callback);
+        return newSet;
+      });
+    };
+  };
+
   return (
     <WebSocketContext.Provider
       value={{
@@ -113,6 +147,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
         leaveSprint,
         joinIssue,
         leaveIssue,
+        onTimerAutoStopped,
       }}
     >
       {children}
