@@ -15,12 +15,39 @@ export class TimeTrackingSchedulerService {
   ) {}
 
   /**
+   * Get current time in a specific timezone
+   */
+  private getTimeInTimezone(timezone: string): { hour: number; minute: number; dayOfWeek: number } {
+    const now = new Date();
+
+    // Use Intl.DateTimeFormat to reliably get time in the target timezone
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone,
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: false,
+      weekday: 'short',
+    });
+
+    const parts = formatter.formatToParts(now);
+    const hour = parseInt(parts.find(p => p.type === 'hour')?.value || '0', 10);
+    const minute = parseInt(parts.find(p => p.type === 'minute')?.value || '0', 10);
+    const weekdayStr = parts.find(p => p.type === 'weekday')?.value || '';
+
+    // Convert weekday string to number (0 = Sunday, 6 = Saturday)
+    const weekdayMap: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+    const dayOfWeek = weekdayMap[weekdayStr] ?? new Date().getDay();
+
+    return { hour, minute, dayOfWeek };
+  }
+
+  /**
    * Check every minute if it's time to stop timers based on admin settings
    * This allows dynamic configuration of the auto-stop time
+   * Runs every minute on the server, but checks against Tunisia timezone
    */
   @Cron('0 * * * * *', {
     name: 'timer-auto-stop-check',
-    timeZone: 'Africa/Tunis',
   })
   async handleTimerAutoStopCheck() {
     try {
@@ -31,21 +58,17 @@ export class TimeTrackingSchedulerService {
         return;
       }
 
-      // Get current time in Tunisia timezone
-      const now = new Date();
-      const tunisiaTime = new Date(now.toLocaleString('en-US', { timeZone: settings.timerAutoStopTimezone || 'Africa/Tunis' }));
+      // Get current time in configured timezone (defaults to Tunisia)
+      const timezone = settings.timerAutoStopTimezone || 'Africa/Tunis';
+      const { hour: currentHour, minute: currentMinute, dayOfWeek } = this.getTimeInTimezone(timezone);
 
       // Check if it's a weekday (if weekdays only is enabled)
-      const dayOfWeek = tunisiaTime.getDay(); // 0 = Sunday, 6 = Saturday
       if (settings.timerAutoStopWeekdaysOnly && (dayOfWeek === 0 || dayOfWeek === 6)) {
         return;
       }
 
-      // Check if current time matches the configured auto-stop time
-      const currentHour = tunisiaTime.getHours();
-      const currentMinute = tunisiaTime.getMinutes();
-
-      this.logger.debug(`Timer check - Tunisia time: ${currentHour}:${currentMinute.toString().padStart(2, '0')}, Target: ${settings.timerAutoStopHour}:${settings.timerAutoStopMinute.toString().padStart(2, '0')}`);
+      // Log every minute for debugging (use .log instead of .debug to ensure visibility)
+      this.logger.log(`Timer check - ${timezone} time: ${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}, Target: ${settings.timerAutoStopHour.toString().padStart(2, '0')}:${settings.timerAutoStopMinute.toString().padStart(2, '0')}`);
 
       if (currentHour === settings.timerAutoStopHour && currentMinute === settings.timerAutoStopMinute) {
         this.logger.log(`Running scheduled end-of-day timer stop (${settings.timerAutoStopHour}:${settings.timerAutoStopMinute.toString().padStart(2, '0')})`);
