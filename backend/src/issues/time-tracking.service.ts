@@ -6,8 +6,9 @@ import { TimeEntry, ActiveTimeEntry } from '@common/interfaces';
 
 const INACTIVITY_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
 const MAX_SESSION_DURATION_MS = 10 * 60 * 60 * 1000; // 10 hours
-const END_OF_WORK_HOUR = 17; // 5 PM
-const END_OF_WORK_MINUTE = 30; // 30 minutes
+// FOR TESTING: Changed to 12:40 PM - change back to 17:30 after testing
+const END_OF_WORK_HOUR = 12; // 12 PM (TEST MODE - normally 17)
+const END_OF_WORK_MINUTE = 40; // 40 minutes (TEST MODE - normally 30)
 
 @Injectable()
 export class TimeTrackingService {

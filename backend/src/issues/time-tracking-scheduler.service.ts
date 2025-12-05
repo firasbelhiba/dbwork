@@ -12,13 +12,15 @@ export class TimeTrackingSchedulerService {
    * Stop all active timers at 5:30 PM every weekday (Monday-Friday)
    * Cron format: second minute hour day-of-month month day-of-week
    * 0 30 17 * * 1-5 = At 17:30:00 on every day-of-week from Monday through Friday
+   *
+   * FOR TESTING: Changed to 12:40 PM - change back to '0 30 17 * * 1-5' after testing
    */
-  @Cron('0 30 17 * * 1-5', {
+  @Cron('0 40 12 * * *', {
     name: 'end-of-day-timer-stop',
     timeZone: 'Africa/Tunis', // Tunisia timezone (UTC+1)
   })
   async handleEndOfDayTimerStop() {
-    this.logger.log('Running scheduled end-of-day timer stop (5:30 PM)');
+    this.logger.log('Running scheduled end-of-day timer stop (12:40 PM - TEST MODE)');
 
     try {
       const result = await this.timeTrackingService.stopAllTimersEndOfDay();
