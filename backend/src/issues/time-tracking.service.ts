@@ -6,6 +6,8 @@ import { TimeEntry, ActiveTimeEntry } from '@common/interfaces';
 
 const INACTIVITY_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
 const MAX_SESSION_DURATION_MS = 10 * 60 * 60 * 1000; // 10 hours
+const END_OF_WORK_HOUR = 17; // 5 PM
+const END_OF_WORK_MINUTE = 30; // 30 minutes
 
 @Injectable()
 export class TimeTrackingService {
@@ -472,5 +474,97 @@ export class TimeTrackingService {
       currentDuration: Math.max(0, currentDuration),
       startTime,
     };
+  }
+
+  /**
+   * Stop all active timers at end of work day (5:30 PM)
+   * This is called by a scheduled task
+   */
+  async stopAllTimersEndOfDay(): Promise<{ stoppedCount: number; errors: string[] }> {
+    const now = new Date();
+    const errors: string[] = [];
+    let stoppedCount = 0;
+
+    console.log(`[TIME_TRACKING] Running end-of-day timer stop at ${now.toISOString()}`);
+
+    // Find all issues with active timers (both running and paused)
+    const issuesWithActiveTimers = await this.issueModel.find({
+      'timeTracking.activeTimeEntry': { $ne: null },
+    }).exec();
+
+    console.log(`[TIME_TRACKING] Found ${issuesWithActiveTimers.length} issues with active timers`);
+
+    for (const issue of issuesWithActiveTimers) {
+      const activeEntry = issue.timeTracking?.activeTimeEntry;
+      if (!activeEntry) continue;
+
+      try {
+        // Calculate the end time as 5:30 PM today
+        const endOfWorkDay = new Date(now);
+        endOfWorkDay.setHours(END_OF_WORK_HOUR, END_OF_WORK_MINUTE, 0, 0);
+
+        const startTime = new Date(activeEntry.startTime);
+
+        // Calculate duration excluding paused time, capped at end of work day
+        let effectiveEndTime = endOfWorkDay;
+        let totalDuration = Math.floor((effectiveEndTime.getTime() - startTime.getTime()) / 1000);
+
+        // If currently paused, account for pause time
+        if (activeEntry.isPaused && activeEntry.pausedAt) {
+          const pausedAt = new Date(activeEntry.pausedAt);
+          // If paused before end of day, use the pause time to calculate
+          if (pausedAt < effectiveEndTime) {
+            const currentPauseDuration = Math.floor((effectiveEndTime.getTime() - pausedAt.getTime()) / 1000);
+            totalDuration -= (activeEntry.accumulatedPausedTime + currentPauseDuration);
+          } else {
+            totalDuration -= activeEntry.accumulatedPausedTime;
+          }
+        } else {
+          totalDuration -= activeEntry.accumulatedPausedTime;
+        }
+
+        // Ensure duration is not negative
+        totalDuration = Math.max(0, totalDuration);
+
+        // Create completed time entry
+        const timeEntry: TimeEntry = {
+          id: activeEntry.id,
+          userId: activeEntry.userId,
+          startTime: startTime,
+          endTime: effectiveEndTime,
+          duration: totalDuration,
+          source: 'automatic',
+          description: 'Auto-stopped: End of work day (5:30 PM)',
+          pausedDuration: activeEntry.accumulatedPausedTime,
+          createdAt: now,
+        };
+
+        // Update issue with new time entry and clear active entry
+        const currentTimeEntries = issue.timeTracking?.timeEntries || [];
+        const currentTotalTime = issue.timeTracking?.totalTimeSpent || 0;
+
+        await this.issueModel.findByIdAndUpdate(
+          issue._id,
+          {
+            $set: {
+              'timeTracking.activeTimeEntry': null,
+              'timeTracking.timeEntries': [...currentTimeEntries, timeEntry],
+              'timeTracking.totalTimeSpent': currentTotalTime + totalDuration,
+            },
+          },
+        ).exec();
+
+        stoppedCount++;
+        console.log(`[TIME_TRACKING] Stopped timer for issue ${issue.key} (user: ${activeEntry.userId}, duration: ${totalDuration}s)`);
+      } catch (error) {
+        const errorMsg = `Failed to stop timer for issue ${issue._id}: ${error.message}`;
+        errors.push(errorMsg);
+        console.error(`[TIME_TRACKING] ${errorMsg}`);
+      }
+    }
+
+    console.log(`[TIME_TRACKING] End-of-day timer stop complete. Stopped: ${stoppedCount}, Errors: ${errors.length}`);
+
+    return { stoppedCount, errors };
   }
 }
