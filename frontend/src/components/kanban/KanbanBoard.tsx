@@ -87,20 +87,24 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId, connected]);
 
-  // Listen for timer:auto-stopped WebSocket events via context callback
+  // Listen for timer:auto-paused WebSocket events via context callback
   useEffect(() => {
     const unsubscribe = onTimerAutoStopped((data) => {
-      console.log('[KanbanBoard] Timer auto-stopped callback:', data);
-      // Update the issue to clear the active timer
+      console.log('[KanbanBoard] Timer auto-paused callback:', data);
+      // Update the issue to mark the timer as paused (not cleared!)
       setIssues((prevIssues) =>
         prevIssues.map((issue) =>
           issue._id === data.issueId
             ? {
                 ...issue,
-                timeTracking: issue.timeTracking
+                timeTracking: issue.timeTracking?.activeTimeEntry
                   ? {
                       ...issue.timeTracking,
-                      activeTimeEntry: null,
+                      activeTimeEntry: {
+                        ...issue.timeTracking.activeTimeEntry,
+                        isPaused: true,
+                        pausedAt: new Date().toISOString(),
+                      },
                     }
                   : issue.timeTracking,
               }
