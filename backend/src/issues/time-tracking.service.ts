@@ -6,9 +6,9 @@ import { TimeEntry, ActiveTimeEntry } from '@common/interfaces';
 
 const INACTIVITY_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
 const MAX_SESSION_DURATION_MS = 10 * 60 * 60 * 1000; // 10 hours
-// FOR TESTING: Changed to 12:40 PM - change back to 17:30 after testing
-const END_OF_WORK_HOUR = 12; // 12 PM (TEST MODE - normally 17)
-const END_OF_WORK_MINUTE = 40; // 40 minutes (TEST MODE - normally 30)
+// FOR TESTING: Changed to 13:00 PM - change back to 17:30 after testing
+const END_OF_WORK_HOUR = 13; // 13 PM (TEST MODE - normally 17)
+const END_OF_WORK_MINUTE = 0; // 0 minutes (TEST MODE - normally 30)
 
 @Injectable()
 export class TimeTrackingService {
@@ -481,10 +481,15 @@ export class TimeTrackingService {
    * Stop all active timers at end of work day (5:30 PM)
    * This is called by a scheduled task
    */
-  async stopAllTimersEndOfDay(): Promise<{ stoppedCount: number; errors: string[] }> {
+  async stopAllTimersEndOfDay(): Promise<{
+    stoppedCount: number;
+    errors: string[];
+    stoppedTimers: Array<{ issueId: string; issueKey: string; userId: string; projectId: string }>;
+  }> {
     const now = new Date();
     const errors: string[] = [];
     let stoppedCount = 0;
+    const stoppedTimers: Array<{ issueId: string; issueKey: string; userId: string; projectId: string }> = [];
 
     console.log(`[TIME_TRACKING] Running end-of-day timer stop at ${now.toISOString()}`);
 
@@ -500,7 +505,7 @@ export class TimeTrackingService {
       if (!activeEntry) continue;
 
       try {
-        // Calculate the end time as 5:30 PM today
+        // Calculate the end time as end of work day
         const endOfWorkDay = new Date(now);
         endOfWorkDay.setHours(END_OF_WORK_HOUR, END_OF_WORK_MINUTE, 0, 0);
 
@@ -535,7 +540,7 @@ export class TimeTrackingService {
           endTime: effectiveEndTime,
           duration: totalDuration,
           source: 'automatic',
-          description: 'Auto-stopped: End of work day (5:30 PM)',
+          description: 'Auto-stopped: End of work day',
           pausedDuration: activeEntry.accumulatedPausedTime,
           createdAt: now,
         };
@@ -556,6 +561,12 @@ export class TimeTrackingService {
         ).exec();
 
         stoppedCount++;
+        stoppedTimers.push({
+          issueId: issue._id.toString(),
+          issueKey: issue.key,
+          userId: activeEntry.userId.toString(),
+          projectId: issue.projectId.toString(),
+        });
         console.log(`[TIME_TRACKING] Stopped timer for issue ${issue.key} (user: ${activeEntry.userId}, duration: ${totalDuration}s)`);
       } catch (error) {
         const errorMsg = `Failed to stop timer for issue ${issue._id}: ${error.message}`;
@@ -566,6 +577,6 @@ export class TimeTrackingService {
 
     console.log(`[TIME_TRACKING] End-of-day timer stop complete. Stopped: ${stoppedCount}, Errors: ${errors.length}`);
 
-    return { stoppedCount, errors };
+    return { stoppedCount, errors, stoppedTimers };
   }
 }

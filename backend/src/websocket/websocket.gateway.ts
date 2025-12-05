@@ -259,4 +259,12 @@ export class AppWebSocketGateway
       this.server.to(socketId).emit(event, data);
     }
   }
+
+  // Emit timer auto-stopped event to user and project
+  emitTimerAutoStopped(userId: string, projectId: string, issueId: string, issueKey: string) {
+    console.log(`[WEBSOCKET] Emitting timer:auto-stopped to user:${userId} and project:${projectId}`);
+    const data = { issueId, issueKey, reason: 'end-of-day' };
+    this.server.to(`user:${userId}`).emit('timer:auto-stopped', data);
+    this.server.to(`project:${projectId}`).emit('timer:auto-stopped', data);
+  }
 }

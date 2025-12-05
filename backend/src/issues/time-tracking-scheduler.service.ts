@@ -1,32 +1,46 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { TimeTrackingService } from './time-tracking.service';
+import { AppWebSocketGateway } from '../websocket/websocket.gateway';
 
 @Injectable()
 export class TimeTrackingSchedulerService {
   private readonly logger = new Logger(TimeTrackingSchedulerService.name);
 
-  constructor(private readonly timeTrackingService: TimeTrackingService) {}
+  constructor(
+    private readonly timeTrackingService: TimeTrackingService,
+    private readonly webSocketGateway: AppWebSocketGateway,
+  ) {}
 
   /**
    * Stop all active timers at 5:30 PM every weekday (Monday-Friday)
    * Cron format: second minute hour day-of-month month day-of-week
    * 0 30 17 * * 1-5 = At 17:30:00 on every day-of-week from Monday through Friday
    *
-   * FOR TESTING: Changed to 12:40 PM - change back to '0 30 17 * * 1-5' after testing
+   * FOR TESTING: Changed to 13:00 PM - change back to '0 30 17 * * 1-5' after testing
    */
-  @Cron('0 40 12 * * *', {
+  @Cron('0 0 13 * * *', {
     name: 'end-of-day-timer-stop',
     timeZone: 'Africa/Tunis', // Tunisia timezone (UTC+1)
   })
   async handleEndOfDayTimerStop() {
-    this.logger.log('Running scheduled end-of-day timer stop (12:40 PM - TEST MODE)');
+    this.logger.log('Running scheduled end-of-day timer stop (13:00 PM - TEST MODE)');
 
     try {
       const result = await this.timeTrackingService.stopAllTimersEndOfDay();
 
       if (result.stoppedCount > 0) {
         this.logger.log(`Successfully stopped ${result.stoppedCount} timer(s)`);
+
+        // Emit WebSocket events for each stopped timer
+        for (const stoppedTimer of result.stoppedTimers) {
+          this.webSocketGateway.emitTimerAutoStopped(
+            stoppedTimer.userId,
+            stoppedTimer.projectId,
+            stoppedTimer.issueId,
+            stoppedTimer.issueKey,
+          );
+        }
       } else {
         this.logger.log('No active timers to stop');
       }

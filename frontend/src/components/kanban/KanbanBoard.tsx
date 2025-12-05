@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import {
   DndContext,
@@ -28,6 +28,7 @@ import { IssueStatus } from '@/types/issue';
 import { LogoLoader } from '@/components/common';
 import { Project, CustomStatus } from '@/types/project';
 import toast from 'react-hot-toast';
+import { useWebSocket } from '@/contexts/WebSocketContext';
 
 interface KanbanBoardProps {
   projectId: string;
@@ -46,6 +47,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
   const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [issueToDelete, setIssueToDelete] = useState<string | null>(null);
   const [issueToArchive, setIssueToArchive] = useState<string | null>(null);
+  const { socket, joinProject, leaveProject } = useWebSocket();
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -59,6 +61,54 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
     fetchProject();
     fetchIssues();
   }, [projectId, sprintId, showArchived, myTasksOnly]);
+
+  // Join project room for WebSocket updates
+  useEffect(() => {
+    if (projectId) {
+      joinProject(projectId);
+    }
+    return () => {
+      if (projectId) {
+        leaveProject(projectId);
+      }
+    };
+  }, [projectId, joinProject, leaveProject]);
+
+  // Listen for timer:auto-stopped WebSocket events
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleTimerAutoStopped = (data: { issueId: string; issueKey: string; reason: string }) => {
+      console.log('[KanbanBoard] Received timer:auto-stopped event:', data);
+      toast(`Timer auto-stopped for ${data.issueKey} (end of day)`, {
+        icon: '⏱️',
+        duration: 5000,
+      });
+
+      // Update the issue to clear the active timer
+      setIssues((prevIssues) =>
+        prevIssues.map((issue) =>
+          issue._id === data.issueId
+            ? {
+                ...issue,
+                timeTracking: issue.timeTracking
+                  ? {
+                      ...issue.timeTracking,
+                      activeTimeEntry: null,
+                    }
+                  : issue.timeTracking,
+              }
+            : issue
+        )
+      );
+    };
+
+    socket.on('timer:auto-stopped', handleTimerAutoStopped);
+
+    return () => {
+      socket.off('timer:auto-stopped', handleTimerAutoStopped);
+    };
+  }, [socket]);
 
   const fetchProject = async () => {
     try {
