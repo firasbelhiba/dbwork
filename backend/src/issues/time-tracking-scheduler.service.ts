@@ -31,17 +31,21 @@ export class TimeTrackingSchedulerService {
         return;
       }
 
+      // Get current time in Tunisia timezone
       const now = new Date();
+      const tunisiaTime = new Date(now.toLocaleString('en-US', { timeZone: settings.timerAutoStopTimezone || 'Africa/Tunis' }));
 
       // Check if it's a weekday (if weekdays only is enabled)
-      const dayOfWeek = now.getDay(); // 0 = Sunday, 6 = Saturday
+      const dayOfWeek = tunisiaTime.getDay(); // 0 = Sunday, 6 = Saturday
       if (settings.timerAutoStopWeekdaysOnly && (dayOfWeek === 0 || dayOfWeek === 6)) {
         return;
       }
 
       // Check if current time matches the configured auto-stop time
-      const currentHour = now.getHours();
-      const currentMinute = now.getMinutes();
+      const currentHour = tunisiaTime.getHours();
+      const currentMinute = tunisiaTime.getMinutes();
+
+      this.logger.debug(`Timer check - Tunisia time: ${currentHour}:${currentMinute.toString().padStart(2, '0')}, Target: ${settings.timerAutoStopHour}:${settings.timerAutoStopMinute.toString().padStart(2, '0')}`);
 
       if (currentHour === settings.timerAutoStopHour && currentMinute === settings.timerAutoStopMinute) {
         this.logger.log(`Running scheduled end-of-day timer stop (${settings.timerAutoStopHour}:${settings.timerAutoStopMinute.toString().padStart(2, '0')})`);
