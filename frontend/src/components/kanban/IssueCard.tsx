@@ -49,9 +49,12 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
   // Check if user can archive/delete (Admin or PM only)
   const canManage = user?.role === UserRole.ADMIN || user?.role === UserRole.PROJECT_MANAGER;
 
-  // Check if current user has an active timer on this issue
+  // Check if there's an active timer on this issue (visible to everyone)
   const activeEntry = issue.timeTracking?.activeTimeEntry;
-  const hasActiveTimer = activeEntry && activeEntry.userId === user?._id;
+  const hasActiveTimer = !!activeEntry;
+
+  // Check if the current user owns the timer
+  const isOwnTimer = activeEntry && activeEntry.userId === user?._id;
 
   // Timer should only be "running" (green) when issue is in_progress AND not paused
   // Timer should be "paused" (yellow) when there's an active timer but issue is NOT in_progress OR isPaused is true
@@ -59,7 +62,7 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
   const isTimerRunning = hasActiveTimer && isInProgress && !activeEntry.isPaused;
   const isTimerPaused = hasActiveTimer && (!isInProgress || activeEntry.isPaused);
 
-  // Calculate and update timer display
+  // Calculate and update timer display (visible to all users)
   useEffect(() => {
     // Clear any existing interval first
     if (intervalRef.current) {
@@ -71,7 +74,8 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
     const currentActiveEntry = issue.timeTracking?.activeTimeEntry;
     const currentIsInProgress = issue.status === 'in_progress';
 
-    if (!currentActiveEntry || currentActiveEntry.userId !== user?._id) {
+    // Show timer for all users, not just the owner
+    if (!currentActiveEntry) {
       setTimerSeconds(0);
       return;
     }
@@ -109,7 +113,7 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
         intervalRef.current = null;
       }
     };
-  }, [issue._id, issue.status, issue.timeTracking?.activeTimeEntry?.isPaused, issue.timeTracking?.activeTimeEntry?.startTime, issue.timeTracking?.activeTimeEntry?.accumulatedPausedTime, issue.timeTracking?.activeTimeEntry?.pausedAt, issue.timeTracking?.activeTimeEntry?.userId, user?._id]);
+  }, [issue._id, issue.status, issue.timeTracking?.activeTimeEntry?.isPaused, issue.timeTracking?.activeTimeEntry?.startTime, issue.timeTracking?.activeTimeEntry?.accumulatedPausedTime, issue.timeTracking?.activeTimeEntry?.pausedAt, issue.timeTracking?.activeTimeEntry?.userId]);
 
   const handleArchive = () => {
     if (onArchive) {
