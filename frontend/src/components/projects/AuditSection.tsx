@@ -3,11 +3,29 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { auditsAPI } from '@/lib/api';
 import { Audit, formatFileSize } from '@/types/audit';
-import { Button, Input, Textarea } from '@/components/common';
+import { Button, Input, Select } from '@/components/common';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserRole } from '@/types/user';
 import { getInitials } from '@/lib/utils';
 import toast from 'react-hot-toast';
+
+const AUDIT_TYPES = [
+  { value: 'security', label: 'Security Audit' },
+  { value: 'financial', label: 'Financial Audit' },
+  { value: 'compliance', label: 'Compliance Audit' },
+  { value: 'code-review', label: 'Code Review' },
+  { value: 'performance', label: 'Performance Audit' },
+  { value: 'accessibility', label: 'Accessibility Audit' },
+  { value: 'penetration-test', label: 'Penetration Test' },
+  { value: 'infrastructure', label: 'Infrastructure Audit' },
+  { value: 'data-privacy', label: 'Data Privacy Audit' },
+  { value: 'other', label: 'Other' },
+];
+
+const getAuditTypeLabel = (value: string): string => {
+  const type = AUDIT_TYPES.find((t) => t.value === value);
+  return type ? type.label : value;
+};
 
 interface AuditSectionProps {
   projectId: string;
@@ -252,12 +270,18 @@ export function AuditSection({ projectId }: AuditSectionProps) {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Audit Type <span className="text-danger-500">*</span>
                   </label>
-                  <Input
+                  <Select
                     value={formData.auditType}
                     onChange={(e) => setFormData({ ...formData, auditType: e.target.value })}
-                    placeholder="e.g., Security, Financial, Compliance"
                     disabled={uploading}
-                  />
+                  >
+                    <option value="">Select audit type...</option>
+                    {AUDIT_TYPES.map((type) => (
+                      <option key={type.value} value={type.value}>
+                        {type.label}
+                      </option>
+                    ))}
+                  </Select>
                 </div>
               </div>
 
@@ -341,7 +365,7 @@ export function AuditSection({ projectId }: AuditSectionProps) {
                         {audit.title}
                       </h3>
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400">
-                        {audit.auditType}
+                        {getAuditTypeLabel(audit.auditType)}
                       </span>
                     </div>
 
