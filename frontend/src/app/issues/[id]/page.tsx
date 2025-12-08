@@ -758,8 +758,7 @@ export default function IssueDetailPage() {
       <SubIssueModal
         isOpen={showSubIssueModal}
         onClose={() => setShowSubIssueModal(false)}
-        parentIssueId={issue._id}
-        parentIssueKey={issue.key}
+        parentIssue={issue}
         projectId={typeof issue.projectId === 'object' ? issue.projectId._id : issue.projectId}
         onSuccess={() => {
           // Force re-render of SubIssues component by refreshing the page data
