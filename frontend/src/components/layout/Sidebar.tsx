@@ -86,6 +86,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) =
   const [projects, setProjects] = useState<Project[]>([]);
   const [collapsed, setCollapsed] = useState(false);
   const [showChangelogModal, setShowChangelogModal] = useState(false);
+  const [showAllProjects, setShowAllProjects] = useState(false);
+
+  const INITIAL_PROJECTS_COUNT = 5;
+  const MAX_VISIBLE_PROJECTS = 10;
 
   // Handle link clicks on mobile - close the drawer
   const handleLinkClick = () => {
@@ -246,46 +250,72 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) =
 
         {/* Projects section */}
         {!isCollapsed && (
-          <div className="mt-6">
-            <div className="px-6 mb-2">
+          <div className="mt-6 flex flex-col min-h-0">
+            <div className="px-6 mb-2 flex items-center justify-between">
               <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Projects
               </h3>
-            </div>
-            <div className="px-3 space-y-1">
-              {projects.slice(0, 5).map((project) => {
-                const isActive = pathname.includes(`/projects/${project._id}`);
-                return (
-                  <Link
-                    key={project._id}
-                    href={`/projects/${project._id}`}
-                    onClick={handleLinkClick}
-                    className={cn(
-                      'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
-                      isActive
-                        ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-400 hover:text-gray-900 dark:hover:text-gray-100'
-                    )}
-                  >
-                    <div className="w-5 h-5 rounded bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs font-bold text-primary-700 dark:text-primary-400">
-                        {project.key.substring(0, 2)}
-                      </span>
-                    </div>
-                    <span className="truncate">{project.name}</span>
-                  </Link>
-                );
-              })}
-              {projects.length > 5 && (
-                <Link
-                  href="/projects"
-                  onClick={handleLinkClick}
-                  className="block px-3 py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                >
-                  View all projects
-                </Link>
+              {projects.length > 0 && (
+                <span className="text-xs text-gray-400 dark:text-gray-500">
+                  {projects.length}
+                </span>
               )}
             </div>
+            <div
+              className={cn(
+                "px-3 space-y-1",
+                showAllProjects && projects.length > MAX_VISIBLE_PROJECTS && "max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-dark-300 scrollbar-track-transparent"
+              )}
+            >
+              {projects
+                .slice(0, showAllProjects ? projects.length : INITIAL_PROJECTS_COUNT)
+                .map((project) => {
+                  const isActive = pathname.includes(`/projects/${project._id}`);
+                  return (
+                    <Link
+                      key={project._id}
+                      href={`/projects/${project._id}`}
+                      onClick={handleLinkClick}
+                      className={cn(
+                        'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                        isActive
+                          ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-400 hover:text-gray-900 dark:hover:text-gray-100'
+                      )}
+                    >
+                      <div className="w-5 h-5 rounded bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-bold text-primary-700 dark:text-primary-400">
+                          {project.key.substring(0, 2)}
+                        </span>
+                      </div>
+                      <span className="truncate">{project.name}</span>
+                    </Link>
+                  );
+                })}
+            </div>
+            {projects.length > INITIAL_PROJECTS_COUNT && (
+              <div className="px-3 mt-1">
+                <button
+                  onClick={() => setShowAllProjects(!showAllProjects)}
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors w-full"
+                >
+                  <svg
+                    className={cn("w-4 h-4 transition-transform", showAllProjects && "rotate-180")}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                  <span>
+                    {showAllProjects
+                      ? 'Show less'
+                      : `View more (${projects.length - INITIAL_PROJECTS_COUNT} more)`
+                    }
+                  </span>
+                </button>
+              </div>
+            )}
           </div>
         )}
       </nav>
