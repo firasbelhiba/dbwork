@@ -165,7 +165,8 @@ export class TimeTrackingService {
 
   /**
    * Resume a paused timer
-   * If the timer was auto-paused at end of day, this starts extra hours tracking
+   * If the timer was auto-paused at end of day and the user has worked more than 8 hours,
+   * this starts extra hours tracking. Otherwise, it resumes as a normal timer.
    */
   async resumeTimer(issueId: string, userId: string): Promise<IssueDocument> {
     const issue = await this.issueModel.findById(issueId).exec();
@@ -193,7 +194,7 @@ export class TimeTrackingService {
     const pauseDuration = Math.floor((now.getTime() - pausedAt.getTime()) / 1000);
     const newAccumulatedPausedTime = activeEntry.accumulatedPausedTime + pauseDuration;
 
-    // Check if this was an end-of-day auto-pause - if so, mark as extra hours
+    // Check if this was an end-of-day auto-pause - if so, check if user qualifies for extra hours
     const wasAutoPausedEndOfDay = (activeEntry as any).autoPausedEndOfDay === true;
 
     const updateData: any = {
@@ -204,11 +205,22 @@ export class TimeTrackingService {
       'timeTracking.activeTimeEntry.autoPausedEndOfDay': false,
     };
 
-    // If resuming after end-of-day auto-pause, mark as extra hours
+    // If resuming after end-of-day auto-pause, check if user has worked 8+ hours today
     if (wasAutoPausedEndOfDay) {
-      updateData['timeTracking.activeTimeEntry.isExtraHours'] = true;
-      updateData['timeTracking.activeTimeEntry.extraHoursStartedAt'] = now;
-      console.log(`[TIME_TRACKING] Resuming timer for issue ${issueId} as EXTRA HOURS`);
+      const dailyWorkSeconds = await this.calculateUserDailyWorkTime(userIdStr, now);
+      const EIGHT_HOURS_IN_SECONDS = 8 * 60 * 60; // 28800 seconds
+
+      console.log(`[TIME_TRACKING] User ${userIdStr} daily work time: ${dailyWorkSeconds}s (${(dailyWorkSeconds / 3600).toFixed(2)} hours), threshold: ${EIGHT_HOURS_IN_SECONDS}s`);
+
+      if (dailyWorkSeconds >= EIGHT_HOURS_IN_SECONDS) {
+        // User has worked 8+ hours, mark as extra hours
+        updateData['timeTracking.activeTimeEntry.isExtraHours'] = true;
+        updateData['timeTracking.activeTimeEntry.extraHoursStartedAt'] = now;
+        console.log(`[TIME_TRACKING] Resuming timer for issue ${issueId} as EXTRA HOURS (user worked ${(dailyWorkSeconds / 3600).toFixed(2)} hours today)`);
+      } else {
+        // User hasn't worked 8 hours yet, resume as normal timer
+        console.log(`[TIME_TRACKING] Resuming timer for issue ${issueId} as NORMAL (user worked only ${(dailyWorkSeconds / 3600).toFixed(2)} hours today, needs 8 hours for extra)`);
+      }
     }
 
     const updatedIssue = await this.issueModel.findByIdAndUpdate(
@@ -218,6 +230,77 @@ export class TimeTrackingService {
     ).exec();
 
     return updatedIssue;
+  }
+
+  /**
+   * Calculate total work time for a user on a specific day
+   * This includes completed time entries and current active timer duration
+   */
+  private async calculateUserDailyWorkTime(userId: string, date: Date): Promise<number> {
+    // Get start and end of the day in Tunisia timezone
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    // Find all issues that this user has time entries for today
+    const issuesWithUserTime = await this.issueModel.find({
+      $or: [
+        // Issues with completed time entries by this user today
+        {
+          'timeTracking.timeEntries': {
+            $elemMatch: {
+              userId: userId,
+              startTime: { $gte: startOfDay, $lte: endOfDay },
+            },
+          },
+        },
+        // Issues with active timer by this user
+        {
+          'timeTracking.activeTimeEntry.userId': userId,
+        },
+      ],
+    }).exec();
+
+    let totalSeconds = 0;
+
+    for (const issue of issuesWithUserTime) {
+      // Sum up completed time entries for today
+      const timeEntries = issue.timeTracking?.timeEntries || [];
+      for (const entry of timeEntries) {
+        if (entry.userId === userId) {
+          const entryStart = new Date(entry.startTime);
+          // Check if the entry started today
+          if (entryStart >= startOfDay && entryStart <= endOfDay) {
+            totalSeconds += entry.duration;
+          }
+        }
+      }
+
+      // Add current active timer duration if it belongs to this user
+      const activeEntry = issue.timeTracking?.activeTimeEntry;
+      if (activeEntry && activeEntry.userId === userId) {
+        const startTime = new Date(activeEntry.startTime);
+        const now = date;
+
+        // Calculate elapsed time for active timer
+        let elapsedSeconds = Math.floor((now.getTime() - startTime.getTime()) / 1000);
+
+        // Subtract paused time
+        if (activeEntry.isPaused && activeEntry.pausedAt) {
+          const pausedAt = new Date(activeEntry.pausedAt);
+          const currentPauseDuration = Math.floor((now.getTime() - pausedAt.getTime()) / 1000);
+          elapsedSeconds -= (activeEntry.accumulatedPausedTime + currentPauseDuration);
+        } else {
+          elapsedSeconds -= activeEntry.accumulatedPausedTime;
+        }
+
+        totalSeconds += Math.max(0, elapsedSeconds);
+      }
+    }
+
+    return totalSeconds;
   }
 
   /**

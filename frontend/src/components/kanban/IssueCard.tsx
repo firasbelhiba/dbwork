@@ -72,7 +72,8 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
   const isTimerRunning = hasActiveTimer && isInProgress && !activeEntry.isPaused;
   const isTimerPaused = hasActiveTimer && (!isInProgress || activeEntry.isPaused);
 
-  // Handle resume timer for extra hours
+  // Handle resume timer after end-of-day auto-pause
+  // Timer will be marked as extra hours only if user has worked 8+ hours today
   const handleResumeTimer = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -82,7 +83,13 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
     setIsResuming(true);
     try {
       const response = await issuesAPI.resumeTimer(issue._id);
-      toast.success('Timer resumed - Extra hours tracking started!');
+      // Check if the resumed timer is marked as extra hours
+      const isNowExtraHours = response.data.timeTracking?.activeTimeEntry?.isExtraHours;
+      if (isNowExtraHours) {
+        toast.success('Timer resumed - Extra hours tracking started!');
+      } else {
+        toast.success('Timer resumed - Continue working to reach 8 hours for extra hours');
+      }
       if (onIssueUpdate) {
         onIssueUpdate(response.data);
       }
