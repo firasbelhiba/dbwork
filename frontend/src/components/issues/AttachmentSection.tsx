@@ -260,7 +260,7 @@ export function AttachmentSection({ issueId }: AttachmentSectionProps) {
                       className="w-full aspect-video relative rounded-lg overflow-hidden border border-gray-200 dark:border-dark-400 hover:border-primary-500 dark:hover:border-primary-400 transition-all hover:shadow-md"
                     >
                       <Image
-                        src={attachment.thumbnail || attachment.url}
+                        src={attachment.url}
                         alt={attachment.originalName}
                         fill
                         className="object-cover"
@@ -480,7 +480,7 @@ export function AttachmentSection({ issueId }: AttachmentSectionProps) {
                   }`}
                 >
                   <img
-                    src={img.thumbnail || img.url}
+                    src={img.url}
                     alt={img.originalName}
                     className="w-full h-full object-cover"
                   />
