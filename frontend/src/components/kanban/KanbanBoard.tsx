@@ -91,7 +91,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
   useEffect(() => {
     const unsubscribe = onTimerAutoStopped((data) => {
       console.log('[KanbanBoard] Timer auto-paused callback:', data);
-      // Update the issue to mark the timer as paused (not cleared!)
+      // Update the issue to mark the timer as paused with autoPausedEndOfDay flag
+      // This enables the play button for extra hours
       setIssues((prevIssues) =>
         prevIssues.map((issue) =>
           issue._id === data.issueId
@@ -104,6 +105,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
                         ...issue.timeTracking.activeTimeEntry,
                         isPaused: true,
                         pausedAt: new Date().toISOString(),
+                        autoPausedEndOfDay: true, // This enables the play button for extra hours
                       },
                     }
                   : issue.timeTracking,
