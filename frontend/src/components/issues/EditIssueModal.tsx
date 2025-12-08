@@ -44,6 +44,7 @@ export const EditIssueModal: React.FC<EditIssueModalProps> = ({
       storyPoints: issue.storyPoints || 0,
       dueDate: issue.dueDate ? new Date(issue.dueDate).toISOString().split('T')[0] : '',
       labels: issue.labels?.join(', ') || '',
+      category: issue.category || '',
     };
   };
 
@@ -129,6 +130,9 @@ export const EditIssueModal: React.FC<EditIssueModalProps> = ({
       } else {
         updateData.labels = [];
       }
+
+      // Category can be empty string (to clear) or a value
+      updateData.category = formData.category || null;
 
       await issuesAPI.update(issue._id, updateData);
       toast.success('Issue updated successfully!');
@@ -221,6 +225,30 @@ export const EditIssueModal: React.FC<EditIssueModalProps> = ({
                 <option value="done">Done</option>
               </Select>
             </div>
+          </div>
+
+          {/* Category */}
+          <div>
+            <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1.5">
+              Category
+            </label>
+            <Select
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+            >
+              <option value="">No category</option>
+              <option value="frontend">Frontend</option>
+              <option value="backend">Backend</option>
+              <option value="design">Design</option>
+              <option value="marketing">Marketing</option>
+              <option value="devops">DevOps</option>
+              <option value="qa">QA / Testing</option>
+              <option value="documentation">Documentation</option>
+              <option value="infrastructure">Infrastructure</option>
+              <option value="security">Security</option>
+              <option value="other">Other</option>
+            </Select>
           </div>
 
           {/* Assignee and Sprint */}

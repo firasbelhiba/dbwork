@@ -42,6 +42,11 @@ export class CreateIssueDto {
   @IsString({ each: true })
   labels?: string[];
 
+  @ApiProperty({ required: false, example: 'frontend' })
+  @IsOptional()
+  @IsString()
+  category?: string;
+
   @ApiProperty({ required: false })
   @IsOptional()
   @IsObject()

@@ -39,6 +39,7 @@ export const SubIssueModal: React.FC<SubIssueModalProps> = ({
     sprintId: '',
     dueDate: '',
     labels: '',
+    category: '',
   });
 
   // Fetch users and sprints when modal opens
@@ -69,6 +70,9 @@ export const SubIssueModal: React.FC<SubIssueModalProps> = ({
     // Extract labels from parent issue
     const parentLabels = parentIssue.labels?.join(', ') || '';
 
+    // Extract category from parent issue
+    const parentCategory = parentIssue.category || '';
+
     setFormData({
       title: '',
       description: '',
@@ -78,6 +82,7 @@ export const SubIssueModal: React.FC<SubIssueModalProps> = ({
       sprintId: parentSprintId,
       dueDate: parentDueDate,
       labels: parentLabels,
+      category: parentCategory,
     });
   };
 
@@ -127,6 +132,9 @@ export const SubIssueModal: React.FC<SubIssueModalProps> = ({
       if (formData.labels.trim()) {
         issueData.labels = formData.labels.split(',').map(l => l.trim()).filter(l => l);
       }
+      if (formData.category) {
+        issueData.category = formData.category;
+      }
 
       await issuesAPI.create(issueData);
       toast.success('Sub-issue created successfully');
@@ -141,6 +149,7 @@ export const SubIssueModal: React.FC<SubIssueModalProps> = ({
         sprintId: '',
         dueDate: '',
         labels: '',
+        category: '',
       });
 
       onSuccess();
@@ -165,6 +174,7 @@ export const SubIssueModal: React.FC<SubIssueModalProps> = ({
       sprintId: '',
       dueDate: '',
       labels: '',
+      category: '',
     });
     onClose();
   };
@@ -258,6 +268,30 @@ export const SubIssueModal: React.FC<SubIssueModalProps> = ({
               <option value={IssuePriority.CRITICAL}>Critical</option>
             </Select>
           </div>
+        </div>
+
+        <div>
+          <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Category
+          </label>
+          <Select
+            id="category"
+            value={formData.category}
+            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+            disabled={creating}
+          >
+            <option value="">No category</option>
+            <option value="frontend">Frontend</option>
+            <option value="backend">Backend</option>
+            <option value="design">Design</option>
+            <option value="marketing">Marketing</option>
+            <option value="devops">DevOps</option>
+            <option value="qa">QA / Testing</option>
+            <option value="documentation">Documentation</option>
+            <option value="infrastructure">Infrastructure</option>
+            <option value="security">Security</option>
+            <option value="other">Other</option>
+          </Select>
         </div>
 
         <div className="grid grid-cols-2 gap-4">

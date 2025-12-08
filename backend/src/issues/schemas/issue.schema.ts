@@ -48,6 +48,9 @@ export class Issue {
   @Prop({ type: [String], default: [] })
   labels: string[];
 
+  @Prop({ type: String, default: null })
+  category: string;
+
   @Prop({ type: Object, default: {} })
   customFields: Record<string, any>;
 
@@ -114,6 +117,7 @@ IssueSchema.index({ status: 1 });
 IssueSchema.index({ priority: 1 });
 IssueSchema.index({ type: 1 });
 IssueSchema.index({ labels: 1 });
+IssueSchema.index({ category: 1 });
 IssueSchema.index({ dueDate: 1 });
 IssueSchema.index({ createdAt: -1 });
 IssueSchema.index({ updatedAt: -1 });

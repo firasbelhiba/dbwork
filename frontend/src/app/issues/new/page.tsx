@@ -33,6 +33,7 @@ function NewIssueForm() {
     storyPoints: 0,
     dueDate: '',
     labels: '',
+    category: '',
   });
 
   const [error, setError] = useState('');
@@ -136,6 +137,7 @@ function NewIssueForm() {
       if (formData.labels.trim()) {
         issueData.labels = formData.labels.split(',').map(l => l.trim()).filter(l => l);
       }
+      if (formData.category) issueData.category = formData.category;
 
       // Add parent issue if provided
       const parentIssueIdFromUrl = searchParams.get('parent');
@@ -309,6 +311,30 @@ function NewIssueForm() {
                   <option value="critical">Critical</option>
                 </Select>
               </div>
+            </div>
+
+            {/* Category */}
+            <div>
+              <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1.5">
+                Category
+              </label>
+              <Select
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+              >
+                <option value="">No category</option>
+                <option value="frontend">Frontend</option>
+                <option value="backend">Backend</option>
+                <option value="design">Design</option>
+                <option value="marketing">Marketing</option>
+                <option value="devops">DevOps</option>
+                <option value="qa">QA / Testing</option>
+                <option value="documentation">Documentation</option>
+                <option value="infrastructure">Infrastructure</option>
+                <option value="security">Security</option>
+                <option value="other">Other</option>
+              </Select>
             </div>
 
             {/* Assignee and Sprint */}

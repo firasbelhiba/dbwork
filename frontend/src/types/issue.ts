@@ -36,6 +36,7 @@ export interface Issue {
   assignees: (User | string)[];
   reporter: User | string;
   labels: string[];
+  category?: string | null;
   customFields: Record<string, any>;
   timeTracking: TimeTracking;
   attachments: string[];
