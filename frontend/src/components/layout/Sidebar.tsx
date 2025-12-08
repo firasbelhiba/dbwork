@@ -287,11 +287,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) =
                           : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-400 hover:text-gray-900 dark:hover:text-gray-100'
                       )}
                     >
-                      <div className="w-5 h-5 rounded bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs font-bold text-primary-700 dark:text-primary-400">
-                          {project.key.substring(0, 2)}
-                        </span>
-                      </div>
+                      {project.logo ? (
+                        <img
+                          src={project.logo}
+                          alt={project.name}
+                          className="w-5 h-5 rounded object-cover flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-5 h-5 rounded bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs font-bold text-primary-700 dark:text-primary-400">
+                            {project.key.substring(0, 2)}
+                          </span>
+                        </div>
+                      )}
                       <span className="truncate">{project.name}</span>
                     </Link>
                   );
