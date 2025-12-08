@@ -44,6 +44,7 @@ export class AttachmentsService {
           crop: 'fill',
           quality: 'auto',
           fetch_format: 'auto',
+          secure: true,
         });
       }
 

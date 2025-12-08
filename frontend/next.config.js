@@ -8,7 +8,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
-    domains: ['localhost'],
+    domains: ['localhost', 'res.cloudinary.com'],
     remotePatterns: [
       {
         protocol: 'http',
@@ -18,6 +18,11 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'http',
         hostname: 'res.cloudinary.com',
         pathname: '/**',
       },
