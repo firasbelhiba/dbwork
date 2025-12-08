@@ -3,42 +3,26 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { reportsAPI, projectsAPI, sprintsAPI } from '@/lib/api';
-import { Project } from '@/types/project';
-import { Sprint } from '@/types/sprint';
-import { Select, Breadcrumb, LogoLoader, Button } from '@/components/common';
-import {
-  BurndownChart,
-  VelocityChart,
-  IssueStatsPieChart,
-  StatusDistributionChart,
-  TeamWorkloadChart,
-  IssueCreationTrendChart
-} from '@/components/charts';
+import { Breadcrumb, LogoLoader, Button } from '@/components/common';
+import { TimeAttendanceTab, TeamPerformanceTab, ProjectsTab, ExportTab } from '@/components/reports';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserRole } from '@/types/user';
 import toast from 'react-hot-toast';
 
+type Tab = 'attendance' | 'performance' | 'projects' | 'export';
+type DatePreset = 'today' | 'week' | 'month' | 'custom';
+
 export default function ReportsPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [sprints, setSprints] = useState<Sprint[]>([]);
-  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
-  const [selectedSprintId, setSelectedSprintId] = useState<string>('');
-
-  const [projectProgress, setProjectProgress] = useState<any>(null);
-  const [issueStats, setIssueStats] = useState<any>(null);
-  const [teamPerformance, setTeamPerformance] = useState<any>(null);
-  const [velocityData, setVelocityData] = useState<any>(null);
-  const [burndownData, setBurndownData] = useState<any>(null);
-  const [timeTracking, setTimeTracking] = useState<any>(null);
-  const [statusDistribution, setStatusDistribution] = useState<any>(null);
-  const [teamWorkload, setTeamWorkload] = useState<any>(null);
-  const [issueCreationTrend, setIssueCreationTrend] = useState<any>(null);
-
+  const [activeTab, setActiveTab] = useState<Tab>('attendance');
   const [loading, setLoading] = useState(true);
   const [unauthorized, setUnauthorized] = useState(false);
+
+  // Date range state
+  const [datePreset, setDatePreset] = useState<DatePreset>('week');
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
 
   useEffect(() => {
     if (user) {
@@ -48,84 +32,72 @@ export default function ReportsPage() {
         toast.error('You do not have access to this page');
         return;
       }
-      fetchProjects();
+      setLoading(false);
     }
   }, [user]);
 
+  // Initialize date range
   useEffect(() => {
-    if (selectedProjectId) {
-      fetchProjectSprints();
-      fetchReports();
-    }
-  }, [selectedProjectId]);
+    updateDateRange('week');
+  }, []);
 
-  useEffect(() => {
-    if (selectedSprintId) {
-      fetchSprintReports();
-    }
-  }, [selectedSprintId]);
+  const updateDateRange = (preset: DatePreset) => {
+    const today = new Date();
+    let start: Date;
+    let end: Date = today;
 
-  const fetchProjects = async () => {
-    try {
-      const response = await projectsAPI.getAll();
-      setProjects(response.data);
-      if (response.data.length > 0) {
-        setSelectedProjectId(response.data[0]._id);
-      }
-    } catch (error) {
-      console.error('Error fetching projects:', error);
-    } finally {
-      setLoading(false);
+    switch (preset) {
+      case 'today':
+        start = today;
+        break;
+      case 'week':
+        start = new Date(today);
+        start.setDate(today.getDate() - 7);
+        break;
+      case 'month':
+        start = new Date(today);
+        start.setMonth(today.getMonth() - 1);
+        break;
+      default:
+        return;
+    }
+
+    setDatePreset(preset);
+    setStartDate(start.toISOString().split('T')[0]);
+    setEndDate(end.toISOString().split('T')[0]);
+  };
+
+  const handleCustomDateChange = (type: 'start' | 'end', value: string) => {
+    setDatePreset('custom');
+    if (type === 'start') {
+      setStartDate(value);
+    } else {
+      setEndDate(value);
     }
   };
 
-  const fetchProjectSprints = async () => {
-    try {
-      const response = await sprintsAPI.getByProject(selectedProjectId);
-      setSprints(response.data);
-      const activeSprint = response.data.find((s: Sprint) => s.status === 'active');
-      if (activeSprint) {
-        setSelectedSprintId(activeSprint._id);
-      }
-    } catch (error) {
-      console.error('Error fetching sprints:', error);
-    }
-  };
-
-  const fetchReports = async () => {
-    try {
-      const [progressRes, statsRes, teamRes, velocityRes, timeRes, statusDistRes, workloadRes, trendRes] = await Promise.all([
-        reportsAPI.getProjectProgress(selectedProjectId),
-        reportsAPI.getIssueStatistics(selectedProjectId),
-        reportsAPI.getTeamPerformance(selectedProjectId),
-        reportsAPI.getVelocityTrend(selectedProjectId, 5),
-        reportsAPI.getTimeTracking(selectedProjectId),
-        reportsAPI.getStatusDistribution(selectedProjectId),
-        reportsAPI.getTeamWorkloadBreakdown(selectedProjectId),
-        reportsAPI.getIssueCreationTrend(selectedProjectId, 30),
-      ]);
-
-      setProjectProgress(progressRes.data);
-      setIssueStats(statsRes.data);
-      setTeamPerformance(teamRes.data);
-      setVelocityData(velocityRes.data);
-      setTimeTracking(timeRes.data);
-      setStatusDistribution(statusDistRes.data);
-      setTeamWorkload(workloadRes.data);
-      setIssueCreationTrend(trendRes.data);
-    } catch (error) {
-      console.error('Error fetching reports:', error);
-    }
-  };
-
-  const fetchSprintReports = async () => {
-    try {
-      const response = await reportsAPI.getSprintBurndown(selectedSprintId);
-      setBurndownData(response.data);
-    } catch (error) {
-      console.error('Error fetching sprint reports:', error);
-    }
-  };
+  const tabs = [
+    { id: 'attendance' as Tab, label: 'Time & Attendance', icon: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    )},
+    { id: 'performance' as Tab, label: 'Team Performance', icon: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+    )},
+    { id: 'projects' as Tab, label: 'Projects', icon: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      </svg>
+    )},
+    { id: 'export' as Tab, label: 'Export', icon: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+      </svg>
+    )},
+  ];
 
   if (loading) {
     return (
@@ -160,7 +132,7 @@ export default function ReportsPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         <Breadcrumb
           items={[
             {
@@ -183,234 +155,106 @@ export default function ReportsPage() {
           ]}
           className="mb-6"
         />
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Reports & Analytics</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">Track progress, performance, and insights</p>
-        </div>
 
-        {/* Filters */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Select
-              label="Project"
-              value={selectedProjectId}
-              onChange={(e) => setSelectedProjectId(e.target.value)}
-              options={projects.map((p) => ({ value: p._id, label: p.name }))}
-            />
-            {sprints.length > 0 && (
-              <Select
-                label="Sprint (for Burndown)"
-                value={selectedSprintId}
-                onChange={(e) => setSelectedSprintId(e.target.value)}
-                options={sprints.map((s) => ({ value: s._id, label: s.name }))}
-              />
-            )}
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">Reports & Analytics</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Track progress, performance, and insights</p>
           </div>
-        </div>
 
-        {/* Project Progress */}
-        {projectProgress && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Project Progress</h2>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Issues</p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{projectProgress.total}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Completed</p>
-                <p className="text-3xl font-bold text-success dark:text-success-400">{projectProgress.completed}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">In Progress</p>
-                <p className="text-3xl font-bold text-primary dark:text-primary-400">{projectProgress.inProgress}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Completion Rate</p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                  {projectProgress.completionRate.toFixed(0)}%
-                </p>
-              </div>
-            </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
-              <div
-                className="bg-green-600 dark:bg-green-500 h-4 rounded-full transition-all"
-                style={{ width: `${projectProgress.completionRate}%` }}
-              ></div>
-            </div>
-          </div>
-        )}
-
-        {/* Status Distribution */}
-        {statusDistribution && statusDistribution.distribution && statusDistribution.distribution.length > 0 && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Issues by Status</h2>
-            <StatusDistributionChart data={statusDistribution.distribution} />
-          </div>
-        )}
-
-        {/* Issue Creation Trend */}
-        {issueCreationTrend && issueCreationTrend.trend && issueCreationTrend.trend.length > 0 && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Issue Creation Trend (Last 30 Days)</h2>
-            <IssueCreationTrendChart data={issueCreationTrend.trend} />
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Issue Statistics */}
-          {issueStats && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Issues by Type</h2>
-              <IssueStatsPieChart
-                data={[
-                  { name: 'Bugs', value: issueStats.bugs || 0 },
-                  { name: 'Tasks', value: issueStats.tasks || 0 },
-                  { name: 'Stories', value: issueStats.stories || 0 },
-                  { name: 'Epics', value: issueStats.epics || 0 },
-                ].filter(item => item.value > 0)}
-                colors={['#DE350B', '#0052CC', '#00875A', '#6554C0']}
-              />
-            </div>
-          )}
-
-          {/* Priority Distribution */}
-          {issueStats && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Issues by Priority</h2>
-              <IssueStatsPieChart
-                data={[
-                  { name: 'Critical', value: issueStats.critical || 0 },
-                  { name: 'High', value: issueStats.high || 0 },
-                  { name: 'Medium', value: issueStats.medium || 0 },
-                  { name: 'Low', value: issueStats.low || 0 },
-                ].filter(item => item.value > 0)}
-                colors={['#DE350B', '#FF5630', '#FF991F', '#6B7280']}
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Team Workload */}
-        {teamWorkload && teamWorkload.workload && teamWorkload.workload.length > 0 && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Team Workload Distribution</h2>
-            <TeamWorkloadChart data={teamWorkload.workload} />
-          </div>
-        )}
-
-        {/* Velocity Trend */}
-        {velocityData && velocityData.velocityData && velocityData.velocityData.length > 0 && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">
-              Velocity Trend (Last 5 Sprints)
-            </h2>
-            <VelocityChart
-              data={velocityData.velocityData.map((s: any) => ({
-                sprintName: s.sprintName,
-                velocity: s.completedPoints,
-                committed: s.totalPoints,
-              }))}
-              averageVelocity={velocityData.averageVelocity}
-            />
-            <div className="mt-4 text-center">
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                Average Velocity: <strong className="dark:text-gray-200">{velocityData.averageVelocity.toFixed(1)}</strong> points/sprint
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Sprint Burndown */}
-        {burndownData && burndownData.burndownData && burndownData.burndownData.length > 0 && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Sprint Burndown Chart</h2>
-            <BurndownChart
-              data={burndownData.burndownData.map((d: any) => ({
-                date: d.date,
-                ideal: d.idealRemaining,
-                actual: d.actualRemaining,
-              }))}
-            />
-          </div>
-        )}
-
-        {/* Team Performance */}
-        {teamPerformance && teamPerformance.length > 0 && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Team Performance</h2>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-700/50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Team Member
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Completed
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      In Progress
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Story Points
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  {teamPerformance.map((member: any, index: number) => (
-                    <tr key={index}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {member.user?.firstName} {member.user?.lastName}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
-                        {member.completed}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
-                        {member.inProgress}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
-                        {member.storyPoints}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* Time Tracking */}
-        {timeTracking && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Time Tracking Summary</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Estimated Hours</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  {timeTracking.totalEstimatedHours.toFixed(1)}h
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Logged Hours</p>
-                <p className="text-2xl font-bold text-primary dark:text-primary-400">
-                  {timeTracking.totalLoggedHours.toFixed(1)}h
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Variance</p>
-                <p
-                  className={`text-2xl font-bold ${
-                    timeTracking.variance >= 0 ? 'text-success dark:text-success-400' : 'text-danger dark:text-danger-400'
+          {/* Date Range Picker */}
+          {activeTab !== 'projects' && (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+              {/* Quick Presets */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => updateDateRange('today')}
+                  className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                    datePreset === 'today'
+                      ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                 >
-                  {timeTracking.variance > 0 ? '+' : ''}
-                  {timeTracking.variance.toFixed(1)}h
-                </p>
+                  Today
+                </button>
+                <button
+                  onClick={() => updateDateRange('week')}
+                  className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                    datePreset === 'week'
+                      ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  Week
+                </button>
+                <button
+                  onClick={() => updateDateRange('month')}
+                  className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                    datePreset === 'month'
+                      ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  Month
+                </button>
+              </div>
+
+              {/* Custom Date Inputs */}
+              <div className="flex items-center gap-2">
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => handleCustomDateChange('start', e.target.value)}
+                  className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                />
+                <span className="text-gray-400">-</span>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => handleCustomDateChange('end', e.target.value)}
+                  className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                />
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
+          <nav className="-mb-px flex space-x-4 md:space-x-8 overflow-x-auto">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-1 py-3 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
+                  activeTab === tab.id
+                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                }`}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        {/* Tab Content */}
+        <div>
+          {activeTab === 'attendance' && startDate && endDate && (
+            <TimeAttendanceTab startDate={startDate} endDate={endDate} />
+          )}
+          {activeTab === 'performance' && startDate && endDate && (
+            <TeamPerformanceTab startDate={startDate} endDate={endDate} />
+          )}
+          {activeTab === 'projects' && (
+            <ProjectsTab />
+          )}
+          {activeTab === 'export' && startDate && endDate && (
+            <ExportTab startDate={startDate} endDate={endDate} />
+          )}
+        </div>
       </div>
     </DashboardLayout>
   );

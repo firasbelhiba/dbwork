@@ -93,4 +93,46 @@ export class ReportsController {
   ) {
     return this.reportsService.getMyCreatedTasksStats(req.user._id, days);
   }
+
+  // ============================================
+  // NEW ADMIN REPORTS
+  // ============================================
+
+  @Get('time-attendance')
+  @ApiOperation({ summary: 'Get time attendance report for all users (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Time attendance data with daily hours, extra hours, and alerts' })
+  getTimeAttendanceReport(
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+  ) {
+    return this.reportsService.getTimeAttendanceReport(startDate, endDate);
+  }
+
+  @Get('team-productivity')
+  @ApiOperation({ summary: 'Get team productivity report (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Team productivity data with issues completed, time logged, leaderboard' })
+  getTeamProductivityReport(
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+  ) {
+    return this.reportsService.getTeamProductivityReport(startDate, endDate);
+  }
+
+  @Get('user/:userId/detail')
+  @ApiOperation({ summary: 'Get detailed report for a single user (Admin only)' })
+  @ApiResponse({ status: 200, description: 'User detail data with time by project, daily activity, issues worked on' })
+  getUserDetailReport(
+    @Param('userId') userId: string,
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+  ) {
+    return this.reportsService.getUserDetailReport(userId, startDate, endDate);
+  }
+
+  @Get('project/:projectId/time-analysis')
+  @ApiOperation({ summary: 'Get project time analysis (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Project time analysis with team breakdown, lifecycle, bottlenecks' })
+  getProjectTimeAnalysis(@Param('projectId') projectId: string) {
+    return this.reportsService.getProjectTimeAnalysis(projectId);
+  }
 }

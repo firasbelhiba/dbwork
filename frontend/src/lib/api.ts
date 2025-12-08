@@ -277,6 +277,15 @@ export const reportsAPI = {
     const params = days ? { days } : {};
     return api.get('/reports/my-created-tasks-stats', { params });
   },
+  // New Admin Reports
+  getTimeAttendance: (startDate: string, endDate: string) =>
+    api.get('/reports/time-attendance', { params: { startDate, endDate } }),
+  getTeamProductivity: (startDate: string, endDate: string) =>
+    api.get('/reports/team-productivity', { params: { startDate, endDate } }),
+  getUserDetail: (userId: string, startDate: string, endDate: string) =>
+    api.get(`/reports/user/${userId}/detail`, { params: { startDate, endDate } }),
+  getProjectTimeAnalysis: (projectId: string) =>
+    api.get(`/reports/project/${projectId}/time-analysis`),
 };
 
 // Activities API
