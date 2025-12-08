@@ -92,4 +92,7 @@ export interface ActiveTimeEntry {
   isPaused: boolean;
   pausedAt?: string;
   accumulatedPausedTime: number;
+  autoPausedEndOfDay?: boolean; // True when auto-paused at end of work day
+  isExtraHours?: boolean; // True when timer resumed after end-of-day auto-pause
+  extraHoursStartedAt?: string; // When extra hours tracking started
 }

@@ -6,6 +6,8 @@ import { SprintStatus } from '@/types/sprint';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserRole } from '@/types/user';
+import { issuesAPI } from '@/lib/api';
+import toast from 'react-hot-toast';
 
 // Format seconds to short timer display
 const formatTimerDisplay = (seconds: number): string => {
@@ -23,6 +25,7 @@ interface IssueCardProps {
   issue: Issue;
   onArchive?: (issueId: string) => void;
   onDelete?: (issueId: string) => void;
+  onIssueUpdate?: (updatedIssue: Issue) => void;
 }
 
 const getSprintStatusVariant = (status: SprintStatus) => {
@@ -38,9 +41,10 @@ const getSprintStatusVariant = (status: SprintStatus) => {
   }
 };
 
-export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete }) => {
+export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete, onIssueUpdate }) => {
   const { user } = useAuth();
   const [timerSeconds, setTimerSeconds] = useState(0);
+  const [isResuming, setIsResuming] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const assignees = issue.assignees?.filter(a => typeof a === 'object' && a !== null).map(a => a as any) || [];
@@ -56,11 +60,39 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
   // Check if the current user owns the timer
   const isOwnTimer = activeEntry && activeEntry.userId === user?._id;
 
-  // Timer should only be "running" (green) when issue is in_progress AND not paused
+  // Check if timer is in extra hours mode
+  const isExtraHours = activeEntry?.isExtraHours === true;
+
+  // Check if timer was auto-paused at end of day (can resume for extra hours)
+  const canResumeForExtraHours = isOwnTimer && activeEntry?.isPaused && activeEntry?.autoPausedEndOfDay;
+
+  // Timer should only be "running" (green/purple) when issue is in_progress AND not paused
   // Timer should be "paused" (yellow) when there's an active timer but issue is NOT in_progress OR isPaused is true
   const isInProgress = issue.status === 'in_progress';
   const isTimerRunning = hasActiveTimer && isInProgress && !activeEntry.isPaused;
   const isTimerPaused = hasActiveTimer && (!isInProgress || activeEntry.isPaused);
+
+  // Handle resume timer for extra hours
+  const handleResumeTimer = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!isOwnTimer || isResuming) return;
+
+    setIsResuming(true);
+    try {
+      const response = await issuesAPI.resumeTimer(issue._id);
+      toast.success('Timer resumed - Extra hours tracking started!');
+      if (onIssueUpdate) {
+        onIssueUpdate(response.data);
+      }
+    } catch (error: any) {
+      console.error('Error resuming timer:', error);
+      toast.error(error?.response?.data?.message || 'Failed to resume timer');
+    } finally {
+      setIsResuming(false);
+    }
+  };
 
   // Calculate and update timer display (visible to all users)
   useEffect(() => {
@@ -175,15 +207,48 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
           )}
           {/* Timer Badge */}
           {(isTimerRunning || isTimerPaused) && (
-            <div
-              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-mono font-medium ${
-                isTimerRunning
-                  ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                  : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-              }`}
-            >
-              <div className={`w-1.5 h-1.5 rounded-full ${isTimerRunning ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'}`} />
-              {formatTimerDisplay(timerSeconds)}
+            <div className="inline-flex items-center gap-1">
+              <div
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-mono font-medium ${
+                  isTimerRunning
+                    ? isExtraHours
+                      ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400'
+                      : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                    : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+                }`}
+              >
+                <div className={`w-1.5 h-1.5 rounded-full ${
+                  isTimerRunning
+                    ? isExtraHours
+                      ? 'bg-purple-500 animate-pulse'
+                      : 'bg-green-500 animate-pulse'
+                    : 'bg-yellow-500'
+                }`} />
+                {formatTimerDisplay(timerSeconds)}
+                {isExtraHours && isTimerRunning && (
+                  <span className="ml-1 text-[10px] uppercase font-semibold">Extra</span>
+                )}
+              </div>
+              {/* Play button for resuming after end-of-day auto-pause */}
+              {canResumeForExtraHours && (
+                <button
+                  onClick={handleResumeTimer}
+                  disabled={isResuming}
+                  className="p-1 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors disabled:opacity-50"
+                  title="Resume timer for extra hours"
+                >
+                  {isResuming ? (
+                    <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  )}
+                </button>
+              )}
             </div>
           )}
         </div>

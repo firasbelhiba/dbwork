@@ -18,9 +18,10 @@ interface KanbanColumnProps {
   onArchiveIssue?: (issueId: string) => void;
   onDeleteIssue?: (issueId: string) => void;
   onArchiveAllInColumn?: (columnId: string, issueIds: string[]) => void;
+  onIssueUpdate?: (updatedIssue: Issue) => void;
 }
 
-export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, color, issues, dragHandleProps, dragHandleRef, onArchiveIssue, onDeleteIssue, onArchiveAllInColumn }) => {
+export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, color, issues, dragHandleProps, dragHandleRef, onArchiveIssue, onDeleteIssue, onArchiveAllInColumn, onIssueUpdate }) => {
   const { setNodeRef } = useDroppable({ id });
   const { user } = useAuth();
   const [showArchiveModal, setShowArchiveModal] = useState(false);
@@ -149,6 +150,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, color, is
                   issue={issue}
                   onArchive={onArchiveIssue}
                   onDelete={onDeleteIssue}
+                  onIssueUpdate={onIssueUpdate}
                 />
               ))
             )}

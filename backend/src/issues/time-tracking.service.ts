@@ -165,6 +165,7 @@ export class TimeTrackingService {
 
   /**
    * Resume a paused timer
+   * If the timer was auto-paused at end of day, this starts extra hours tracking
    */
   async resumeTimer(issueId: string, userId: string): Promise<IssueDocument> {
     const issue = await this.issueModel.findById(issueId).exec();
@@ -192,16 +193,27 @@ export class TimeTrackingService {
     const pauseDuration = Math.floor((now.getTime() - pausedAt.getTime()) / 1000);
     const newAccumulatedPausedTime = activeEntry.accumulatedPausedTime + pauseDuration;
 
+    // Check if this was an end-of-day auto-pause - if so, mark as extra hours
+    const wasAutoPausedEndOfDay = (activeEntry as any).autoPausedEndOfDay === true;
+
+    const updateData: any = {
+      'timeTracking.activeTimeEntry.isPaused': false,
+      'timeTracking.activeTimeEntry.pausedAt': null,
+      'timeTracking.activeTimeEntry.accumulatedPausedTime': newAccumulatedPausedTime,
+      'timeTracking.activeTimeEntry.lastActivityAt': now,
+      'timeTracking.activeTimeEntry.autoPausedEndOfDay': false,
+    };
+
+    // If resuming after end-of-day auto-pause, mark as extra hours
+    if (wasAutoPausedEndOfDay) {
+      updateData['timeTracking.activeTimeEntry.isExtraHours'] = true;
+      updateData['timeTracking.activeTimeEntry.extraHoursStartedAt'] = now;
+      console.log(`[TIME_TRACKING] Resuming timer for issue ${issueId} as EXTRA HOURS`);
+    }
+
     const updatedIssue = await this.issueModel.findByIdAndUpdate(
       issueId,
-      {
-        $set: {
-          'timeTracking.activeTimeEntry.isPaused': false,
-          'timeTracking.activeTimeEntry.pausedAt': null,
-          'timeTracking.activeTimeEntry.accumulatedPausedTime': newAccumulatedPausedTime,
-          'timeTracking.activeTimeEntry.lastActivityAt': now,
-        },
-      },
+      { $set: updateData },
       { new: true }
     ).exec();
 
@@ -507,12 +519,14 @@ export class TimeTrackingService {
       try {
         // Pause the timer instead of stopping it
         // This keeps the activeTimeEntry but sets isPaused to true
+        // Mark as autoPausedEndOfDay so we know to track extra hours when resumed
         await this.issueModel.findByIdAndUpdate(
           issue._id,
           {
             $set: {
               'timeTracking.activeTimeEntry.isPaused': true,
               'timeTracking.activeTimeEntry.pausedAt': now,
+              'timeTracking.activeTimeEntry.autoPausedEndOfDay': true,
             },
           },
         ).exec();
@@ -533,6 +547,100 @@ export class TimeTrackingService {
     }
 
     console.log(`[TIME_TRACKING] End-of-day timer pause complete. Paused: ${stoppedCount}, Errors: ${errors.length}`);
+
+    return { stoppedCount, errors, stoppedTimers };
+  }
+
+  /**
+   * Stop all extra hours timers at start of work day (9 AM)
+   * This is the maximum time extra hours can run
+   */
+  async stopExtraHoursTimers(): Promise<{
+    stoppedCount: number;
+    errors: string[];
+    stoppedTimers: Array<{ issueId: string; issueKey: string; userId: string; projectId: string }>;
+  }> {
+    const now = new Date();
+    const errors: string[] = [];
+    let stoppedCount = 0;
+    const stoppedTimers: Array<{ issueId: string; issueKey: string; userId: string; projectId: string }> = [];
+
+    console.log(`[TIME_TRACKING] Running start-of-day extra hours stop at ${now.toISOString()}`);
+
+    // Find all issues with active timers that are in extra hours mode
+    const issuesWithExtraHours = await this.issueModel.find({
+      'timeTracking.activeTimeEntry': { $ne: null },
+      'timeTracking.activeTimeEntry.isExtraHours': true,
+    }).exec();
+
+    console.log(`[TIME_TRACKING] Found ${issuesWithExtraHours.length} extra hours timers to stop`);
+
+    for (const issue of issuesWithExtraHours) {
+      const activeEntry = issue.timeTracking?.activeTimeEntry;
+      if (!activeEntry) continue;
+
+      try {
+        const startTime = new Date(activeEntry.startTime);
+
+        // Calculate duration excluding paused time
+        let totalDuration = Math.floor((now.getTime() - startTime.getTime()) / 1000);
+
+        // If currently paused, account for pause time
+        if (activeEntry.isPaused && activeEntry.pausedAt) {
+          const pausedAt = new Date(activeEntry.pausedAt);
+          const currentPauseDuration = Math.floor((now.getTime() - pausedAt.getTime()) / 1000);
+          totalDuration -= (activeEntry.accumulatedPausedTime + currentPauseDuration);
+        } else {
+          totalDuration -= activeEntry.accumulatedPausedTime;
+        }
+
+        // Ensure duration is not negative
+        totalDuration = Math.max(0, totalDuration);
+
+        // Create completed time entry
+        const timeEntry: TimeEntry = {
+          id: activeEntry.id,
+          userId: activeEntry.userId,
+          startTime: startTime,
+          endTime: now,
+          duration: totalDuration,
+          source: 'automatic',
+          description: 'Auto-stopped: Start of work day (max extra hours reached)',
+          pausedDuration: activeEntry.accumulatedPausedTime,
+          createdAt: now,
+        };
+
+        // Update issue with new time entry and clear active entry
+        const currentTimeEntries = issue.timeTracking?.timeEntries || [];
+        const currentTotalTime = issue.timeTracking?.totalTimeSpent || 0;
+
+        await this.issueModel.findByIdAndUpdate(
+          issue._id,
+          {
+            $set: {
+              'timeTracking.activeTimeEntry': null,
+              'timeTracking.timeEntries': [...currentTimeEntries, timeEntry],
+              'timeTracking.totalTimeSpent': currentTotalTime + totalDuration,
+            },
+          },
+        ).exec();
+
+        stoppedCount++;
+        stoppedTimers.push({
+          issueId: issue._id.toString(),
+          issueKey: issue.key,
+          userId: activeEntry.userId.toString(),
+          projectId: issue.projectId.toString(),
+        });
+        console.log(`[TIME_TRACKING] Stopped extra hours timer for issue ${issue.key} (user: ${activeEntry.userId}, duration: ${totalDuration}s)`);
+      } catch (error) {
+        const errorMsg = `Failed to stop extra hours timer for issue ${issue._id}: ${error.message}`;
+        errors.push(errorMsg);
+        console.error(`[TIME_TRACKING] ${errorMsg}`);
+      }
+    }
+
+    console.log(`[TIME_TRACKING] Start-of-day extra hours stop complete. Stopped: ${stoppedCount}, Errors: ${errors.length}`);
 
     return { stoppedCount, errors, stoppedTimers };
   }

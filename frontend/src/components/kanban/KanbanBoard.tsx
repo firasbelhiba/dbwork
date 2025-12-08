@@ -348,6 +348,14 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
     }
   };
 
+  const handleIssueUpdate = (updatedIssue: Issue) => {
+    setIssues((prevIssues) =>
+      prevIssues.map((issue) =>
+        issue._id === updatedIssue._id ? updatedIssue : issue
+      )
+    );
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -391,6 +399,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
                   onArchiveIssue={handleArchiveIssue}
                   onDeleteIssue={handleDeleteIssue}
                   onArchiveAllInColumn={handleArchiveAllInColumn}
+                  onIssueUpdate={handleIssueUpdate}
                 />
               ))}
             </div>

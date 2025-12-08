@@ -132,4 +132,44 @@ export class TimeTrackingSchedulerService implements OnModuleInit {
       this.logger.error('Failed to check inactive timers', error.stack);
     }
   }
+
+  /**
+   * Stop all extra hours timers at 9 AM (start of work day)
+   * This is the maximum time extra hours can run
+   * Runs at 9:00 AM Tunisia time on weekdays
+   */
+  @Cron('0 0 9 * * 1-5', {
+    name: 'extra-hours-stop',
+    timeZone: 'Africa/Tunis',
+  })
+  async handleExtraHoursStop() {
+    this.logger.log('Checking for extra hours timers to stop at start of work day (9 AM)...');
+
+    try {
+      const result = await this.timeTrackingService.stopExtraHoursTimers();
+
+      if (result.stoppedCount > 0) {
+        this.logger.log(`Successfully stopped ${result.stoppedCount} extra hours timer(s)`);
+
+        // Emit WebSocket events for each stopped timer
+        for (const stoppedTimer of result.stoppedTimers) {
+          this.webSocketGateway.emitTimerAutoStopped(
+            stoppedTimer.userId,
+            stoppedTimer.projectId,
+            stoppedTimer.issueId,
+            stoppedTimer.issueKey,
+          );
+        }
+      } else {
+        this.logger.log('No extra hours timers to stop');
+      }
+
+      if (result.errors.length > 0) {
+        this.logger.warn(`Encountered ${result.errors.length} error(s) while stopping extra hours timers`);
+        result.errors.forEach((err) => this.logger.error(err));
+      }
+    } catch (error) {
+      this.logger.error('Failed to stop extra hours timers', error.stack);
+    }
+  }
 }
