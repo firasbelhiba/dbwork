@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import Image from 'next/image';
 import { attachmentsAPI } from '@/lib/api';
 import { Attachment, formatFileSize, getFileIcon, isImageFile } from '@/types/attachment';
 import { Button } from '@/components/common';
@@ -259,12 +258,10 @@ export function AttachmentSection({ issueId }: AttachmentSectionProps) {
                       onClick={() => setPreviewImageIndex(index)}
                       className="w-full aspect-video relative rounded-lg overflow-hidden border border-gray-200 dark:border-dark-400 hover:border-primary-500 dark:hover:border-primary-400 transition-all hover:shadow-md"
                     >
-                      <Image
+                      <img
                         src={attachment.thumbnail || attachment.url}
                         alt={attachment.originalName}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        className="absolute inset-0 w-full h-full object-cover"
                       />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
                         <svg
