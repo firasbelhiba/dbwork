@@ -89,7 +89,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) =
   const [showAllProjects, setShowAllProjects] = useState(false);
 
   const INITIAL_PROJECTS_COUNT = 5;
-  const MAX_VISIBLE_PROJECTS = 10;
 
   // Handle link clicks on mobile - close the drawer
   const handleLinkClick = () => {
@@ -261,11 +260,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) =
                 </span>
               )}
             </div>
+            {/* Scrollable projects container */}
             <div
               className={cn(
                 "px-3 space-y-1",
-                showAllProjects && projects.length > MAX_VISIBLE_PROJECTS && "max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-dark-300 scrollbar-track-transparent"
+                showAllProjects && "max-h-48 overflow-y-auto pr-1"
               )}
+              style={showAllProjects ? {
+                scrollbarWidth: 'thin',
+                scrollbarColor: 'rgb(156 163 175) transparent'
+              } : undefined}
             >
               {projects
                 .slice(0, showAllProjects ? projects.length : INITIAL_PROJECTS_COUNT)
