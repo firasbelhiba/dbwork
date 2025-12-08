@@ -12,7 +12,7 @@ import { KanbanBoard } from '@/components/kanban';
 import { Button, Badge, Select, Breadcrumb, LogoLoader } from '@/components/common';
 import { CreateSprintModal, SprintList } from '@/components/sprints';
 import { UserProfileSidebar } from '@/components/users';
-import { CustomStatusModal } from '@/components/projects';
+import { CustomStatusModal, AuditSection } from '@/components/projects';
 import { ProjectCalendar, DemoEventModal } from '@/components/calendar';
 import Link from 'next/link';
 import { getInitials } from '@/lib/utils';
@@ -29,7 +29,7 @@ export default function ProjectDetailPage() {
   const [sprints, setSprints] = useState<Sprint[]>([]);
   const [activeSprint, setActiveSprint] = useState<Sprint | null>(null);
   const [selectedSprintId, setSelectedSprintId] = useState<string>('all');
-  const [view, setView] = useState<'board' | 'list' | 'calendar'>('board');
+  const [view, setView] = useState<'board' | 'list' | 'calendar' | 'audits'>('board');
   const [loading, setLoading] = useState(true);
   const [issues, setIssues] = useState<Issue[]>([]);
   const [loadingIssues, setLoadingIssues] = useState(false);
@@ -397,6 +397,16 @@ export default function ProjectDetailPage() {
                 >
                   Calendar
                 </button>
+                <button
+                  onClick={() => setView('audits')}
+                  className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+                    view === 'audits'
+                      ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                  }`}
+                >
+                  Audits
+                </button>
               </div>
 
               {/* Board View Controls */}
@@ -632,6 +642,10 @@ export default function ProjectDetailPage() {
                 setIsDemoEventModalOpen(true);
               }}
             />
+          ) : view === 'audits' ? (
+            <div className="p-6">
+              <AuditSection projectId={projectId} />
+            </div>
           ) : loadingIssues ? (
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
