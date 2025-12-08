@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -20,6 +20,25 @@ export default function FeedbackDetailPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [upvoteLoading, setUpvoteLoading] = useState(false);
+  const [previewImageIndex, setPreviewImageIndex] = useState<number | null>(null);
+
+  // Keyboard navigation for image preview
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (previewImageIndex === null || !feedback?.images) return;
+
+      if (e.key === 'Escape') {
+        setPreviewImageIndex(null);
+      } else if (e.key === 'ArrowLeft' && previewImageIndex > 0) {
+        setPreviewImageIndex(previewImageIndex - 1);
+      } else if (e.key === 'ArrowRight' && previewImageIndex < feedback.images.length - 1) {
+        setPreviewImageIndex(previewImageIndex + 1);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [previewImageIndex, feedback?.images]);
 
   useEffect(() => {
     if (params.id) {
@@ -353,12 +372,10 @@ export default function FeedbackDetailPage() {
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {feedback.images.map((image, index) => (
-                <a
+                <button
                   key={index}
-                  href={image.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group block"
+                  onClick={() => setPreviewImageIndex(index)}
+                  className="group block text-left"
                 >
                   <div className="aspect-video relative rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:border-primary-500 dark:hover:border-primary-400 transition-colors">
                     <Image
@@ -366,6 +383,7 @@ export default function FeedbackDetailPage() {
                       alt={image.fileName || `Screenshot ${index + 1}`}
                       fill
                       className="object-cover group-hover:opacity-90 transition-opacity"
+                      unoptimized
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
                       <svg
@@ -383,7 +401,7 @@ export default function FeedbackDetailPage() {
                       {image.fileName}
                     </p>
                   )}
-                </a>
+                </button>
               ))}
             </div>
           </div>
@@ -550,6 +568,106 @@ export default function FeedbackDetailPage() {
           <CommentSection feedbackId={params.id as string} />
         </div>
       </div>
+
+      {/* Image Preview Modal */}
+      {previewImageIndex !== null && feedback.images && feedback.images[previewImageIndex] && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
+          onClick={() => setPreviewImageIndex(null)}
+        >
+          {/* Close button */}
+          <button
+            className="absolute top-4 right-4 p-2 text-white/70 hover:text-white transition-colors z-10"
+            onClick={() => setPreviewImageIndex(null)}
+          >
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* Image counter */}
+          <div className="absolute top-4 left-4 text-white/70 text-sm">
+            {previewImageIndex + 1} / {feedback.images.length}
+          </div>
+
+          {/* Previous button */}
+          {previewImageIndex > 0 && (
+            <button
+              className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                setPreviewImageIndex(previewImageIndex - 1);
+              }}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+
+          {/* Next button */}
+          {previewImageIndex < feedback.images.length - 1 && (
+            <button
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                setPreviewImageIndex(previewImageIndex + 1);
+              }}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
+
+          {/* Main image */}
+          <div className="relative max-w-[90vw] max-h-[80vh]" onClick={(e) => e.stopPropagation()}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={feedback.images[previewImageIndex].url}
+              alt={feedback.images[previewImageIndex].fileName || `Screenshot ${previewImageIndex + 1}`}
+              className="max-w-full max-h-[80vh] object-contain"
+            />
+          </div>
+
+          {/* Image info */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-center text-white/80">
+            <p className="text-sm font-medium">
+              {feedback.images[previewImageIndex].fileName || `Screenshot ${previewImageIndex + 1}`}
+            </p>
+            <p className="text-xs text-white/60 mt-1">
+              Press ESC to close, ← → to navigate
+            </p>
+          </div>
+
+          {/* Thumbnail strip */}
+          {feedback.images.length > 1 && (
+            <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-black/50 rounded-lg max-w-[80vw] overflow-x-auto">
+              {feedback.images.map((img, idx) => (
+                <button
+                  key={idx}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPreviewImageIndex(idx);
+                  }}
+                  className={`flex-shrink-0 w-16 h-12 rounded overflow-hidden border-2 transition-all ${
+                    idx === previewImageIndex
+                      ? 'border-white opacity-100'
+                      : 'border-transparent opacity-60 hover:opacity-100'
+                  }`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={img.url}
+                    alt={img.fileName || `Screenshot ${idx + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </DashboardLayout>
   );
 }
