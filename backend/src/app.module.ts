@@ -23,6 +23,7 @@ import { MailModule } from './mail/mail.module';
 import { WebSocketModule } from './websocket/websocket.module';
 import { AdminModule } from './admin/admin.module';
 import { GoogleCalendarModule } from './google-calendar/google-calendar.module';
+import { AuditsModule } from './audits/audits.module';
 import { HttpExceptionFilter } from './common/filters';
 import { LoggingInterceptor } from './common/interceptors';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
@@ -57,6 +58,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     WebSocketModule,
     AdminModule,
     GoogleCalendarModule,
+    AuditsModule,
   ],
   providers: [
     {

@@ -375,4 +375,22 @@ export const googleCalendarAPI = {
   disconnect: () => api.post('/google-calendar/disconnect'),
 };
 
+// Audits API
+export const auditsAPI = {
+  getByProject: (projectId: string) => api.get(`/projects/${projectId}/audits`),
+  getById: (id: string) => api.get(`/audits/${id}`),
+  upload: (projectId: string, file: File, data: { title: string; auditType: string; description?: string; auditDate?: string }) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('title', data.title);
+    formData.append('auditType', data.auditType);
+    if (data.description) formData.append('description', data.description);
+    if (data.auditDate) formData.append('auditDate', data.auditDate);
+    return api.post(`/projects/${projectId}/audits`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  delete: (id: string) => api.delete(`/audits/${id}`),
+};
+
 export default api;

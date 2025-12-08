@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getInitials } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
+import { AuditSection } from '@/components/projects/AuditSection';
 
 // Helper function to get badge variant based on role
 const getRoleBadgeVariant = (role: UserRole) => {
@@ -37,7 +38,7 @@ export default function ProjectSettingsPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'general' | 'members' | 'settings'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'members' | 'settings' | 'audits'>('general');
   const [unauthorized, setUnauthorized] = useState(false);
 
   // General settings
@@ -407,6 +408,16 @@ export default function ProjectSettingsPage() {
               >
                 Settings
               </button>
+              <button
+                onClick={() => setActiveTab('audits')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === 'audits'
+                    ? 'border-primary text-primary-600 dark:text-primary-400'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                }`}
+              >
+                Audits
+              </button>
             </nav>
           </div>
 
@@ -723,6 +734,10 @@ export default function ProjectSettingsPage() {
                 </div>
               </div>
             </div>
+          )}
+
+          {activeTab === 'audits' && (
+            <AuditSection projectId={projectId} />
           )}
         </div>
       </div>
