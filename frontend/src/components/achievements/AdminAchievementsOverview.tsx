@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { User, Achievement, UserAchievement } from '@/types';
 import { usersAPI, achievementsAPI } from '@/lib/api';
 import { toast } from 'react-hot-toast';
-import Link from 'next/link';
+import { UserAchievementsModal } from './UserAchievementsModal';
 
 interface UserWithStats extends User {
   achievementStats?: {
@@ -19,6 +19,8 @@ export const AdminAchievementsOverview: React.FC = () => {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<'points' | 'achievements'>('points');
+  const [selectedUser, setSelectedUser] = useState<UserWithStats | null>(null);
+  const [showUserModal, setShowUserModal] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -228,7 +230,14 @@ export const AdminAchievementsOverview: React.FC = () => {
               const completionRate = (stats.unlockedCount / stats.totalAchievements) * 100;
 
               return (
-                <tr key={user._id} className="hover:bg-gray-50 dark:hover:bg-dark-500 transition-colors">
+                <tr
+                  key={user._id}
+                  className="hover:bg-gray-50 dark:hover:bg-dark-500 transition-colors cursor-pointer"
+                  onClick={() => {
+                    setSelectedUser(user);
+                    setShowUserModal(true);
+                  }}
+                >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       {index < 3 ? (
@@ -303,6 +312,19 @@ export const AdminAchievementsOverview: React.FC = () => {
           </tbody>
         </table>
       </div>
+
+      {/* User Achievements Modal */}
+      {selectedUser && (
+        <UserAchievementsModal
+          isOpen={showUserModal}
+          onClose={() => {
+            setShowUserModal(false);
+            setSelectedUser(null);
+          }}
+          user={selectedUser}
+          allAchievements={achievements}
+        />
+      )}
     </div>
   );
 };
