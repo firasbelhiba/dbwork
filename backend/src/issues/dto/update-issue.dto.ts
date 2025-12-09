@@ -60,6 +60,12 @@ export class UpdateIssueDto {
   @IsOptional()
   @Type(() => Date)
   @IsDate()
+  startDate?: Date;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
   dueDate?: Date;
 
   @ApiProperty({ required: false })

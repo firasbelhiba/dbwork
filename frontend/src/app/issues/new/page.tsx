@@ -31,6 +31,7 @@ function NewIssueForm() {
     assignees: [] as string[],
     sprintId: '',
     storyPoints: 0,
+    startDate: '',
     dueDate: '',
     labels: '',
     category: '',
@@ -133,6 +134,7 @@ function NewIssueForm() {
       if (formData.assignees && formData.assignees.length > 0) issueData.assignees = formData.assignees;
       if (formData.sprintId) issueData.sprintId = formData.sprintId;
       if (formData.storyPoints > 0) issueData.storyPoints = Number(formData.storyPoints);
+      if (formData.startDate) issueData.startDate = new Date(formData.startDate);
       if (formData.dueDate) issueData.dueDate = new Date(formData.dueDate);
       if (formData.labels.trim()) {
         issueData.labels = formData.labels.split(',').map(l => l.trim()).filter(l => l);
@@ -371,16 +373,14 @@ function NewIssueForm() {
               </div>
             </div>
 
-            {/* Story Points and Due Date */}
+            {/* Start Date and Due Date */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Input
-                label="Story Points"
-                name="storyPoints"
-                type="number"
-                value={formData.storyPoints}
+                label="Start Date"
+                name="startDate"
+                type="date"
+                value={formData.startDate}
                 onChange={handleChange}
-                placeholder="0"
-                min="0"
               />
 
               <Input
@@ -391,6 +391,17 @@ function NewIssueForm() {
                 onChange={handleChange}
               />
             </div>
+
+            {/* Story Points */}
+            <Input
+              label="Story Points"
+              name="storyPoints"
+              type="number"
+              value={formData.storyPoints}
+              onChange={handleChange}
+              placeholder="0"
+              min="0"
+            />
 
             {/* Labels */}
             <Input

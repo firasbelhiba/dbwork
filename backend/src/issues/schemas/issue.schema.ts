@@ -71,6 +71,9 @@ export class Issue {
   sprintId: Types.ObjectId;
 
   @Prop({ default: null })
+  startDate: Date;
+
+  @Prop({ default: null })
   dueDate: Date;
 
   @Prop({ type: Number, default: 0 })
@@ -118,6 +121,7 @@ IssueSchema.index({ priority: 1 });
 IssueSchema.index({ type: 1 });
 IssueSchema.index({ labels: 1 });
 IssueSchema.index({ category: 1 });
+IssueSchema.index({ startDate: 1 });
 IssueSchema.index({ dueDate: 1 });
 IssueSchema.index({ createdAt: -1 });
 IssueSchema.index({ updatedAt: -1 });

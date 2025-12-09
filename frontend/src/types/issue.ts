@@ -41,6 +41,7 @@ export interface Issue {
   timeTracking: TimeTracking;
   attachments: string[];
   sprintId: string | Sprint | null;
+  startDate: Date | null;
   dueDate: Date | null;
   storyPoints: number;
   watchers: (User | string)[];

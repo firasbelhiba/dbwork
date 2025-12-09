@@ -42,6 +42,7 @@ export const EditIssueModal: React.FC<EditIssueModalProps> = ({
       assignees: assigneeIds,
       sprintId: sprintId,
       storyPoints: issue.storyPoints || 0,
+      startDate: issue.startDate ? new Date(issue.startDate).toISOString().split('T')[0] : '',
       dueDate: issue.dueDate ? new Date(issue.dueDate).toISOString().split('T')[0] : '',
       labels: issue.labels?.join(', ') || '',
       category: issue.category || '',
@@ -117,6 +118,12 @@ export const EditIssueModal: React.FC<EditIssueModalProps> = ({
 
       if (formData.storyPoints > 0) {
         updateData.storyPoints = Number(formData.storyPoints);
+      }
+
+      if (formData.startDate) {
+        updateData.startDate = new Date(formData.startDate);
+      } else {
+        updateData.startDate = null;
       }
 
       if (formData.dueDate) {
@@ -284,16 +291,14 @@ export const EditIssueModal: React.FC<EditIssueModalProps> = ({
             </div>
           </div>
 
-          {/* Story Points and Due Date */}
+          {/* Start Date and Due Date */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
-              label="Story Points"
-              name="storyPoints"
-              type="number"
-              value={formData.storyPoints}
+              label="Start Date"
+              name="startDate"
+              type="date"
+              value={formData.startDate}
               onChange={handleChange}
-              placeholder="0"
-              min="0"
             />
 
             <Input
@@ -304,6 +309,17 @@ export const EditIssueModal: React.FC<EditIssueModalProps> = ({
               onChange={handleChange}
             />
           </div>
+
+          {/* Story Points */}
+          <Input
+            label="Story Points"
+            name="storyPoints"
+            type="number"
+            value={formData.storyPoints}
+            onChange={handleChange}
+            placeholder="0"
+            min="0"
+          />
 
           {/* Labels */}
           <Input

@@ -37,6 +37,7 @@ export const SubIssueModal: React.FC<SubIssueModalProps> = ({
     priority: IssuePriority.MEDIUM,
     assignees: [] as string[],
     sprintId: '',
+    startDate: '',
     dueDate: '',
     labels: '',
     category: '',
@@ -62,6 +63,11 @@ export const SubIssueModal: React.FC<SubIssueModalProps> = ({
       ? (typeof parentIssue.sprintId === 'string' ? parentIssue.sprintId : parentIssue.sprintId._id)
       : '';
 
+    // Format start date if exists
+    const parentStartDate = parentIssue.startDate
+      ? new Date(parentIssue.startDate).toISOString().split('T')[0]
+      : '';
+
     // Format due date if exists
     const parentDueDate = parentIssue.dueDate
       ? new Date(parentIssue.dueDate).toISOString().split('T')[0]
@@ -80,6 +86,7 @@ export const SubIssueModal: React.FC<SubIssueModalProps> = ({
       priority: parentIssue.priority || IssuePriority.MEDIUM,
       assignees: parentAssigneeIds,
       sprintId: parentSprintId,
+      startDate: parentStartDate,
       dueDate: parentDueDate,
       labels: parentLabels,
       category: parentCategory,
@@ -126,6 +133,9 @@ export const SubIssueModal: React.FC<SubIssueModalProps> = ({
       if (formData.sprintId) {
         issueData.sprintId = formData.sprintId;
       }
+      if (formData.startDate) {
+        issueData.startDate = new Date(formData.startDate);
+      }
       if (formData.dueDate) {
         issueData.dueDate = new Date(formData.dueDate);
       }
@@ -147,6 +157,7 @@ export const SubIssueModal: React.FC<SubIssueModalProps> = ({
         priority: IssuePriority.MEDIUM,
         assignees: [],
         sprintId: '',
+        startDate: '',
         dueDate: '',
         labels: '',
         category: '',
@@ -172,6 +183,7 @@ export const SubIssueModal: React.FC<SubIssueModalProps> = ({
       priority: IssuePriority.MEDIUM,
       assignees: [],
       sprintId: '',
+      startDate: '',
       dueDate: '',
       labels: '',
       category: '',
@@ -330,6 +342,19 @@ export const SubIssueModal: React.FC<SubIssueModalProps> = ({
 
         <div className="grid grid-cols-2 gap-4">
           <div>
+            <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Start Date
+            </label>
+            <Input
+              id="startDate"
+              type="date"
+              value={formData.startDate}
+              onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+              disabled={creating}
+            />
+          </div>
+
+          <div>
             <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Due Date
             </label>
@@ -341,19 +366,19 @@ export const SubIssueModal: React.FC<SubIssueModalProps> = ({
               disabled={creating}
             />
           </div>
+        </div>
 
-          <div>
-            <label htmlFor="labels" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Labels
-            </label>
-            <Input
-              id="labels"
-              value={formData.labels}
-              onChange={(e) => setFormData({ ...formData, labels: e.target.value })}
-              placeholder="e.g., frontend, urgent"
-              disabled={creating}
-            />
-          </div>
+        <div>
+          <label htmlFor="labels" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Labels
+          </label>
+          <Input
+            id="labels"
+            value={formData.labels}
+            onChange={(e) => setFormData({ ...formData, labels: e.target.value })}
+            placeholder="e.g., frontend, urgent"
+            disabled={creating}
+          />
         </div>
       </div>
     </Modal>
