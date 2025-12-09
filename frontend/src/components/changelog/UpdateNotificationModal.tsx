@@ -70,6 +70,17 @@ export const UpdateNotificationModal: React.FC<UpdateNotificationModalProps> = (
           opacity: isAnimating ? 1 : 0,
         }}
       >
+        {/* X Close Button */}
+        <button
+          onClick={handleClose}
+          className="absolute top-4 right-4 z-10 p-2 rounded-full bg-gray-100 dark:bg-dark-400 hover:bg-gray-200 dark:hover:bg-dark-300 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+          aria-label="Close"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
         {/* Sparkle effect background */}
         <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
           <div className="absolute top-0 left-1/4 w-2 h-2 bg-blue-400 rounded-full animate-ping" style={{ animationDelay: '0.1s' }} />
