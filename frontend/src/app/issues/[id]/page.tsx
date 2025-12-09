@@ -852,6 +852,13 @@ export default function IssueDetailPage() {
                   )}
 
                   <div>
+                    <span className="text-xs text-gray-600 dark:text-gray-400 block mb-1">Start Date</span>
+                    <span className="text-sm text-gray-900 dark:text-white">
+                      {issue.startDate ? formatDateTime(issue.startDate) : 'No start date set'}
+                    </span>
+                  </div>
+
+                  <div>
                     <span className="text-xs text-gray-600 dark:text-gray-400 block mb-1">Due Date</span>
                     <span className="text-sm text-gray-900 dark:text-white">
                       {issue.dueDate ? formatDateTime(issue.dueDate) : 'No due date set'}
