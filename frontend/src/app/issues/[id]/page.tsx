@@ -7,7 +7,7 @@ import { issuesAPI, commentsAPI } from '@/lib/api';
 import { Issue } from '@/types/issue';
 import { Comment, CommentImage } from '@/types/comment';
 import { UserRole } from '@/types/user';
-import { Button, Badge, Select, Breadcrumb, LogoLoader } from '@/components/common';
+import { Button, Badge, Select, Breadcrumb, LogoLoader, EmojiReactionPicker } from '@/components/common';
 import { MentionTextarea } from '@/components/common/MentionTextarea';
 import { SubIssues, SubIssueModal, EditIssueModal, AttachmentSection, TimeTracker } from '@/components/issues';
 import { useAuth } from '@/contexts/AuthContext';
@@ -137,6 +137,54 @@ export default function IssueDetailPage() {
   const cancelReply = () => {
     setReplyingTo(null);
     setReplyContent('');
+  };
+
+  const handleAddReaction = async (commentId: string, emoji: string) => {
+    try {
+      await commentsAPI.addReaction(commentId, emoji);
+      // Update local state optimistically
+      setComments((prevComments) =>
+        prevComments.map((comment) =>
+          comment._id === commentId
+            ? {
+                ...comment,
+                reactions: [
+                  ...comment.reactions,
+                  { userId: user?._id || '', reaction: emoji },
+                ],
+              }
+            : comment
+        )
+      );
+    } catch (error) {
+      console.error('Error adding reaction:', error);
+      toast.error('Failed to add reaction');
+    }
+  };
+
+  const handleRemoveReaction = async (commentId: string, emoji: string) => {
+    try {
+      await commentsAPI.removeReaction(commentId, emoji);
+      // Update local state optimistically
+      setComments((prevComments) =>
+        prevComments.map((comment) =>
+          comment._id === commentId
+            ? {
+                ...comment,
+                reactions: comment.reactions.filter(
+                  (r) => {
+                    const reactionUserId = typeof r.userId === 'object' ? r.userId._id : r.userId;
+                    return !(reactionUserId === user?._id && r.reaction === emoji);
+                  }
+                ),
+              }
+            : comment
+        )
+      );
+    } catch (error) {
+      console.error('Error removing reaction:', error);
+      toast.error('Failed to remove reaction');
+    }
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -634,17 +682,14 @@ export default function IssueDetailPage() {
                                 )}
                               </div>
                               {/* Actions: Reactions and Reply */}
-                              <div className="flex items-center gap-4 mt-2">
-                                {/* Reactions */}
-                                {comment.reactions && comment.reactions.length > 0 && (
-                                  <div className="flex gap-1">
-                                    {comment.reactions.map((reaction, index) => (
-                                      <span key={index} className="text-sm">
-                                        {reaction.reaction}
-                                      </span>
-                                    ))}
-                                  </div>
-                                )}
+                              <div className="flex items-center gap-3 mt-2">
+                                {/* Emoji Reactions */}
+                                <EmojiReactionPicker
+                                  reactions={comment.reactions || []}
+                                  currentUserId={user?._id}
+                                  onAddReaction={(emoji) => handleAddReaction(comment._id, emoji)}
+                                  onRemoveReaction={(emoji) => handleRemoveReaction(comment._id, emoji)}
+                                />
                                 {/* Reply Button */}
                                 <button
                                   type="button"
@@ -729,6 +774,15 @@ export default function IssueDetailPage() {
                                             {reply.isEdited && (
                                               <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 block">(edited)</span>
                                             )}
+                                          </div>
+                                          {/* Reply Reactions */}
+                                          <div className="mt-1.5">
+                                            <EmojiReactionPicker
+                                              reactions={reply.reactions || []}
+                                              currentUserId={user?._id}
+                                              onAddReaction={(emoji) => handleAddReaction(reply._id, emoji)}
+                                              onRemoveReaction={(emoji) => handleRemoveReaction(reply._id, emoji)}
+                                            />
                                           </div>
                                         </div>
                                       </div>

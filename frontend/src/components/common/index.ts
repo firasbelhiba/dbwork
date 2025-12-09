@@ -42,3 +42,5 @@ export type { BreadcrumbProps, BreadcrumbItem } from './Breadcrumb';
 export { LogoLoader } from './LogoLoader';
 
 export { MultiUserSelect } from './MultiUserSelect';
+
+export { EmojiReactionPicker } from './EmojiReactionPicker';
