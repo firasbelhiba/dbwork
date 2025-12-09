@@ -635,6 +635,77 @@ export class TimeTrackingService {
   }
 
   /**
+   * Resume all paused timers at start of work day (9 AM)
+   * This automatically restarts timers that were paused at end of previous day
+   */
+  async resumeAllTimersStartOfDay(): Promise<{
+    resumedCount: number;
+    errors: string[];
+    resumedTimers: Array<{ issueId: string; issueKey: string; userId: string; projectId: string }>;
+  }> {
+    const now = new Date();
+    const errors: string[] = [];
+    let resumedCount = 0;
+    const resumedTimers: Array<{ issueId: string; issueKey: string; userId: string; projectId: string }> = [];
+
+    console.log(`[TIME_TRACKING] Running start-of-day timer resume at ${now.toISOString()}`);
+
+    // Find all in_progress issues with paused timers (autoPausedEndOfDay)
+    const issuesWithPausedTimers = await this.issueModel.find({
+      status: 'in_progress',
+      'timeTracking.activeTimeEntry': { $ne: null },
+      'timeTracking.activeTimeEntry.isPaused': true,
+      'timeTracking.activeTimeEntry.autoPausedEndOfDay': true,
+    }).exec();
+
+    console.log(`[TIME_TRACKING] Found ${issuesWithPausedTimers.length} paused timers to resume`);
+
+    for (const issue of issuesWithPausedTimers) {
+      const activeEntry = issue.timeTracking?.activeTimeEntry;
+      if (!activeEntry) continue;
+
+      try {
+        // Calculate pause duration and add to accumulated
+        const pausedAt = new Date(activeEntry.pausedAt);
+        const pauseDuration = Math.floor((now.getTime() - pausedAt.getTime()) / 1000);
+        const newAccumulatedPausedTime = activeEntry.accumulatedPausedTime + pauseDuration;
+
+        // Resume the timer - NOT as extra hours (fresh start of day)
+        await this.issueModel.findByIdAndUpdate(
+          issue._id,
+          {
+            $set: {
+              'timeTracking.activeTimeEntry.isPaused': false,
+              'timeTracking.activeTimeEntry.pausedAt': null,
+              'timeTracking.activeTimeEntry.accumulatedPausedTime': newAccumulatedPausedTime,
+              'timeTracking.activeTimeEntry.lastActivityAt': now,
+              'timeTracking.activeTimeEntry.autoPausedEndOfDay': false,
+              'timeTracking.activeTimeEntry.isExtraHours': false,
+            },
+          },
+        ).exec();
+
+        resumedCount++;
+        resumedTimers.push({
+          issueId: issue._id.toString(),
+          issueKey: issue.key,
+          userId: activeEntry.userId.toString(),
+          projectId: issue.projectId.toString(),
+        });
+        console.log(`[TIME_TRACKING] Resumed timer for issue ${issue.key} (user: ${activeEntry.userId})`);
+      } catch (error) {
+        const errorMsg = `Failed to resume timer for issue ${issue._id}: ${error.message}`;
+        errors.push(errorMsg);
+        console.error(`[TIME_TRACKING] ${errorMsg}`);
+      }
+    }
+
+    console.log(`[TIME_TRACKING] Start-of-day timer resume complete. Resumed: ${resumedCount}, Errors: ${errors.length}`);
+
+    return { resumedCount, errors, resumedTimers };
+  }
+
+  /**
    * Stop all extra hours timers at start of work day (9 AM)
    * This is the maximum time extra hours can run
    */

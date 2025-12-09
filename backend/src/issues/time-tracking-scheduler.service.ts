@@ -134,25 +134,28 @@ export class TimeTrackingSchedulerService implements OnModuleInit {
   }
 
   /**
-   * Stop all extra hours timers at 9 AM (start of work day)
-   * This is the maximum time extra hours can run
+   * Resume all paused timers and stop extra hours at 9 AM (start of work day)
+   * 1. First, stop any extra hours timers that ran overnight
+   * 2. Then, resume all paused timers from end of previous day
    * Runs at 9:00 AM Tunisia time on weekdays
    */
   @Cron('0 0 9 * * 1-5', {
-    name: 'extra-hours-stop',
+    name: 'start-of-day-timer-management',
     timeZone: 'Africa/Tunis',
   })
-  async handleExtraHoursStop() {
-    this.logger.log('Checking for extra hours timers to stop at start of work day (9 AM)...');
+  async handleStartOfDay() {
+    this.logger.log('=== START OF DAY TIMER MANAGEMENT (9 AM) ===');
 
     try {
-      const result = await this.timeTrackingService.stopExtraHoursTimers();
+      // Step 1: Stop extra hours timers first
+      this.logger.log('Step 1: Stopping extra hours timers...');
+      const stopResult = await this.timeTrackingService.stopExtraHoursTimers();
 
-      if (result.stoppedCount > 0) {
-        this.logger.log(`Successfully stopped ${result.stoppedCount} extra hours timer(s)`);
+      if (stopResult.stoppedCount > 0) {
+        this.logger.log(`Stopped ${stopResult.stoppedCount} extra hours timer(s)`);
 
         // Emit WebSocket events for each stopped timer
-        for (const stoppedTimer of result.stoppedTimers) {
+        for (const stoppedTimer of stopResult.stoppedTimers) {
           this.webSocketGateway.emitTimerAutoStopped(
             stoppedTimer.userId,
             stoppedTimer.projectId,
@@ -164,12 +167,40 @@ export class TimeTrackingSchedulerService implements OnModuleInit {
         this.logger.log('No extra hours timers to stop');
       }
 
-      if (result.errors.length > 0) {
-        this.logger.warn(`Encountered ${result.errors.length} error(s) while stopping extra hours timers`);
-        result.errors.forEach((err) => this.logger.error(err));
+      // Step 2: Resume all paused timers from end of previous day
+      this.logger.log('Step 2: Resuming paused timers from previous day...');
+      const resumeResult = await this.timeTrackingService.resumeAllTimersStartOfDay();
+
+      if (resumeResult.resumedCount > 0) {
+        this.logger.log(`Resumed ${resumeResult.resumedCount} timer(s) for start of day`);
+
+        // Emit WebSocket events for each resumed timer
+        for (const resumedTimer of resumeResult.resumedTimers) {
+          this.webSocketGateway.emitTimerResumed(
+            resumedTimer.userId,
+            resumedTimer.projectId,
+            resumedTimer.issueId,
+            resumedTimer.issueKey,
+          );
+        }
+      } else {
+        this.logger.log('No paused timers to resume');
       }
+
+      // Log any errors
+      if (stopResult.errors.length > 0) {
+        this.logger.warn(`Encountered ${stopResult.errors.length} error(s) while stopping extra hours`);
+        stopResult.errors.forEach((err) => this.logger.error(err));
+      }
+
+      if (resumeResult.errors.length > 0) {
+        this.logger.warn(`Encountered ${resumeResult.errors.length} error(s) while resuming timers`);
+        resumeResult.errors.forEach((err) => this.logger.error(err));
+      }
+
+      this.logger.log('=== START OF DAY TIMER MANAGEMENT COMPLETE ===');
     } catch (error) {
-      this.logger.error('Failed to stop extra hours timers', error.stack);
+      this.logger.error('Failed to run start of day timer management', error.stack);
     }
   }
 }

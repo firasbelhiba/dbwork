@@ -325,4 +325,16 @@ export class AppWebSocketGateway
     this.server.to(`user:${userId}`).emit('timer:auto-paused', data);
     this.server.to(`project:${projectId}`).emit('timer:auto-paused', data);
   }
+
+  // Emit timer resumed event to user and project (for start-of-day auto-resume)
+  emitTimerResumed(userId: string, projectId: string, issueId: string, issueKey: string) {
+    const data = { issueId, issueKey, reason: 'start-of-day' };
+    const isUserOnline = this.isUserOnline(userId);
+    console.log(`[WEBSOCKET] Emitting timer:resumed for ${issueKey}`);
+    console.log(`[WEBSOCKET]   -> user:${userId} (online: ${isUserOnline})`);
+    console.log(`[WEBSOCKET]   -> project:${projectId}`);
+    console.log(`[WEBSOCKET]   -> data:`, JSON.stringify(data));
+    this.server.to(`user:${userId}`).emit('timer:resumed', data);
+    this.server.to(`project:${projectId}`).emit('timer:resumed', data);
+  }
 }
