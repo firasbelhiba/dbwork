@@ -36,9 +36,10 @@ interface KanbanBoardProps {
   zoomLevel: number;
   showArchived?: boolean;
   myTasksOnly?: boolean;
+  sortByStartDate?: boolean;
 }
 
-export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, zoomLevel, showArchived = false, myTasksOnly = false }) => {
+export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, zoomLevel, showArchived = false, myTasksOnly = false, sortByStartDate = false }) => {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [activeIssue, setActiveIssue] = useState<Issue | null>(null);
   const [loading, setLoading] = useState(true);
@@ -292,7 +293,32 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
   };
 
   const getIssuesByStatus = (statusId: string) => {
-    return issues.filter((issue) => issue.status === statusId);
+    const filteredIssues = issues.filter((issue) => issue.status === statusId);
+
+    if (sortByStartDate) {
+      // Sort by start date: issues with start date first (earliest first), then issues without start date
+      return filteredIssues.sort((a, b) => {
+        const aDate = a.startDate ? new Date(a.startDate).getTime() : null;
+        const bDate = b.startDate ? new Date(b.startDate).getTime() : null;
+
+        // Both have start dates - sort by date (earliest first)
+        if (aDate !== null && bDate !== null) {
+          return aDate - bDate;
+        }
+        // Only a has start date - a comes first
+        if (aDate !== null && bDate === null) {
+          return -1;
+        }
+        // Only b has start date - b comes first
+        if (aDate === null && bDate !== null) {
+          return 1;
+        }
+        // Neither has start date - maintain original order
+        return 0;
+      });
+    }
+
+    return filteredIssues;
   };
 
   const handleArchiveIssue = (issueId: string) => {

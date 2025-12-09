@@ -51,6 +51,14 @@ export default function ProjectDetailPage() {
     }
     return false;
   });
+  const [sortByStartDate, setSortByStartDate] = useState(() => {
+    // Load from localStorage on mount
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('kanban-sortByStartDate');
+      return saved === 'true';
+    }
+    return false;
+  });
   const [showFiltersMenu, setShowFiltersMenu] = useState(false);
   const [showSprintsMenu, setShowSprintsMenu] = useState(false);
 
@@ -60,6 +68,13 @@ export default function ProjectDetailPage() {
       localStorage.setItem('kanban-myTasksOnly', String(myTasksOnly));
     }
   }, [myTasksOnly]);
+
+  // Save to localStorage when sortByStartDate changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('kanban-sortByStartDate', String(sortByStartDate));
+    }
+  }, [sortByStartDate]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -418,22 +433,22 @@ export default function ProjectDetailPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => setShowFiltersMenu(!showFiltersMenu)}
-                      className={`${(myTasksOnly || showArchived) ? 'border-primary dark:border-primary' : ''}`}
+                      className={`${(myTasksOnly || showArchived || sortByStartDate) ? 'border-primary dark:border-primary' : ''}`}
                     >
                       <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                       </svg>
                       Filters
-                      {(myTasksOnly || showArchived) && (
+                      {(myTasksOnly || showArchived || sortByStartDate) && (
                         <span className="ml-1 px-1.5 py-0.5 text-xs bg-primary text-white rounded-full">
-                          {(myTasksOnly ? 1 : 0) + (showArchived ? 1 : 0)}
+                          {(myTasksOnly ? 1 : 0) + (showArchived ? 1 : 0) + (sortByStartDate ? 1 : 0)}
                         </span>
                       )}
                     </Button>
                     {showFiltersMenu && (
                       <div className="absolute left-0 top-full mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
                         <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Filter Issues</h3>
+                          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Filter & Sort</h3>
                         </div>
                         <div className="px-4 py-3 space-y-3">
                           <label className="flex items-center justify-between cursor-pointer group">
@@ -478,6 +493,30 @@ export default function ProjectDetailPage() {
                               />
                             </button>
                           </label>
+                          <div className="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
+                            <label className="flex items-center justify-between cursor-pointer group">
+                              <div className="flex items-center gap-2">
+                                <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <span className="text-sm text-gray-700 dark:text-gray-300">Sort by Start Date</span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setSortByStartDate(!sortByStartDate)}
+                                aria-label="Toggle sort by start date"
+                                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                                  sortByStartDate ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'
+                                }`}
+                              >
+                                <span
+                                  className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                                    sortByStartDate ? 'translate-x-5' : 'translate-x-0.5'
+                                  }`}
+                                />
+                              </button>
+                            </label>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -633,6 +672,7 @@ export default function ProjectDetailPage() {
               zoomLevel={zoomLevel}
               showArchived={showArchived}
               myTasksOnly={myTasksOnly}
+              sortByStartDate={sortByStartDate}
             />
           ) : view === 'calendar' ? (
             <ProjectCalendar
