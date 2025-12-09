@@ -35,6 +35,8 @@ export default function IssueDetailPage() {
   const [commentImages, setCommentImages] = useState<CommentImage[]>([]);
   const [uploadingImage, setUploadingImage] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const [replyingTo, setReplyingTo] = useState<Comment | null>(null);
+  const [replyContent, setReplyContent] = useState('');
 
   useEffect(() => {
     if (issueId && !authLoading) {
@@ -108,6 +110,33 @@ export default function IssueDetailPage() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleReply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!replyContent.trim() || !replyingTo) return;
+
+    setSubmitting(true);
+    try {
+      await commentsAPI.create(issueId, {
+        content: replyContent,
+        parentCommentId: replyingTo._id,
+      });
+      toast.success('Reply added successfully!');
+      setReplyContent('');
+      setReplyingTo(null);
+      fetchIssueData();
+    } catch (error) {
+      console.error('Error adding reply:', error);
+      toast.error('Failed to add reply');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const cancelReply = () => {
+    setReplyingTo(null);
+    setReplyContent('');
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -548,70 +577,169 @@ export default function IssueDetailPage() {
                   {comments.length === 0 ? (
                     <p className="text-gray-500 dark:text-gray-400 text-center py-8">No comments yet</p>
                   ) : (
-                    comments.map((comment) => {
-                      const commentUser = typeof comment.userId === 'object' ? comment.userId : null;
-                      return (
-                        <div key={comment._id} className="flex gap-3">
-                          {commentUser?.avatar ? (
-                            <img
-                              src={commentUser.avatar}
-                              alt={`${commentUser.firstName} ${commentUser.lastName}`}
-                              className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-                            />
-                          ) : (
-                            <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium flex-shrink-0">
-                              {commentUser && getInitials(commentUser.firstName, commentUser.lastName)}
-                            </div>
-                          )}
-                          <div className="flex-1">
-                            <div className="bg-gray-50 dark:bg-dark-500 rounded-lg p-4">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="font-medium text-gray-900 dark:text-white">
-                                  {commentUser ? `${commentUser.firstName} ${commentUser.lastName}` : 'User'}
-                                </span>
-                                <span className="text-xs text-gray-500 dark:text-gray-400">
-                                  {getRelativeTime(comment.createdAt)}
-                                </span>
-                              </div>
-                              <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{comment.content}</p>
-                              {/* Comment Images */}
-                              {comment.images && comment.images.length > 0 && (
-                                <div className="flex flex-wrap gap-2 mt-3">
-                                  {comment.images.map((image, imgIndex) => (
-                                    <a
-                                      key={imgIndex}
-                                      href={image.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="block"
-                                    >
-                                      <img
-                                        src={image.url}
-                                        alt={image.fileName || 'Comment image'}
-                                        className="max-w-xs max-h-48 object-contain rounded-lg border border-gray-200 dark:border-dark-400 hover:opacity-90 transition-opacity"
-                                      />
-                                    </a>
-                                  ))}
-                                </div>
-                              )}
-                              {comment.isEdited && (
-                                <span className="text-xs text-gray-500 dark:text-gray-400 mt-2 block">(edited)</span>
-                              )}
-                            </div>
-                            {/* Reactions */}
-                            {comment.reactions && comment.reactions.length > 0 && (
-                              <div className="flex gap-2 mt-2">
-                                {comment.reactions.map((reaction, index) => (
-                                  <span key={index} className="text-sm">
-                                    {reaction.reaction}
-                                  </span>
-                                ))}
+                    comments
+                      .filter((comment) => !comment.parentCommentId) // Only show root comments
+                      .map((comment) => {
+                        const commentUser = typeof comment.userId === 'object' ? comment.userId : null;
+                        // Get replies for this comment
+                        const replies = comments.filter(
+                          (c) => c.parentCommentId && (typeof c.parentCommentId === 'string' ? c.parentCommentId : c.parentCommentId._id) === comment._id
+                        );
+                        return (
+                          <div key={comment._id} className="flex gap-3">
+                            {commentUser?.avatar ? (
+                              <img
+                                src={commentUser.avatar}
+                                alt={`${commentUser.firstName} ${commentUser.lastName}`}
+                                className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                              />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium flex-shrink-0">
+                                {commentUser && getInitials(commentUser.firstName, commentUser.lastName)}
                               </div>
                             )}
+                            <div className="flex-1">
+                              <div className="bg-gray-50 dark:bg-dark-500 rounded-lg p-4">
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="font-medium text-gray-900 dark:text-white">
+                                    {commentUser ? `${commentUser.firstName} ${commentUser.lastName}` : 'User'}
+                                  </span>
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                    {getRelativeTime(comment.createdAt)}
+                                  </span>
+                                </div>
+                                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{comment.content}</p>
+                                {/* Comment Images */}
+                                {comment.images && comment.images.length > 0 && (
+                                  <div className="flex flex-wrap gap-2 mt-3">
+                                    {comment.images.map((image, imgIndex) => (
+                                      <a
+                                        key={imgIndex}
+                                        href={image.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="block"
+                                      >
+                                        <img
+                                          src={image.url}
+                                          alt={image.fileName || 'Comment image'}
+                                          className="max-w-xs max-h-48 object-contain rounded-lg border border-gray-200 dark:border-dark-400 hover:opacity-90 transition-opacity"
+                                        />
+                                      </a>
+                                    ))}
+                                  </div>
+                                )}
+                                {comment.isEdited && (
+                                  <span className="text-xs text-gray-500 dark:text-gray-400 mt-2 block">(edited)</span>
+                                )}
+                              </div>
+                              {/* Actions: Reactions and Reply */}
+                              <div className="flex items-center gap-4 mt-2">
+                                {/* Reactions */}
+                                {comment.reactions && comment.reactions.length > 0 && (
+                                  <div className="flex gap-1">
+                                    {comment.reactions.map((reaction, index) => (
+                                      <span key={index} className="text-sm">
+                                        {reaction.reaction}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                                {/* Reply Button */}
+                                <button
+                                  type="button"
+                                  onClick={() => setReplyingTo(comment)}
+                                  className="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary-400 flex items-center gap-1"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                  </svg>
+                                  Reply
+                                </button>
+                              </div>
+
+                              {/* Reply Form */}
+                              {replyingTo?._id === comment._id && (
+                                <form onSubmit={handleReply} className="mt-3 pl-4 border-l-2 border-gray-200 dark:border-dark-400">
+                                  <div className="flex gap-2">
+                                    {user?.avatar ? (
+                                      <img
+                                        src={user.avatar}
+                                        alt={`${user.firstName} ${user.lastName}`}
+                                        className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+                                      />
+                                    ) : (
+                                      <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-medium flex-shrink-0">
+                                        {user && getInitials(user.firstName, user.lastName)}
+                                      </div>
+                                    )}
+                                    <div className="flex-1">
+                                      <MentionTextarea
+                                        value={replyContent}
+                                        onChange={setReplyContent}
+                                        placeholder={`Reply to ${commentUser?.firstName || 'User'}...`}
+                                        rows={2}
+                                      />
+                                      <div className="flex items-center justify-end gap-2 mt-2">
+                                        <button
+                                          type="button"
+                                          onClick={cancelReply}
+                                          className="px-3 py-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                                        >
+                                          Cancel
+                                        </button>
+                                        <Button type="submit" size="sm" loading={submitting} disabled={!replyContent.trim()}>
+                                          Reply
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </form>
+                              )}
+
+                              {/* Replies */}
+                              {replies.length > 0 && (
+                                <div className="mt-3 pl-4 border-l-2 border-gray-200 dark:border-dark-400 space-y-3">
+                                  {replies.map((reply) => {
+                                    const replyUser = typeof reply.userId === 'object' ? reply.userId : null;
+                                    return (
+                                      <div key={reply._id} className="flex gap-2">
+                                        {replyUser?.avatar ? (
+                                          <img
+                                            src={replyUser.avatar}
+                                            alt={`${replyUser.firstName} ${replyUser.lastName}`}
+                                            className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+                                          />
+                                        ) : (
+                                          <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-medium flex-shrink-0">
+                                            {replyUser && getInitials(replyUser.firstName, replyUser.lastName)}
+                                          </div>
+                                        )}
+                                        <div className="flex-1">
+                                          <div className="bg-gray-100 dark:bg-dark-400 rounded-lg p-3">
+                                            <div className="flex items-center justify-between mb-1">
+                                              <span className="font-medium text-sm text-gray-900 dark:text-white">
+                                                {replyUser ? `${replyUser.firstName} ${replyUser.lastName}` : 'User'}
+                                              </span>
+                                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                {getRelativeTime(reply.createdAt)}
+                                              </span>
+                                            </div>
+                                            <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{reply.content}</p>
+                                            {reply.isEdited && (
+                                              <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 block">(edited)</span>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })
+                        );
+                      })
                   )}
                 </div>
               </div>
