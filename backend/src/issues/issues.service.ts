@@ -142,6 +142,8 @@ export class IssuesService {
       labels,
       search,
       isArchived,
+      category,
+      categories,
       page = 1,
       limit = 50,
       sortBy = 'createdAt',
@@ -163,6 +165,13 @@ export class IssuesService {
     }
     if (reporter) query.reporter = new Types.ObjectId(reporter);
     if (labels && labels.length > 0) query.labels = { $in: labels };
+
+    // Category filtering
+    if (category) {
+      query.category = category;
+    } else if (categories && categories.length > 0) {
+      query.category = { $in: categories };
+    }
 
     // Exclude archived issues by default
     if (isArchived !== undefined) {

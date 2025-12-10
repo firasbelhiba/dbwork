@@ -57,6 +57,22 @@ export class FilterIssuesDto {
   @IsString()
   search?: string;
 
+  @ApiProperty({ required: false, description: 'Filter by single category' })
+  @IsOptional()
+  @IsString()
+  category?: string;
+
+  @ApiProperty({ required: false, type: [String], description: 'Filter by multiple categories' })
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (typeof value === 'string') return [value];
+    if (Array.isArray(value)) return value;
+    return value;
+  })
+  @IsArray()
+  @IsString({ each: true })
+  categories?: string[];
+
   @ApiProperty({ required: false, description: 'Filter by archived status. Defaults to false (excludes archived).' })
   @IsOptional()
   @IsString()

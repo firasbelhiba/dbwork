@@ -37,9 +37,10 @@ interface KanbanBoardProps {
   showArchived?: boolean;
   myTasksOnly?: boolean;
   sortByStartDate?: boolean;
+  teamCategories?: string[];
 }
 
-export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, zoomLevel, showArchived = false, myTasksOnly = false, sortByStartDate = false }) => {
+export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, zoomLevel, showArchived = false, myTasksOnly = false, sortByStartDate = false, teamCategories }) => {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [activeIssue, setActiveIssue] = useState<Issue | null>(null);
   const [loading, setLoading] = useState(true);
@@ -62,7 +63,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
   useEffect(() => {
     fetchProject();
     fetchIssues();
-  }, [projectId, sprintId, showArchived, myTasksOnly]);
+  }, [projectId, sprintId, showArchived, myTasksOnly, teamCategories]);
 
   // Join project room for WebSocket updates
   // Re-run when projectId or connected state changes (to join when connection is established)
@@ -143,7 +144,12 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, sprintId, z
         params.assignedTo = 'me';
       }
 
-      console.log('[KanbanBoard] fetchIssues called with showArchived:', showArchived, 'myTasksOnly:', myTasksOnly, 'params:', params);
+      // Add team category filter
+      if (teamCategories && teamCategories.length > 0) {
+        params.categories = teamCategories;
+      }
+
+      console.log('[KanbanBoard] fetchIssues called with showArchived:', showArchived, 'myTasksOnly:', myTasksOnly, 'teamCategories:', teamCategories, 'params:', params);
 
       if (sprintId) {
         // For sprint view
