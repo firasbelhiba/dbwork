@@ -265,10 +265,17 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
         {issue.title}
       </h4>
 
-      {/* Issue Key */}
-      <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-        {issue.key}
-      </p>
+      {/* Issue Key & Category */}
+      <div className="flex items-center gap-2 mb-2">
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          {issue.key}
+        </p>
+        {issue.category && (
+          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-cyan-100 dark:bg-cyan-900/40 text-cyan-700 dark:text-cyan-300 capitalize border border-cyan-200 dark:border-cyan-800">
+            {issue.category}
+          </span>
+        )}
+      </div>
 
       {/* Sprint Badge */}
       {sprint && (
