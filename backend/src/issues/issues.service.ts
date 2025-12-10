@@ -695,7 +695,7 @@ export class IssuesService {
       .exec();
   }
 
-  async getIssuesByProject(projectId: string, status?: string, isArchived?: string, assignedTo?: string, userId?: string): Promise<IssueDocument[]> {
+  async getIssuesByProject(projectId: string, status?: string, isArchived?: string, assignedTo?: string, userId?: string, categories?: string[]): Promise<IssueDocument[]> {
     const query: any = {
       projectId: new Types.ObjectId(projectId),
     };
@@ -714,6 +714,10 @@ export class IssuesService {
       query.assignees = { $in: [new Types.ObjectId(userId)] };
     }
 
+    // Handle categories filter (for team tabs)
+    if (categories && categories.length > 0) {
+      query.category = { $in: categories };
+    }
 
     // Count before query
     const count = await this.issueModel.countDocuments(query);
@@ -729,7 +733,7 @@ export class IssuesService {
     return results;
   }
 
-  async getIssuesBySprint(sprintId: string, isArchived?: string, assignedTo?: string, userId?: string): Promise<IssueDocument[]> {
+  async getIssuesBySprint(sprintId: string, isArchived?: string, assignedTo?: string, userId?: string, categories?: string[]): Promise<IssueDocument[]> {
     const query: any = {
       sprintId: new Types.ObjectId(sprintId),
     };
@@ -746,6 +750,10 @@ export class IssuesService {
       query.assignees = { $in: [new Types.ObjectId(userId)] };
     }
 
+    // Handle categories filter (for team tabs)
+    if (categories && categories.length > 0) {
+      query.category = { $in: categories };
+    }
 
     return this.issueModel
       .find(query)

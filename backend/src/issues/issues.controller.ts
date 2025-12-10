@@ -62,9 +62,14 @@ export class IssuesController {
     @Query('status') status?: string,
     @Query('isArchived') isArchived?: string,
     @Query('assignedTo') assignedTo?: string,
+    @Query('categories') categories?: string | string[],
     @CurrentUser() user?,
   ) {
-    return this.issuesService.getIssuesByProject(projectId, status, isArchived, assignedTo, user?._id);
+    // Handle categories parameter (can be string or array)
+    const categoriesArray = categories
+      ? (Array.isArray(categories) ? categories : [categories])
+      : undefined;
+    return this.issuesService.getIssuesByProject(projectId, status, isArchived, assignedTo, user?._id, categoriesArray);
   }
 
   @Get('project/:projectId/backlog')
@@ -81,9 +86,14 @@ export class IssuesController {
     @Param('sprintId') sprintId: string,
     @Query('isArchived') isArchived?: string,
     @Query('assignedTo') assignedTo?: string,
+    @Query('categories') categories?: string | string[],
     @CurrentUser() user?,
   ) {
-    return this.issuesService.getIssuesBySprint(sprintId, isArchived, assignedTo, user?._id);
+    // Handle categories parameter (can be string or array)
+    const categoriesArray = categories
+      ? (Array.isArray(categories) ? categories : [categories])
+      : undefined;
+    return this.issuesService.getIssuesBySprint(sprintId, isArchived, assignedTo, user?._id, categoriesArray);
   }
 
   @Get('key/:key')
