@@ -41,6 +41,23 @@ const getSprintStatusVariant = (status: SprintStatus) => {
   }
 };
 
+// Category color mapping for distinctive badges
+const getCategoryColors = (category: string): string => {
+  const colors: Record<string, string> = {
+    frontend: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+    backend: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800',
+    devops: 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800',
+    qa: 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800',
+    infrastructure: 'bg-slate-100 dark:bg-slate-900/40 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800',
+    security: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800',
+    design: 'bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300 border-pink-200 dark:border-pink-800',
+    marketing: 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800',
+    documentation: 'bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800',
+    other: 'bg-gray-100 dark:bg-gray-900/40 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800',
+  };
+  return colors[category.toLowerCase()] || colors.other;
+};
+
 export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete, onIssueUpdate }) => {
   const { user } = useAuth();
   const [timerSeconds, setTimerSeconds] = useState(0);
@@ -271,7 +288,7 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
           {issue.key}
         </p>
         {issue.category && (
-          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-cyan-100 dark:bg-cyan-900/40 text-cyan-700 dark:text-cyan-300 capitalize border border-cyan-200 dark:border-cyan-800">
+          <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium capitalize border ${getCategoryColors(issue.category)}`}>
             {issue.category}
           </span>
         )}
