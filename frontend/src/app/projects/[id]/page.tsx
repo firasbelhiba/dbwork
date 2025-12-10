@@ -76,11 +76,11 @@ export default function ProjectDetailPage() {
     marketing: ['marketing', 'documentation'],
   };
 
-  const TEAM_LABELS: Record<string, { label: string; icon: string }> = {
-    all: { label: 'All', icon: '' },
-    dev: { label: 'Dev', icon: '🔧' },
-    design: { label: 'Design', icon: '🎨' },
-    marketing: { label: 'Marketing', icon: '📢' },
+  const TEAM_LABELS: Record<string, string> = {
+    all: 'All',
+    dev: 'Dev',
+    design: 'Design',
+    marketing: 'Marketing',
   };
 
   // Save to localStorage when myTasksOnly changes
@@ -385,6 +385,28 @@ export default function ProjectDetailPage() {
               </div>
             </div>
           </div>
+
+          {/* Team Tabs - Filter by team/category */}
+          {view === 'board' && (
+            <div className="flex items-center gap-2 mt-4">
+              <span className="text-sm text-gray-600 dark:text-gray-400">View:</span>
+              <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 rounded-md p-1">
+                {Object.entries(TEAM_LABELS).map(([key, label]) => (
+                  <button
+                    key={key}
+                    onClick={() => setSelectedTeam(key)}
+                    className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+                      selectedTeam === key
+                        ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Toolbar */}
@@ -451,26 +473,6 @@ export default function ProjectDetailPage() {
                   Audits
                 </button>
               </div>
-
-              {/* Team Tabs - Only show in board view */}
-              {view === 'board' && (
-                <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 rounded-md p-1">
-                  {Object.entries(TEAM_LABELS).map(([key, { label, icon }]) => (
-                    <button
-                      key={key}
-                      onClick={() => setSelectedTeam(key)}
-                      className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
-                        selectedTeam === key
-                          ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
-                          : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
-                      }`}
-                    >
-                      {icon && <span className="mr-1">{icon}</span>}
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              )}
 
               {/* Board View Controls */}
               {view === 'board' && (
