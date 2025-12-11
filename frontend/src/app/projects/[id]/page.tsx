@@ -72,7 +72,7 @@ export default function ProjectDetailPage() {
   // Team category mapping
   const TEAM_CATEGORIES: Record<string, string[] | null> = {
     all: null, // no filter - show all issues
-    dev: ['frontend', 'backend', 'devops', 'qa', 'infrastructure', 'security'],
+    dev: ['frontend', 'backend', 'fullstack', 'devops', 'qa', 'infrastructure', 'security'],
     design: ['design'],
     marketing: ['marketing', 'documentation'],
   };

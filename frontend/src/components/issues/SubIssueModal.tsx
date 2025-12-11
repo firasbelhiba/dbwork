@@ -295,6 +295,7 @@ export const SubIssueModal: React.FC<SubIssueModalProps> = ({
             <option value="">No category</option>
             <option value="frontend">Frontend</option>
             <option value="backend">Backend</option>
+            <option value="fullstack">Fullstack</option>
             <option value="design">Design</option>
             <option value="marketing">Marketing</option>
             <option value="devops">DevOps</option>

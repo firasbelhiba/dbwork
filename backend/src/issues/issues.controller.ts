@@ -61,6 +61,13 @@ export class IssuesController {
     return this.issuesService.getUserWorkload(userId);
   }
 
+  @Get('user/:userId/bandwidth')
+  @ApiOperation({ summary: 'Get user bandwidth (hours worked and remaining capacity)' })
+  @ApiResponse({ status: 200, description: 'User bandwidth data including projects and time worked' })
+  getUserBandwidth(@Param('userId') userId: string) {
+    return this.issuesService.getUserBandwidth(userId);
+  }
+
   @Get('project/:projectId')
   @ApiOperation({ summary: 'Get issues by project' })
   @ApiResponse({ status: 200, description: 'Project issues' })

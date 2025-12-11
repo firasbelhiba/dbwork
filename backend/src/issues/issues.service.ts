@@ -950,4 +950,214 @@ export class IssuesService {
       byProject: Array.from(projectMap.values()),
     };
   }
+
+  /**
+   * Get user bandwidth - hours worked today/this week/this month
+   * and remaining capacity based on 8h/day, 40h/week, ~160h/month targets
+   */
+  async getUserBandwidth(userId: string): Promise<{
+    projects: Array<{
+      _id: string;
+      key: string;
+      name: string;
+      logo?: string;
+    }>;
+    bandwidth: {
+      daily: {
+        worked: number; // hours
+        target: number; // 8
+        remaining: number;
+        percentage: number;
+      };
+      weekly: {
+        worked: number;
+        target: number; // 40
+        remaining: number;
+        percentage: number;
+      };
+      monthly: {
+        worked: number;
+        target: number; // ~160 (working days in month * 8)
+        remaining: number;
+        percentage: number;
+      };
+    };
+    activeTimer: {
+      issueKey: string;
+      issueTitle: string;
+      projectKey: string;
+      startedAt: Date;
+      isPaused: boolean;
+    } | null;
+  }> {
+    const now = new Date();
+
+    // Calculate date ranges
+    const todayStart = new Date(now);
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(now);
+    todayEnd.setHours(23, 59, 59, 999);
+
+    // This week (Monday to Sunday)
+    const weekStart = new Date(now);
+    const dayOfWeek = weekStart.getDay();
+    const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Monday is start of week
+    weekStart.setDate(weekStart.getDate() - diff);
+    weekStart.setHours(0, 0, 0, 0);
+
+    // This month
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    monthStart.setHours(0, 0, 0, 0);
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    // Get user's projects (where they are a member or lead)
+    const userProjects = await this.projectsService.findByUser(userId);
+    const projects = userProjects.map(p => ({
+      _id: p._id.toString(),
+      key: p.key,
+      name: p.name,
+      logo: p.logo,
+    }));
+
+    // Get all issues with time entries for this user
+    const issues = await this.issueModel.find({
+      $or: [
+        { 'timeTracking.timeEntries.userId': userId },
+        { 'timeTracking.activeTimeEntry.userId': userId },
+      ],
+    }).populate('projectId', 'key').exec();
+
+    let dailySeconds = 0;
+    let weeklySeconds = 0;
+    let monthlySeconds = 0;
+    let activeTimerInfo: any = null;
+
+    for (const issue of issues) {
+      const timeEntries = issue.timeTracking?.timeEntries || [];
+
+      // Process completed time entries
+      for (const entry of timeEntries) {
+        if (entry.userId !== userId) continue;
+
+        const entryDate = new Date(entry.startTime);
+        const duration = entry.duration || 0;
+
+        // Daily
+        if (entryDate >= todayStart && entryDate <= todayEnd) {
+          dailySeconds += duration;
+        }
+        // Weekly
+        if (entryDate >= weekStart && entryDate <= now) {
+          weeklySeconds += duration;
+        }
+        // Monthly
+        if (entryDate >= monthStart && entryDate <= now) {
+          monthlySeconds += duration;
+        }
+      }
+
+      // Process active timer
+      const activeEntry = issue.timeTracking?.activeTimeEntry;
+      if (activeEntry && activeEntry.userId === userId) {
+        const entryStartTime = new Date(activeEntry.startTime);
+
+        // Store active timer info
+        const projectData = issue.projectId as any;
+        activeTimerInfo = {
+          issueKey: issue.key,
+          issueTitle: issue.title,
+          projectKey: projectData?.key || 'UNK',
+          startedAt: activeEntry.startTime,
+          isPaused: activeEntry.isPaused || false,
+        };
+
+        // Calculate active timer duration for today only (using 9 AM work start)
+        const workStart = new Date(todayStart);
+        workStart.setHours(9, 0, 0, 0);
+
+        const effectiveStart = entryStartTime > workStart ? entryStartTime : workStart;
+        let activeSeconds = Math.floor((now.getTime() - effectiveStart.getTime()) / 1000);
+
+        // Subtract pause time if currently paused
+        if (activeEntry.isPaused && activeEntry.pausedAt) {
+          const pausedAt = new Date(activeEntry.pausedAt);
+          if (pausedAt > effectiveStart) {
+            activeSeconds -= Math.floor((now.getTime() - pausedAt.getTime()) / 1000);
+          }
+        }
+
+        // Cap at reasonable max
+        activeSeconds = Math.max(0, Math.min(activeSeconds, 12 * 3600));
+
+        // Add to daily
+        dailySeconds += activeSeconds;
+
+        // For weekly/monthly, calculate actual timer duration (not capped to today)
+        if (entryStartTime >= weekStart) {
+          let weekActiveSeconds = Math.floor((now.getTime() - entryStartTime.getTime()) / 1000);
+          if (activeEntry.isPaused && activeEntry.pausedAt) {
+            const pausedAt = new Date(activeEntry.pausedAt);
+            weekActiveSeconds -= Math.floor((now.getTime() - pausedAt.getTime()) / 1000);
+          }
+          weekActiveSeconds -= (activeEntry.accumulatedPausedTime || 0);
+          weekActiveSeconds = Math.max(0, weekActiveSeconds);
+          weeklySeconds += weekActiveSeconds;
+        }
+
+        if (entryStartTime >= monthStart) {
+          let monthActiveSeconds = Math.floor((now.getTime() - entryStartTime.getTime()) / 1000);
+          if (activeEntry.isPaused && activeEntry.pausedAt) {
+            const pausedAt = new Date(activeEntry.pausedAt);
+            monthActiveSeconds -= Math.floor((now.getTime() - pausedAt.getTime()) / 1000);
+          }
+          monthActiveSeconds -= (activeEntry.accumulatedPausedTime || 0);
+          monthActiveSeconds = Math.max(0, monthActiveSeconds);
+          monthlySeconds += monthActiveSeconds;
+        }
+      }
+    }
+
+    // Calculate working days in month (excluding weekends)
+    let workingDaysInMonth = 0;
+    for (let d = new Date(monthStart); d <= monthEnd; d.setDate(d.getDate() + 1)) {
+      const dayOfWeek = d.getDay();
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+        workingDaysInMonth++;
+      }
+    }
+
+    // Convert to hours
+    const dailyHours = dailySeconds / 3600;
+    const weeklyHours = weeklySeconds / 3600;
+    const monthlyHours = monthlySeconds / 3600;
+
+    const DAILY_TARGET = 8;
+    const WEEKLY_TARGET = 40;
+    const MONTHLY_TARGET = workingDaysInMonth * 8;
+
+    return {
+      projects,
+      bandwidth: {
+        daily: {
+          worked: Math.round(dailyHours * 100) / 100,
+          target: DAILY_TARGET,
+          remaining: Math.max(0, Math.round((DAILY_TARGET - dailyHours) * 100) / 100),
+          percentage: Math.min(100, Math.round((dailyHours / DAILY_TARGET) * 100)),
+        },
+        weekly: {
+          worked: Math.round(weeklyHours * 100) / 100,
+          target: WEEKLY_TARGET,
+          remaining: Math.max(0, Math.round((WEEKLY_TARGET - weeklyHours) * 100) / 100),
+          percentage: Math.min(100, Math.round((weeklyHours / WEEKLY_TARGET) * 100)),
+        },
+        monthly: {
+          worked: Math.round(monthlyHours * 100) / 100,
+          target: MONTHLY_TARGET,
+          remaining: Math.max(0, Math.round((MONTHLY_TARGET - monthlyHours) * 100) / 100),
+          percentage: Math.min(100, Math.round((monthlyHours / MONTHLY_TARGET) * 100)),
+        },
+      },
+      activeTimer: activeTimerInfo,
+    };
+  }
 }

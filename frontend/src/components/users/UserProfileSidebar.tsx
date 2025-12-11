@@ -24,6 +24,42 @@ interface WorkloadData {
   }>;
 }
 
+interface BandwidthData {
+  projects: Array<{
+    _id: string;
+    key: string;
+    name: string;
+    logo?: string;
+  }>;
+  bandwidth: {
+    daily: {
+      worked: number;
+      target: number;
+      remaining: number;
+      percentage: number;
+    };
+    weekly: {
+      worked: number;
+      target: number;
+      remaining: number;
+      percentage: number;
+    };
+    monthly: {
+      worked: number;
+      target: number;
+      remaining: number;
+      percentage: number;
+    };
+  };
+  activeTimer: {
+    issueKey: string;
+    issueTitle: string;
+    projectKey: string;
+    startedAt: string;
+    isPaused: boolean;
+  } | null;
+}
+
 interface UserProfileSidebarProps {
   user: User | null;
   isOpen: boolean;
@@ -36,11 +72,14 @@ export const UserProfileSidebar: React.FC<UserProfileSidebarProps> = ({
   onClose,
 }) => {
   const [workload, setWorkload] = useState<WorkloadData | null>(null);
+  const [bandwidth, setBandwidth] = useState<BandwidthData | null>(null);
   const [loadingWorkload, setLoadingWorkload] = useState(false);
+  const [loadingBandwidth, setLoadingBandwidth] = useState(false);
 
   useEffect(() => {
     if (user && isOpen) {
       fetchWorkload();
+      fetchBandwidth();
     }
   }, [user?._id, isOpen]);
 
@@ -55,6 +94,35 @@ export const UserProfileSidebar: React.FC<UserProfileSidebarProps> = ({
     } finally {
       setLoadingWorkload(false);
     }
+  };
+
+  const fetchBandwidth = async () => {
+    if (!user) return;
+    setLoadingBandwidth(true);
+    try {
+      const response = await issuesAPI.getUserBandwidth(user._id);
+      setBandwidth(response.data);
+    } catch (error) {
+      console.error('Error fetching user bandwidth:', error);
+    } finally {
+      setLoadingBandwidth(false);
+    }
+  };
+
+  const formatHours = (hours: number): string => {
+    const h = Math.floor(hours);
+    const m = Math.round((hours - h) * 60);
+    if (h === 0 && m === 0) return '0h';
+    if (h === 0) return `${m}m`;
+    if (m === 0) return `${h}h`;
+    return `${h}h ${m}m`;
+  };
+
+  const getBandwidthColor = (percentage: number): string => {
+    if (percentage >= 100) return 'bg-success-500';
+    if (percentage >= 75) return 'bg-primary-500';
+    if (percentage >= 50) return 'bg-warning-500';
+    return 'bg-gray-300 dark:bg-gray-600';
   };
 
   if (!user) return null;
@@ -76,21 +144,6 @@ export const UserProfileSidebar: React.FC<UserProfileSidebarProps> = ({
 
   const formatRole = (role: string) => {
     return role.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'critical':
-        return 'text-danger-600 dark:text-danger-400';
-      case 'high':
-        return 'text-orange-600 dark:text-orange-400';
-      case 'medium':
-        return 'text-warning-600 dark:text-warning-400';
-      case 'low':
-        return 'text-success-600 dark:text-success-400';
-      default:
-        return 'text-gray-600 dark:text-gray-400';
-    }
   };
 
   const getTypeIcon = (type: string) => {
@@ -196,15 +249,167 @@ export const UserProfileSidebar: React.FC<UserProfileSidebarProps> = ({
             </div>
           </div>
 
-          {/* Current Workload Section */}
+          {/* Bandwidth Section */}
+          <div className="px-6 py-6 border-b border-gray-200 dark:border-dark-300">
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4 uppercase tracking-wide">
+              Availability
+            </h4>
+
+            {loadingBandwidth ? (
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
+              </div>
+            ) : bandwidth ? (
+              <div className="space-y-4">
+                {/* Daily */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Today</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {formatHours(bandwidth.bandwidth.daily.worked)} / {bandwidth.bandwidth.daily.target}h
+                    </span>
+                  </div>
+                  <div className="h-2 bg-gray-200 dark:bg-dark-200 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${getBandwidthColor(bandwidth.bandwidth.daily.percentage)}`}
+                      style={{ width: `${Math.min(100, bandwidth.bandwidth.daily.percentage)}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    {bandwidth.bandwidth.daily.remaining > 0
+                      ? `${formatHours(bandwidth.bandwidth.daily.remaining)} remaining`
+                      : 'Target reached!'}
+                  </p>
+                </div>
+
+                {/* Weekly */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">This Week</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {formatHours(bandwidth.bandwidth.weekly.worked)} / {bandwidth.bandwidth.weekly.target}h
+                    </span>
+                  </div>
+                  <div className="h-2 bg-gray-200 dark:bg-dark-200 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${getBandwidthColor(bandwidth.bandwidth.weekly.percentage)}`}
+                      style={{ width: `${Math.min(100, bandwidth.bandwidth.weekly.percentage)}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    {bandwidth.bandwidth.weekly.remaining > 0
+                      ? `${formatHours(bandwidth.bandwidth.weekly.remaining)} remaining`
+                      : 'Target reached!'}
+                  </p>
+                </div>
+
+                {/* Monthly */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">This Month</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {formatHours(bandwidth.bandwidth.monthly.worked)} / {bandwidth.bandwidth.monthly.target}h
+                    </span>
+                  </div>
+                  <div className="h-2 bg-gray-200 dark:bg-dark-200 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${getBandwidthColor(bandwidth.bandwidth.monthly.percentage)}`}
+                      style={{ width: `${Math.min(100, bandwidth.bandwidth.monthly.percentage)}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    {bandwidth.bandwidth.monthly.remaining > 0
+                      ? `${formatHours(bandwidth.bandwidth.monthly.remaining)} remaining`
+                      : 'Target reached!'}
+                  </p>
+                </div>
+
+                {/* Active Timer indicator */}
+                {bandwidth.activeTimer && (
+                  <div className="mt-4 p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg border border-primary-200 dark:border-primary-800">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${bandwidth.activeTimer.isPaused ? 'bg-warning-500' : 'bg-success-500 animate-pulse'}`} />
+                      <span className="text-xs font-medium text-primary-700 dark:text-primary-300">
+                        {bandwidth.activeTimer.isPaused ? 'Timer Paused' : 'Timer Running'}
+                      </span>
+                    </div>
+                    <Link
+                      href={`/issues/${bandwidth.activeTimer.issueKey}`}
+                      onClick={onClose}
+                      className="text-sm text-primary-600 dark:text-primary-400 hover:underline mt-1 block truncate"
+                    >
+                      {bandwidth.activeTimer.issueKey}: {bandwidth.activeTimer.issueTitle}
+                    </Link>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+                No data available
+              </p>
+            )}
+          </div>
+
+          {/* Projects Section */}
+          <div className="px-6 py-6 border-b border-gray-200 dark:border-dark-300">
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4 uppercase tracking-wide">
+              Assigned Projects
+            </h4>
+
+            {loadingBandwidth ? (
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
+              </div>
+            ) : bandwidth && bandwidth.projects.length > 0 ? (
+              <div className="space-y-2">
+                {bandwidth.projects.map((project) => (
+                  <Link
+                    key={project._id}
+                    href={`/projects/${project._id}`}
+                    onClick={onClose}
+                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-300 transition-colors group"
+                  >
+                    {project.logo ? (
+                      <img
+                        src={project.logo}
+                        alt={project.name}
+                        className="w-8 h-8 rounded object-cover"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                        <span className="text-sm font-bold text-primary-600 dark:text-primary-400">
+                          {project.key.charAt(0)}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                        {project.name}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{project.key}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-4">
+                <svg className="w-8 h-8 text-gray-400 dark:text-gray-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                </svg>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Not assigned to any projects</p>
+              </div>
+            )}
+          </div>
+
+          {/* Current Tasks Section (condensed) */}
           <div className="px-6 py-6 border-b border-gray-200 dark:border-dark-300">
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
-                Current Workload
+                In Progress Tasks
               </h4>
               {workload && (
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-400">
-                  {workload.totalInProgress} in progress
+                  {workload.totalInProgress}
                 </span>
               )}
             </div>
@@ -214,43 +419,25 @@ export const UserProfileSidebar: React.FC<UserProfileSidebarProps> = ({
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
               </div>
             ) : workload && workload.byProject.length > 0 ? (
-              <div className="space-y-4">
-                {workload.byProject.map((project) => (
-                  <div key={project.projectId} className="bg-gray-50 dark:bg-dark-300 rounded-lg p-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-dark-200 px-2 py-0.5 rounded">
-                        {project.projectKey}
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {workload.byProject.flatMap((project) =>
+                  project.issues.map((issue) => (
+                    <Link
+                      key={issue._id}
+                      href={`/issues/${issue.key}`}
+                      onClick={onClose}
+                      className="flex items-center gap-2 p-2 rounded hover:bg-gray-50 dark:hover:bg-dark-300 transition-colors group"
+                    >
+                      {getTypeIcon(issue.type)}
+                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                        {issue.key}
                       </span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                        {project.projectName}
+                      <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1 group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                        {issue.title}
                       </span>
-                      <span className="ml-auto text-xs text-gray-500 dark:text-gray-400">
-                        {project.issues.length} {project.issues.length === 1 ? 'issue' : 'issues'}
-                      </span>
-                    </div>
-                    <div className="space-y-2">
-                      {project.issues.map((issue) => (
-                        <Link
-                          key={issue._id}
-                          href={`/issues/${issue.key}`}
-                          onClick={onClose}
-                          className="flex items-center gap-2 p-2 rounded hover:bg-gray-100 dark:hover:bg-dark-200 transition-colors group"
-                        >
-                          {getTypeIcon(issue.type)}
-                          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                            {issue.key}
-                          </span>
-                          <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1 group-hover:text-primary-600 dark:group-hover:text-primary-400">
-                            {issue.title}
-                          </span>
-                          <span className={`text-xs font-medium capitalize ${getPriorityColor(issue.priority)}`}>
-                            {issue.priority}
-                          </span>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+                    </Link>
+                  ))
+                )}
               </div>
             ) : (
               <div className="text-center py-4">
