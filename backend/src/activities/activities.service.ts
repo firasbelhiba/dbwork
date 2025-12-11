@@ -335,7 +335,8 @@ export class ActivitiesService {
                 $match: {
                   $expr: {
                     $and: [
-                      { $eq: ['$userId', '$$userId'] },
+                      // Convert both to string to handle ObjectId vs string mismatch
+                      { $eq: [{ $toString: '$userId' }, { $toString: '$$userId' }] },
                       { $gte: ['$createdAt', start] },
                       { $lte: ['$createdAt', end] },
                     ],
