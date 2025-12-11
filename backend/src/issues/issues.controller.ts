@@ -54,6 +54,13 @@ export class IssuesController {
     return this.issuesService.search(query, projectId);
   }
 
+  @Get('user/:userId/workload')
+  @ApiOperation({ summary: 'Get user workload (in-progress issues by project)' })
+  @ApiResponse({ status: 200, description: 'User workload data' })
+  getUserWorkload(@Param('userId') userId: string) {
+    return this.issuesService.getUserWorkload(userId);
+  }
+
   @Get('project/:projectId')
   @ApiOperation({ summary: 'Get issues by project' })
   @ApiResponse({ status: 200, description: 'Project issues' })

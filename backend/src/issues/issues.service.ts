@@ -885,4 +885,76 @@ export class IssuesService {
 
     return issue;
   }
+
+  async getUserWorkload(userId: string): Promise<{
+    totalInProgress: number;
+    byProject: Array<{
+      projectId: string;
+      projectName: string;
+      projectKey: string;
+      issues: Array<{
+        _id: string;
+        key: string;
+        title: string;
+        status: string;
+        priority: string;
+        type: string;
+      }>;
+    }>;
+  }> {
+    // Find all in-progress issues assigned to this user
+    const issues = await this.issueModel
+      .find({
+        assignees: new Types.ObjectId(userId),
+        status: 'in_progress',
+        isArchived: { $ne: true },
+      })
+      .populate('projectId', 'name key')
+      .select('key title status priority type projectId')
+      .sort({ updatedAt: -1 })
+      .exec();
+
+    // Group by project
+    const projectMap = new Map<string, {
+      projectId: string;
+      projectName: string;
+      projectKey: string;
+      issues: Array<{
+        _id: string;
+        key: string;
+        title: string;
+        status: string;
+        priority: string;
+        type: string;
+      }>;
+    }>();
+
+    for (const issue of issues) {
+      const project = issue.projectId as any;
+      const projectId = project._id.toString();
+
+      if (!projectMap.has(projectId)) {
+        projectMap.set(projectId, {
+          projectId,
+          projectName: project.name || 'Unknown Project',
+          projectKey: project.key || 'UNK',
+          issues: [],
+        });
+      }
+
+      projectMap.get(projectId)!.issues.push({
+        _id: issue._id.toString(),
+        key: issue.key,
+        title: issue.title,
+        status: issue.status,
+        priority: issue.priority,
+        type: issue.type,
+      });
+    }
+
+    return {
+      totalInProgress: issues.length,
+      byProject: Array.from(projectMap.values()),
+    };
+  }
 }

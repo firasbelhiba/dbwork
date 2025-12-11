@@ -1,9 +1,28 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { User } from '@/types/user';
 import { Badge } from '@/components/common';
 import { getInitials, formatDateTime, getRelativeTime } from '@/lib/utils';
+import { issuesAPI } from '@/lib/api';
+
+interface WorkloadData {
+  totalInProgress: number;
+  byProject: Array<{
+    projectId: string;
+    projectName: string;
+    projectKey: string;
+    issues: Array<{
+      _id: string;
+      key: string;
+      title: string;
+      status: string;
+      priority: string;
+      type: string;
+    }>;
+  }>;
+}
 
 interface UserProfileSidebarProps {
   user: User | null;
@@ -16,6 +35,28 @@ export const UserProfileSidebar: React.FC<UserProfileSidebarProps> = ({
   isOpen,
   onClose,
 }) => {
+  const [workload, setWorkload] = useState<WorkloadData | null>(null);
+  const [loadingWorkload, setLoadingWorkload] = useState(false);
+
+  useEffect(() => {
+    if (user && isOpen) {
+      fetchWorkload();
+    }
+  }, [user?._id, isOpen]);
+
+  const fetchWorkload = async () => {
+    if (!user) return;
+    setLoadingWorkload(true);
+    try {
+      const response = await issuesAPI.getUserWorkload(user._id);
+      setWorkload(response.data);
+    } catch (error) {
+      console.error('Error fetching user workload:', error);
+    } finally {
+      setLoadingWorkload(false);
+    }
+  };
+
   if (!user) return null;
 
   const getRoleBadgeVariant = (role: string) => {
@@ -35,6 +76,50 @@ export const UserProfileSidebar: React.FC<UserProfileSidebarProps> = ({
 
   const formatRole = (role: string) => {
     return role.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'critical':
+        return 'text-danger-600 dark:text-danger-400';
+      case 'high':
+        return 'text-orange-600 dark:text-orange-400';
+      case 'medium':
+        return 'text-warning-600 dark:text-warning-400';
+      case 'low':
+        return 'text-success-600 dark:text-success-400';
+      default:
+        return 'text-gray-600 dark:text-gray-400';
+    }
+  };
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'bug':
+        return (
+          <svg className="w-4 h-4 text-danger-500" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M6.56 1.14a.75.75 0 01.177 1.045 3.989 3.989 0 00-.464.86c.185.17.382.329.59.473A3.993 3.993 0 0110 2c1.272 0 2.405.594 3.137 1.518.208-.144.405-.302.59-.473a3.989 3.989 0 00-.464-.86.75.75 0 011.222-.869c.369.519.65 1.105.822 1.736a.75.75 0 01-.174.707 7.03 7.03 0 01-1.299 1.098A4 4 0 0114 6c0 .52-.301.963-.723 1.187a6.961 6.961 0 01-.172 3.223 6.87 6.87 0 01-1.267 2.37l1.108 1.109a.75.75 0 01-1.06 1.06l-1.109-1.108a6.87 6.87 0 01-2.37 1.267 6.961 6.961 0 01-3.223.172A1.28 1.28 0 016 16a4 4 0 01-.166-1.833 7.03 7.03 0 01-1.098-1.299.75.75 0 01.707-.174c.631.172 1.217.453 1.736.822a.75.75 0 01-.869 1.222 3.989 3.989 0 00-.86-.464c.144.208.302.405.473.59A3.993 3.993 0 012 10c0-1.272.594-2.405 1.518-3.137a5.023 5.023 0 01-.473-.59 3.989 3.989 0 00.86.464.75.75 0 01.869-1.222 4.97 4.97 0 01-1.736-.822.75.75 0 01-.174-.707c.172-.631.453-1.217.822-1.736a.75.75 0 011.045-.177z" clipRule="evenodd" />
+          </svg>
+        );
+      case 'task':
+        return (
+          <svg className="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+          </svg>
+        );
+      case 'story':
+        return (
+          <svg className="w-4 h-4 text-success-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+        );
+      default:
+        return (
+          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        );
+    }
   };
 
   return (
@@ -111,6 +196,72 @@ export const UserProfileSidebar: React.FC<UserProfileSidebarProps> = ({
             </div>
           </div>
 
+          {/* Current Workload Section */}
+          <div className="px-6 py-6 border-b border-gray-200 dark:border-dark-300">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
+                Current Workload
+              </h4>
+              {workload && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-400">
+                  {workload.totalInProgress} in progress
+                </span>
+              )}
+            </div>
+
+            {loadingWorkload ? (
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
+              </div>
+            ) : workload && workload.byProject.length > 0 ? (
+              <div className="space-y-4">
+                {workload.byProject.map((project) => (
+                  <div key={project.projectId} className="bg-gray-50 dark:bg-dark-300 rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-dark-200 px-2 py-0.5 rounded">
+                        {project.projectKey}
+                      </span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                        {project.projectName}
+                      </span>
+                      <span className="ml-auto text-xs text-gray-500 dark:text-gray-400">
+                        {project.issues.length} {project.issues.length === 1 ? 'issue' : 'issues'}
+                      </span>
+                    </div>
+                    <div className="space-y-2">
+                      {project.issues.map((issue) => (
+                        <Link
+                          key={issue._id}
+                          href={`/issues/${issue.key}`}
+                          onClick={onClose}
+                          className="flex items-center gap-2 p-2 rounded hover:bg-gray-100 dark:hover:bg-dark-200 transition-colors group"
+                        >
+                          {getTypeIcon(issue.type)}
+                          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                            {issue.key}
+                          </span>
+                          <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1 group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                            {issue.title}
+                          </span>
+                          <span className={`text-xs font-medium capitalize ${getPriorityColor(issue.priority)}`}>
+                            {issue.priority}
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-4">
+                <svg className="w-8 h-8 text-gray-400 dark:text-gray-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-sm text-gray-500 dark:text-gray-400">No tasks in progress</p>
+              </div>
+            )}
+          </div>
+
           {/* Details Section */}
           <div className="px-6 py-6">
             <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4 uppercase tracking-wide">
@@ -158,51 +309,6 @@ export const UserProfileSidebar: React.FC<UserProfileSidebarProps> = ({
             </div>
           </div>
 
-          {/* Notification Preferences Section */}
-          {user.preferences?.emailNotifications && (
-            <div className="px-6 py-6 border-t border-gray-200 dark:border-dark-300">
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4 uppercase tracking-wide">
-                Email Notifications
-              </h4>
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Issue Assigned</span>
-                  <div className={`w-10 h-5 rounded-full ${user.preferences.emailNotifications.issueAssigned ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'} relative`}>
-                    <div className={`w-4 h-4 bg-white rounded-full absolute top-0.5 transition-transform ${user.preferences.emailNotifications.issueAssigned ? 'translate-x-5' : 'translate-x-0.5'}`} />
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Issue Updated</span>
-                  <div className={`w-10 h-5 rounded-full ${user.preferences.emailNotifications.issueUpdated ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'} relative`}>
-                    <div className={`w-4 h-4 bg-white rounded-full absolute top-0.5 transition-transform ${user.preferences.emailNotifications.issueUpdated ? 'translate-x-5' : 'translate-x-0.5'}`} />
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Issue Commented</span>
-                  <div className={`w-10 h-5 rounded-full ${user.preferences.emailNotifications.issueCommented ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'} relative`}>
-                    <div className={`w-4 h-4 bg-white rounded-full absolute top-0.5 transition-transform ${user.preferences.emailNotifications.issueCommented ? 'translate-x-5' : 'translate-x-0.5'}`} />
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Mentions</span>
-                  <div className={`w-10 h-5 rounded-full ${user.preferences.emailNotifications.mentions ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'} relative`}>
-                    <div className={`w-4 h-4 bg-white rounded-full absolute top-0.5 transition-transform ${user.preferences.emailNotifications.mentions ? 'translate-x-5' : 'translate-x-0.5'}`} />
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Sprint Updates</span>
-                  <div className={`w-10 h-5 rounded-full ${user.preferences.emailNotifications.sprintUpdates ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'} relative`}>
-                    <div className={`w-4 h-4 bg-white rounded-full absolute top-0.5 transition-transform ${user.preferences.emailNotifications.sprintUpdates ? 'translate-x-5' : 'translate-x-0.5'}`} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </>
