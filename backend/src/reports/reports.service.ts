@@ -632,15 +632,18 @@ export class ReportsService {
     start.setHours(0, 0, 0, 0);
     const end = new Date(endDate);
     end.setHours(23, 59, 59, 999);
+    const now = new Date();
 
     // Get all active users
     const users = await this.userModel.find({ isActive: true }).select('_id firstName lastName email avatar').exec();
 
-    // Get all issues with time entries in the date range
+    // Get all issues with:
+    // 1. Completed time entries in the date range
+    // 2. ANY active timer (we'll calculate today's portion regardless of when it started)
     const issues = await this.issueModel.find({
       $or: [
         { 'timeTracking.timeEntries.startTime': { $gte: start, $lte: end } },
-        { 'timeTracking.activeTimeEntry.startTime': { $gte: start, $lte: end } },
+        { 'timeTracking.activeTimeEntry': { $exists: true, $ne: null } },
       ],
     }).exec();
 
@@ -681,38 +684,60 @@ export class ReportsService {
         }
       }
 
-      // Process active time entry if within range
+      // Process active time entry - include if it's currently running (regardless of start date)
       const activeEntry = issue.timeTracking?.activeTimeEntry;
       if (activeEntry) {
-        const entryDate = new Date(activeEntry.startTime);
-        if (entryDate >= start && entryDate <= end) {
-          const userId = activeEntry.userId;
-          const dateKey = entryDate.toISOString().split('T')[0];
-          const now = new Date();
+        const entryStartTime = new Date(activeEntry.startTime);
+        const userId = activeEntry.userId;
 
+        // For active timers, we count the time that falls within the report date range
+        // Use today's date for active timer attribution (since it's currently running)
+        const todayStr = now.toISOString().split('T')[0];
+
+        // Only count if today falls within the report date range
+        if (now >= start && now <= end) {
           if (!userDailyTime[userId]) {
             userDailyTime[userId] = {};
           }
-          if (!userDailyTime[userId][dateKey]) {
-            userDailyTime[userId][dateKey] = { regularSeconds: 0, extraSeconds: 0 };
+          if (!userDailyTime[userId][todayStr]) {
+            userDailyTime[userId][todayStr] = { regularSeconds: 0, extraSeconds: 0 };
           }
 
-          // Calculate active timer duration
-          let elapsedSeconds = Math.floor((now.getTime() - entryDate.getTime()) / 1000);
+          // Calculate total elapsed time (from start to now, minus pauses)
+          let totalElapsedSeconds = Math.floor((now.getTime() - entryStartTime.getTime()) / 1000);
           if (activeEntry.isPaused && activeEntry.pausedAt) {
             const pausedAt = new Date(activeEntry.pausedAt);
             const currentPauseDuration = Math.floor((now.getTime() - pausedAt.getTime()) / 1000);
-            elapsedSeconds -= (activeEntry.accumulatedPausedTime + currentPauseDuration);
+            totalElapsedSeconds -= (activeEntry.accumulatedPausedTime + currentPauseDuration);
           } else {
-            elapsedSeconds -= activeEntry.accumulatedPausedTime;
+            totalElapsedSeconds -= activeEntry.accumulatedPausedTime;
           }
-          elapsedSeconds = Math.max(0, elapsedSeconds);
+          totalElapsedSeconds = Math.max(0, totalElapsedSeconds);
+
+          // Calculate how much of this time falls within today
+          // If timer started before today, only count from start of today
+          const todayStart = new Date(todayStr);
+          todayStart.setHours(0, 0, 0, 0);
+
+          let todaySeconds = totalElapsedSeconds;
+          if (entryStartTime < todayStart) {
+            // Timer started before today - calculate only today's portion
+            // This is approximate since we don't track pauses per day
+            todaySeconds = Math.floor((now.getTime() - todayStart.getTime()) / 1000);
+            // Account for pauses (simplified - assumes pause ratio is constant)
+            if (totalElapsedSeconds > 0) {
+              const pauseRatio = (activeEntry.accumulatedPausedTime || 0) /
+                Math.floor((now.getTime() - entryStartTime.getTime()) / 1000);
+              todaySeconds = Math.floor(todaySeconds * (1 - pauseRatio));
+            }
+          }
+          todaySeconds = Math.max(0, todaySeconds);
 
           const isExtra = (activeEntry as any).isExtraHours === true;
           if (isExtra) {
-            userDailyTime[userId][dateKey].extraSeconds += elapsedSeconds;
+            userDailyTime[userId][todayStr].extraSeconds += todaySeconds;
           } else {
-            userDailyTime[userId][dateKey].regularSeconds += elapsedSeconds;
+            userDailyTime[userId][todayStr].regularSeconds += todaySeconds;
           }
         }
       }
