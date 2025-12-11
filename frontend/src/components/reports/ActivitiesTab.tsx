@@ -251,20 +251,51 @@ export const ActivitiesTab: React.FC<ActivitiesTabProps> = ({ startDate, endDate
       {/* Daily Trend Chart */}
       {data.dailyTrend.length > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Activity Trend</h3>
-          <div className="h-48 flex items-end gap-1">
-            {data.dailyTrend.map((day, index) => (
-              <div key={index} className="flex-1 flex flex-col items-center gap-1">
-                <div
-                  className="w-full bg-primary-500 rounded-t transition-all hover:bg-primary-600"
-                  style={{ height: `${(day.count / maxDailyCount) * 100}%`, minHeight: day.count > 0 ? '4px' : '0' }}
-                  title={`${day.count} activities`}
-                />
-                <span className="text-xs text-gray-500 dark:text-gray-400 transform -rotate-45 origin-center whitespace-nowrap">
-                  {formatDate(day.date)}
-                </span>
-              </div>
-            ))}
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Activity Trend</h3>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              Total: {data.dailyTrend.reduce((sum, d) => sum + d.count, 0)} activities
+            </span>
+          </div>
+          <div className="h-56 flex items-end gap-2 pb-8 relative">
+            {data.dailyTrend.map((day, index) => {
+              const heightPercent = maxDailyCount > 0 ? (day.count / maxDailyCount) * 100 : 0;
+              return (
+                <div key={index} className="flex-1 flex flex-col items-center relative group">
+                  {/* Count label on top */}
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {day.count}
+                  </span>
+                  {/* Bar */}
+                  <div className="w-full flex-1 flex items-end">
+                    <div
+                      className="w-full bg-primary-500 rounded-t transition-all hover:bg-primary-400 cursor-pointer"
+                      style={{
+                        height: day.count > 0 ? `${Math.max(heightPercent, 8)}%` : '2px',
+                        backgroundColor: day.count === 0 ? '#e5e7eb' : undefined
+                      }}
+                      title={`${formatDate(day.date)}: ${day.count} activities`}
+                    >
+                      {/* Show count inside bar if tall enough */}
+                      {heightPercent > 20 && (
+                        <span className="text-xs font-bold text-white w-full text-center block pt-1">
+                          {day.count}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {/* Date label */}
+                  <span className="absolute -bottom-6 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap transform -rotate-45 origin-top-left">
+                    {formatDate(day.date)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+          {/* Legend */}
+          <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+            <span>Max: {maxDailyCount} activities/day</span>
+            <span>Avg: {Math.round(data.dailyTrend.reduce((sum, d) => sum + d.count, 0) / data.dailyTrend.length)} activities/day</span>
           </div>
         </div>
       )}
