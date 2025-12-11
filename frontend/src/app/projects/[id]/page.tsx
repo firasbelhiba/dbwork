@@ -67,6 +67,7 @@ export default function ProjectDetailPage() {
     }
     return 'all';
   });
+  const [isTeamExpanded, setIsTeamExpanded] = useState(false);
 
   // Team category mapping
   const TEAM_CATEGORIES: Record<string, string[] | null> = {
@@ -337,8 +338,8 @@ export default function ProjectDetailPage() {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-600 dark:text-gray-400">Team:</span>
-              <div className="flex gap-2">
-                {project.members?.slice(0, 5).map((member, index) => {
+              <div className="flex flex-wrap gap-2 items-center">
+                {(isTeamExpanded ? project.members : project.members?.slice(0, 5))?.map((member, index) => {
                   const memberUser = typeof member.userId === 'object' ? member.userId : null;
                   return memberUser ? (
                     <div key={index} className="relative group">
@@ -378,9 +379,19 @@ export default function ProjectDetailPage() {
                   ) : null;
                 })}
                 {project.members && project.members.length > 5 && (
-                  <div className="w-9 h-9 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center justify-center text-xs font-medium shadow-sm border-2 border-white dark:border-gray-700">
-                    +{project.members.length - 5}
-                  </div>
+                  <button
+                    onClick={() => setIsTeamExpanded(!isTeamExpanded)}
+                    className="w-9 h-9 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center justify-center text-xs font-medium shadow-sm border-2 border-white dark:border-gray-700 cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                    title={isTeamExpanded ? 'Show less' : `Show ${project.members.length - 5} more`}
+                  >
+                    {isTeamExpanded ? (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    ) : (
+                      `+${project.members.length - 5}`
+                    )}
+                  </button>
                 )}
               </div>
             </div>
