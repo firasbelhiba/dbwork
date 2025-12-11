@@ -703,35 +703,30 @@ export class ReportsService {
             userDailyTime[userId][todayStr] = { regularSeconds: 0, extraSeconds: 0 };
           }
 
-          // Calculate total elapsed time (from start to now, minus pauses)
-          let totalElapsedSeconds = Math.floor((now.getTime() - entryStartTime.getTime()) / 1000);
+          // Calculate TODAY's work time only
+          // Use the later of: timer start time OR start of today (9 AM work start)
+          const todayStart = new Date(todayStr);
+          todayStart.setHours(9, 0, 0, 0); // 9 AM work start
+
+          // If timer started before today's work start, use 9 AM as effective start
+          const effectiveStart = entryStartTime > todayStart ? entryStartTime : todayStart;
+
+          // Calculate time from effective start to now
+          let todaySeconds = Math.floor((now.getTime() - effectiveStart.getTime()) / 1000);
+
+          // If timer is currently paused, subtract current pause duration
           if (activeEntry.isPaused && activeEntry.pausedAt) {
             const pausedAt = new Date(activeEntry.pausedAt);
-            const currentPauseDuration = Math.floor((now.getTime() - pausedAt.getTime()) / 1000);
-            totalElapsedSeconds -= (activeEntry.accumulatedPausedTime + currentPauseDuration);
-          } else {
-            totalElapsedSeconds -= activeEntry.accumulatedPausedTime;
-          }
-          totalElapsedSeconds = Math.max(0, totalElapsedSeconds);
-
-          // Calculate how much of this time falls within today
-          // If timer started before today, only count from start of today
-          const todayStart = new Date(todayStr);
-          todayStart.setHours(0, 0, 0, 0);
-
-          let todaySeconds = totalElapsedSeconds;
-          if (entryStartTime < todayStart) {
-            // Timer started before today - calculate only today's portion
-            // This is approximate since we don't track pauses per day
-            todaySeconds = Math.floor((now.getTime() - todayStart.getTime()) / 1000);
-            // Account for pauses (simplified - assumes pause ratio is constant)
-            if (totalElapsedSeconds > 0) {
-              const pauseRatio = (activeEntry.accumulatedPausedTime || 0) /
-                Math.floor((now.getTime() - entryStartTime.getTime()) / 1000);
-              todaySeconds = Math.floor(todaySeconds * (1 - pauseRatio));
+            // Only subtract pause time if pause started after our effective start
+            if (pausedAt > effectiveStart) {
+              const currentPauseDuration = Math.floor((now.getTime() - pausedAt.getTime()) / 1000);
+              todaySeconds -= currentPauseDuration;
             }
           }
-          todaySeconds = Math.max(0, todaySeconds);
+
+          // Ensure non-negative and cap at maximum reasonable daily hours (12 hours)
+          const MAX_DAILY_SECONDS = 12 * 3600; // 12 hours max
+          todaySeconds = Math.max(0, Math.min(todaySeconds, MAX_DAILY_SECONDS));
 
           const isExtra = (activeEntry as any).isExtraHours === true;
           if (isExtra) {
