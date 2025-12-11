@@ -47,4 +47,15 @@ export class ActivitiesController {
   async getStats() {
     return this.activitiesService.getStats();
   }
+
+  @Get('analytics')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Get activity analytics with date range (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Activity analytics' })
+  async getAnalytics(
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+  ) {
+    return this.activitiesService.getAnalytics(startDate, endDate);
+  }
 }

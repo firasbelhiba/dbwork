@@ -197,6 +197,146 @@ export class ActivitiesService {
     };
   }
 
+  async getAnalytics(startDate: string, endDate: string): Promise<{
+    summary: {
+      totalActivities: number;
+      activitiesInPeriod: number;
+      uniqueUsers: number;
+      uniqueProjects: number;
+    };
+    byActionType: Array<{ action: string; count: number }>;
+    byEntityType: Array<{ entityType: string; count: number }>;
+    byUser: Array<{ userId: string; userName: string; userAvatar: string | null; count: number }>;
+    byProject: Array<{ projectId: string; projectName: string; count: number }>;
+    dailyTrend: Array<{ date: string; count: number }>;
+    recentActivities: any[];
+  }> {
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+
+    const dateFilter = { createdAt: { $gte: start, $lte: end } };
+
+    const [
+      totalActivities,
+      activitiesInPeriod,
+      uniqueUsersResult,
+      uniqueProjectsResult,
+      byActionType,
+      byEntityType,
+      byUser,
+      byProject,
+      dailyTrend,
+      recentActivities,
+    ] = await Promise.all([
+      this.activityModel.countDocuments(),
+      this.activityModel.countDocuments(dateFilter),
+      this.activityModel.distinct('userId', dateFilter),
+      this.activityModel.distinct('projectId', dateFilter),
+      this.activityModel.aggregate([
+        { $match: dateFilter },
+        { $group: { _id: '$action', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $project: { action: '$_id', count: 1, _id: 0 } },
+      ]),
+      this.activityModel.aggregate([
+        { $match: dateFilter },
+        { $group: { _id: '$entityType', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $project: { entityType: '$_id', count: 1, _id: 0 } },
+      ]),
+      this.activityModel.aggregate([
+        { $match: dateFilter },
+        { $group: { _id: '$userId', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 10 },
+        {
+          $lookup: {
+            from: 'users',
+            localField: '_id',
+            foreignField: '_id',
+            as: 'user',
+          },
+        },
+        { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+        {
+          $project: {
+            userId: '$_id',
+            count: 1,
+            userName: {
+              $cond: {
+                if: { $and: ['$user.firstName', '$user.lastName'] },
+                then: { $concat: ['$user.firstName', ' ', '$user.lastName'] },
+                else: 'Unknown User',
+              },
+            },
+            userAvatar: { $ifNull: ['$user.avatar', null] },
+            _id: 0,
+          },
+        },
+      ]),
+      this.activityModel.aggregate([
+        { $match: { ...dateFilter, projectId: { $ne: null } } },
+        { $group: { _id: '$projectId', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 10 },
+        {
+          $lookup: {
+            from: 'projects',
+            localField: '_id',
+            foreignField: '_id',
+            as: 'project',
+          },
+        },
+        { $unwind: { path: '$project', preserveNullAndEmptyArrays: true } },
+        {
+          $project: {
+            projectId: '$_id',
+            count: 1,
+            projectName: { $ifNull: ['$project.name', 'Unknown Project'] },
+            _id: 0,
+          },
+        },
+      ]),
+      this.activityModel.aggregate([
+        { $match: dateFilter },
+        {
+          $group: {
+            _id: {
+              $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
+            },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+        { $project: { date: '$_id', count: 1, _id: 0 } },
+      ]),
+      this.activityModel
+        .find(dateFilter)
+        .populate('userId', 'firstName lastName email avatar')
+        .populate('projectId', 'name key')
+        .sort({ createdAt: -1 })
+        .limit(20)
+        .exec(),
+    ]);
+
+    return {
+      summary: {
+        totalActivities,
+        activitiesInPeriod,
+        uniqueUsers: uniqueUsersResult.length,
+        uniqueProjects: uniqueProjectsResult.filter(Boolean).length,
+      },
+      byActionType,
+      byEntityType,
+      byUser,
+      byProject,
+      dailyTrend,
+      recentActivities,
+    };
+  }
+
   // Helper method to log activity from other services
   async logActivity(
     userId: string,

@@ -293,6 +293,8 @@ export const activitiesAPI = {
   getAll: (params?: any) => api.get('/activities', { params }),
   getRecent: () => api.get('/activities/recent'),
   getStats: () => api.get('/activities/stats'),
+  getAnalytics: (startDate: string, endDate: string) =>
+    api.get('/activities/analytics', { params: { startDate, endDate } }),
 };
 
 // Feedback API
