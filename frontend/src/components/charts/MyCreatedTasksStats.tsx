@@ -23,6 +23,7 @@ interface MyCreatedTasksStatsData {
   summary: {
     total: number;
     completed: number;
+    inReview: number;
     inProgress: number;
     todo: number;
     completionRate: number;
@@ -97,8 +98,8 @@ export const MyCreatedTasksStats: React.FC = () => {
       <div className="bg-white dark:bg-dark-400 rounded-lg shadow-sm border border-gray-200 dark:border-dark-300 p-4 md:p-6">
         <div className="animate-pulse">
           <div className="h-6 bg-gray-200 dark:bg-dark-300 rounded w-48 mb-4"></div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
-            {[1, 2, 3, 4].map((i) => (
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-6">
+            {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="h-20 bg-gray-200 dark:bg-dark-300 rounded"></div>
             ))}
           </div>
@@ -170,6 +171,7 @@ export const MyCreatedTasksStats: React.FC = () => {
   // Prepare pie chart data for status distribution
   const statusPieData = [
     { name: 'Completed', value: data.summary.completed, color: '#22C55E' },
+    { name: 'In Review', value: data.summary.inReview, color: '#8B5CF6' },
     { name: 'In Progress', value: data.summary.inProgress, color: '#3B82F6' },
     { name: 'To Do', value: data.summary.todo, color: '#6B7280' },
   ].filter((d) => d.value > 0);
@@ -362,7 +364,7 @@ export const MyCreatedTasksStats: React.FC = () => {
       </div>
 
       {/* Summary Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-6">
         {/* Total */}
         <div className="bg-gray-50 dark:bg-dark-300 rounded-lg p-3 md:p-4">
           <div className="flex items-center gap-2">
@@ -415,6 +417,39 @@ export const MyCreatedTasksStats: React.FC = () => {
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Completed ({data.summary.completionRate}%)
               </p>
+            </div>
+          </div>
+        </div>
+
+        {/* In Review */}
+        <div className="bg-gray-50 dark:bg-dark-300 rounded-lg p-3 md:p-4">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 md:w-10 md:h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+              <svg
+                className="w-4 h-4 md:w-5 md:h-5 text-purple-600 dark:text-purple-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                />
+              </svg>
+            </div>
+            <div>
+              <p className="text-xl md:text-2xl font-bold text-purple-500">
+                {data.summary.inReview}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">In Review</p>
             </div>
           </div>
         </div>

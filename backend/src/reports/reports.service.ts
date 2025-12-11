@@ -371,6 +371,7 @@ export class ReportsService {
         summary: {
           total: 0,
           completed: 0,
+          inReview: 0,
           inProgress: 0,
           todo: 0,
           completionRate: 0,
@@ -394,13 +395,17 @@ export class ReportsService {
       if (s === 'done' || s.includes('complete') || s.includes('closed') || s.includes('resolved')) {
         return 'completed';
       }
-      if (s.includes('progress') || s.includes('review') || s.includes('testing')) {
+      if (s.includes('review') || s.includes('testing')) {
+        return 'inReview';
+      }
+      if (s.includes('progress')) {
         return 'inProgress';
       }
       return 'todo';
     };
 
     let completed = 0;
+    let inReview = 0;
     let inProgress = 0;
     let todo = 0;
 
@@ -413,6 +418,7 @@ export class ReportsService {
       // Status category
       const category = getStatusCategory(issue.status);
       if (category === 'completed') completed++;
+      else if (category === 'inReview') inReview++;
       else if (category === 'inProgress') inProgress++;
       else todo++;
 
@@ -603,6 +609,7 @@ export class ReportsService {
       summary: {
         total,
         completed,
+        inReview,
         inProgress,
         todo,
         completionRate,
