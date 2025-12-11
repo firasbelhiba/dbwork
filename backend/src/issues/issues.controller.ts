@@ -236,18 +236,6 @@ export class IssuesController {
     return this.timeTrackingService.startTimer(id, user._id);
   }
 
-  @Post(':id/timer/stop')
-  @ApiOperation({ summary: 'Stop time tracking for an issue' })
-  @ApiResponse({ status: 200, description: 'Timer stopped successfully' })
-  @ApiResponse({ status: 400, description: 'No active timer' })
-  stopTimer(
-    @Param('id') id: string,
-    @Body() stopTimerDto: StopTimerDto,
-    @CurrentUser() user,
-  ) {
-    return this.timeTrackingService.stopTimer(id, user._id, stopTimerDto.description);
-  }
-
   @Post(':id/timer/pause')
   @ApiOperation({ summary: 'Pause time tracking for an issue' })
   @ApiResponse({ status: 200, description: 'Timer paused successfully' })

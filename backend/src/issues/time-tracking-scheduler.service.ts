@@ -134,9 +134,9 @@ export class TimeTrackingSchedulerService implements OnModuleInit {
   }
 
   /**
-   * Resume all paused timers and stop extra hours at 9 AM (start of work day)
-   * 1. First, stop any extra hours timers that ran overnight
-   * 2. Then, resume all paused timers from end of previous day
+   * Resume all paused timers at 9 AM (start of work day)
+   * 1. Resume all paused timers from end of previous day
+   * 2. Start timers for in_progress issues that don't have any timer
    * Runs at 9:00 AM Tunisia time on weekdays
    */
   @Cron('0 0 9 * * 1-5', {
@@ -147,28 +147,8 @@ export class TimeTrackingSchedulerService implements OnModuleInit {
     this.logger.log('=== START OF DAY TIMER MANAGEMENT (9 AM) ===');
 
     try {
-      // Step 1: Stop extra hours timers first
-      this.logger.log('Step 1: Stopping extra hours timers...');
-      const stopResult = await this.timeTrackingService.stopExtraHoursTimers();
-
-      if (stopResult.stoppedCount > 0) {
-        this.logger.log(`Stopped ${stopResult.stoppedCount} extra hours timer(s)`);
-
-        // Emit WebSocket events for each stopped timer
-        for (const stoppedTimer of stopResult.stoppedTimers) {
-          this.webSocketGateway.emitTimerAutoStopped(
-            stoppedTimer.userId,
-            stoppedTimer.projectId,
-            stoppedTimer.issueId,
-            stoppedTimer.issueKey,
-          );
-        }
-      } else {
-        this.logger.log('No extra hours timers to stop');
-      }
-
-      // Step 2: Resume all paused timers from end of previous day
-      this.logger.log('Step 2: Resuming paused timers from previous day...');
+      // Step 1: Resume all paused timers from end of previous day
+      this.logger.log('Step 1: Resuming paused timers from previous day...');
       const resumeResult = await this.timeTrackingService.resumeAllTimersStartOfDay();
 
       if (resumeResult.resumedCount > 0) {
@@ -187,9 +167,9 @@ export class TimeTrackingSchedulerService implements OnModuleInit {
         this.logger.log('No paused timers to resume');
       }
 
-      // Step 3: Start timers for in_progress issues that don't have any timer
+      // Step 2: Start timers for in_progress issues that don't have any timer
       // This handles cases where tickets were set to in_progress but never had a timer started
-      this.logger.log('Step 3: Starting timers for in_progress issues without active timer...');
+      this.logger.log('Step 2: Starting timers for in_progress issues without active timer...');
       const startResult = await this.timeTrackingService.startTimersForInProgressIssuesWithoutTimer();
 
       if (startResult.startedCount > 0) {
@@ -209,11 +189,6 @@ export class TimeTrackingSchedulerService implements OnModuleInit {
       }
 
       // Log any errors
-      if (stopResult.errors.length > 0) {
-        this.logger.warn(`Encountered ${stopResult.errors.length} error(s) while stopping extra hours`);
-        stopResult.errors.forEach((err) => this.logger.error(err));
-      }
-
       if (resumeResult.errors.length > 0) {
         this.logger.warn(`Encountered ${resumeResult.errors.length} error(s) while resuming timers`);
         resumeResult.errors.forEach((err) => this.logger.error(err));

@@ -161,21 +161,6 @@ export function TimeTracker({ issueId, timeTracking, onUpdate, hasSubIssues }: T
     }
   };
 
-  const handleStopTimer = async () => {
-    setLoading(true);
-    try {
-      await issuesAPI.stopTimer(issueId);
-      toast.success('Timer stopped');
-      await fetchTimerStatus();
-      onUpdate?.();
-    } catch (error: any) {
-      console.error('Error stopping timer:', error);
-      toast.error(error.response?.data?.message || 'Failed to stop timer');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handlePauseTimer = async () => {
     setLoading(true);
     try {
@@ -286,18 +271,6 @@ export function TimeTracker({ issueId, timeTracking, onUpdate, hasSubIssues }: T
                 Pause
               </Button>
             )}
-            <Button
-              size="sm"
-              onClick={handleStopTimer}
-              disabled={loading}
-              variant="outline"
-              className="flex-1 border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-            >
-              <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M6 6h12v12H6z" />
-              </svg>
-              Stop
-            </Button>
           </div>
         </div>
       )}

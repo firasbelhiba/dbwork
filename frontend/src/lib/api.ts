@@ -171,7 +171,6 @@ export const issuesAPI = {
   restore: (id: string) => api.patch(`/issues/${id}/restore`),
   // Time Tracking
   startTimer: (id: string) => api.post(`/issues/${id}/timer/start`),
-  stopTimer: (id: string, description?: string) => api.post(`/issues/${id}/timer/stop`, { description }),
   pauseTimer: (id: string) => api.post(`/issues/${id}/timer/pause`),
   resumeTimer: (id: string) => api.post(`/issues/${id}/timer/resume`),
   getTimerStatus: (id: string) => api.get(`/issues/${id}/timer/status`),
