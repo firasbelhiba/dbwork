@@ -655,7 +655,14 @@ export class ReportsService {
       userDailyTime[user._id.toString()] = {};
     });
 
-    // Process completed time entries
+    // Collect all active timers per user (to pick only ONE per user later)
+    const userActiveTimers: Record<string, Array<{
+      entry: any;
+      isPaused: boolean;
+      startTime: Date;
+    }>> = {};
+
+    // Process completed time entries and collect active timers
     for (const issue of issues) {
       const timeEntries = issue.timeTracking?.timeEntries || [];
 
@@ -684,48 +691,67 @@ export class ReportsService {
         }
       }
 
-      // Process active time entry - include if it's currently running (regardless of start date)
+      // Collect active timer (don't process yet - we'll pick ONE per user later)
       const activeEntry = issue.timeTracking?.activeTimeEntry;
       if (activeEntry) {
-        const entryStartTime = new Date(activeEntry.startTime);
         const userId = activeEntry.userId;
+        if (!userActiveTimers[userId]) {
+          userActiveTimers[userId] = [];
+        }
+        userActiveTimers[userId].push({
+          entry: activeEntry,
+          isPaused: activeEntry.isPaused || false,
+          startTime: new Date(activeEntry.startTime),
+        });
+      }
+    }
 
-        // For active timers, we count the time that falls within the report date range
-        // Use today's date for active timer attribution (since it's currently running)
-        const todayStr = now.toISOString().split('T')[0];
+    // Process active timers - only ONE per user
+    // A user can only work on one thing at a time
+    const todayStr = now.toISOString().split('T')[0];
+    if (now >= start && now <= end) {
+      for (const userId of Object.keys(userActiveTimers)) {
+        const timers = userActiveTimers[userId];
+        if (timers.length === 0) continue;
 
-        // Only count if today falls within the report date range
-        if (now >= start && now <= end) {
-          if (!userDailyTime[userId]) {
-            userDailyTime[userId] = {};
+        // Sort: running timers first, then by start time (most recent first)
+        timers.sort((a, b) => {
+          if (a.isPaused !== b.isPaused) {
+            return a.isPaused ? 1 : -1;
           }
-          if (!userDailyTime[userId][todayStr]) {
-            userDailyTime[userId][todayStr] = { regularSeconds: 0, extraSeconds: 0 };
-          }
+          return b.startTime.getTime() - a.startTime.getTime();
+        });
 
-          // Calculate TODAY's work time only
-          // Use the later of: timer start time OR start of today (9 AM work start)
-          const todayStart = new Date(todayStr);
-          todayStart.setHours(9, 0, 0, 0); // 9 AM work start
+        // Pick only the first (best) timer
+        const { entry: activeEntry, isPaused } = timers[0];
+        const entryStartTime = new Date(activeEntry.startTime);
 
-          // If timer started before today's work start, use 9 AM as effective start
-          const effectiveStart = entryStartTime > todayStart ? entryStartTime : todayStart;
+        if (!userDailyTime[userId]) {
+          userDailyTime[userId] = {};
+        }
+        if (!userDailyTime[userId][todayStr]) {
+          userDailyTime[userId][todayStr] = { regularSeconds: 0, extraSeconds: 0 };
+        }
 
-          // Calculate time from effective start to now
-          let todaySeconds = Math.floor((now.getTime() - effectiveStart.getTime()) / 1000);
+        // Calculate TODAY's work time only
+        const todayStart = new Date(todayStr);
+        todayStart.setHours(9, 0, 0, 0);
+        const todayEnd = new Date(todayStr);
+        todayEnd.setHours(23, 59, 59, 999);
 
-          // If timer is currently paused, subtract current pause duration
-          if (activeEntry.isPaused && activeEntry.pausedAt) {
-            const pausedAt = new Date(activeEntry.pausedAt);
-            // Only subtract pause time if pause started after our effective start
-            if (pausedAt > effectiveStart) {
-              const currentPauseDuration = Math.floor((now.getTime() - pausedAt.getTime()) / 1000);
-              todaySeconds -= currentPauseDuration;
-            }
-          }
+        // For paused timers, use pausedAt as end time
+        const endTime = isPaused && activeEntry.pausedAt
+          ? new Date(activeEntry.pausedAt)
+          : now;
 
-          // Ensure non-negative and cap at maximum reasonable daily hours (12 hours)
-          const MAX_DAILY_SECONDS = 12 * 3600; // 12 hours max
+        const effectiveStart = entryStartTime > todayStart ? entryStartTime : todayStart;
+        const effectiveEnd = endTime < todayEnd ? endTime : todayEnd;
+
+        if (effectiveEnd > effectiveStart) {
+          let todaySeconds = Math.floor((effectiveEnd.getTime() - effectiveStart.getTime()) / 1000);
+
+          // Cap at maximum reasonable daily hours (12 hours)
+          const MAX_DAILY_SECONDS = 12 * 3600;
           todaySeconds = Math.max(0, Math.min(todaySeconds, MAX_DAILY_SECONDS));
 
           const isExtra = (activeEntry as any).isExtraHours === true;
