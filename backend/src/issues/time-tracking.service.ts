@@ -212,9 +212,20 @@ export class TimeTrackingService {
     }
 
     // Calculate pause duration and add to accumulated
-    const pausedAt = new Date(activeEntry.pausedAt);
     const now = new Date();
-    const pauseDuration = Math.floor((now.getTime() - pausedAt.getTime()) / 1000);
+    let pauseDuration = 0;
+
+    // Only calculate pause duration if pausedAt exists (data consistency check)
+    if (activeEntry.pausedAt) {
+      const pausedAt = new Date(activeEntry.pausedAt);
+      pauseDuration = Math.floor((now.getTime() - pausedAt.getTime()) / 1000);
+      // Ensure non-negative (in case of clock issues or corrupted data)
+      pauseDuration = Math.max(0, pauseDuration);
+    } else {
+      // pausedAt is missing but isPaused is true - data inconsistency
+      // Log warning and continue with 0 pause duration
+      console.warn(`[TIME_TRACKING] Warning: Timer for issue ${issueId} is marked as paused but has no pausedAt timestamp`);
+    }
     const newAccumulatedPausedTime = activeEntry.accumulatedPausedTime + pauseDuration;
 
     // Check if this was an end-of-day auto-pause - if so, check if user qualifies for extra hours

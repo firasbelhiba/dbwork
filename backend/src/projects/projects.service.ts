@@ -339,6 +339,10 @@ export class ProjectsService {
       .populate('members.userId', 'firstName lastName email avatar')
       .exec();
 
+    if (!updatedProject) {
+      throw new NotFoundException('Project not found after logo upload');
+    }
+
     // Log activity
     if (userId) {
       await this.activitiesService.logActivity(
@@ -382,6 +386,10 @@ export class ProjectsService {
       .populate('lead', 'firstName lastName email avatar')
       .populate('members.userId', 'firstName lastName email avatar')
       .exec();
+
+    if (!updatedProject) {
+      throw new NotFoundException('Project not found after logo removal');
+    }
 
     // Log activity
     if (userId) {

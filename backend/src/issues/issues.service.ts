@@ -298,7 +298,7 @@ export class IssuesService {
       .findByIdAndUpdate(id, updateData, { new: true })
       .populate({ path: 'assignees', select: 'firstName lastName email avatar', model: 'User' })
       .populate({ path: 'reporter', select: 'firstName lastName email avatar', model: 'User' })
-      .populate('projectId', 'name key')
+      .populate('projectId', 'name key lead')
       .populate('sprintId', 'name status')
       .exec();
 
@@ -515,19 +515,12 @@ export class IssuesService {
           recipientIds.add(reporterId);
         }
 
-        // Add project lead (admin)
-        if (issue.projectId) {
-          try {
-            const projectData = typeof issue.projectId === 'object' && '_id' in issue.projectId
-              ? issue.projectId
-              : await this.issueModel.findById(id).populate('projectId').exec().then(i => i.projectId);
-
-            if (projectData && (projectData as any).lead) {
-              const leadId = (projectData as any).lead.toString();
-              recipientIds.add(leadId);
-            }
-          } catch (error) {
-            console.error('[NOTIFICATION] Error getting project lead:', error);
+        // Add project lead (admin) - projectId is already populated with 'lead' field
+        if (issue.projectId && typeof issue.projectId === 'object') {
+          const projectData = issue.projectId as any;
+          if (projectData.lead) {
+            const leadId = projectData.lead.toString();
+            recipientIds.add(leadId);
           }
         }
 
