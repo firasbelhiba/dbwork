@@ -887,6 +887,13 @@ export default function IssueDetailPage() {
                     <Badge variant={issue.priority as any}>{issue.priority}</Badge>
                   </div>
 
+                  <div>
+                    <span className="text-xs text-gray-600 dark:text-gray-400 block mb-1">Category</span>
+                    <span className="text-sm text-gray-900 dark:text-white">
+                      {issue.category || 'Not categorized'}
+                    </span>
+                  </div>
+
                   {issue.storyPoints && issue.storyPoints > 0 && (
                     <div>
                       <span className="text-xs text-gray-600 dark:text-gray-400 block mb-1">Story Points</span>
