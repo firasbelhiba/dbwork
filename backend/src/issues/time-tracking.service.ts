@@ -188,7 +188,7 @@ export class TimeTrackingService {
 
   /**
    * Resume a paused timer
-   * If the timer was auto-paused at end of day and the user has worked more than 8 hours,
+   * If the timer was auto-paused at end of day and the user has worked more than 7 hours,
    * this starts extra hours tracking. Otherwise, it resumes as a normal timer.
    */
   async resumeTimer(issueId: string, userId: string): Promise<IssueDocument> {
@@ -239,21 +239,21 @@ export class TimeTrackingService {
       'timeTracking.activeTimeEntry.autoPausedEndOfDay': false,
     };
 
-    // If resuming after end-of-day auto-pause, check if user has worked 8+ hours today
+    // If resuming after end-of-day auto-pause, check if user has worked 7+ hours today
     if (wasAutoPausedEndOfDay) {
       const dailyWorkSeconds = await this.calculateUserDailyWorkTime(userIdStr, now);
-      const EIGHT_HOURS_IN_SECONDS = 8 * 60 * 60; // 28800 seconds
+      const SEVEN_HOURS_IN_SECONDS = 7 * 60 * 60; // 25200 seconds
 
-      console.log(`[TIME_TRACKING] User ${userIdStr} daily work time: ${dailyWorkSeconds}s (${(dailyWorkSeconds / 3600).toFixed(2)} hours), threshold: ${EIGHT_HOURS_IN_SECONDS}s`);
+      console.log(`[TIME_TRACKING] User ${userIdStr} daily work time: ${dailyWorkSeconds}s (${(dailyWorkSeconds / 3600).toFixed(2)} hours), threshold: ${SEVEN_HOURS_IN_SECONDS}s`);
 
-      if (dailyWorkSeconds >= EIGHT_HOURS_IN_SECONDS) {
-        // User has worked 8+ hours, mark as extra hours
+      if (dailyWorkSeconds >= SEVEN_HOURS_IN_SECONDS) {
+        // User has worked 7+ hours, mark as extra hours
         updateData['timeTracking.activeTimeEntry.isExtraHours'] = true;
         updateData['timeTracking.activeTimeEntry.extraHoursStartedAt'] = now;
         console.log(`[TIME_TRACKING] Resuming timer for issue ${issueId} as EXTRA HOURS (user worked ${(dailyWorkSeconds / 3600).toFixed(2)} hours today)`);
       } else {
-        // User hasn't worked 8 hours yet, resume as normal timer
-        console.log(`[TIME_TRACKING] Resuming timer for issue ${issueId} as NORMAL (user worked only ${(dailyWorkSeconds / 3600).toFixed(2)} hours today, needs 8 hours for extra)`);
+        // User hasn't worked 7 hours yet, resume as normal timer
+        console.log(`[TIME_TRACKING] Resuming timer for issue ${issueId} as NORMAL (user worked only ${(dailyWorkSeconds / 3600).toFixed(2)} hours today, needs 7 hours for extra)`);
       }
     }
 

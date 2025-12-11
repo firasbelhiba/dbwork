@@ -812,7 +812,7 @@ export class ReportsService {
 
     // Build daily data array
     const dailyData: any[] = [];
-    const TARGET_HOURS = 8;
+    const TARGET_HOURS = 7;
     const TARGET_SECONDS = TARGET_HOURS * 3600;
 
     // Generate all dates in range
@@ -871,7 +871,7 @@ export class ReportsService {
       dailyData.filter((d) => d.status === 'under').map((d) => d.userId)
     ).size;
 
-    // Get users with consistently under 8 hours
+    // Get users with consistently under 7 hours
     const userUnderDays: Record<string, number> = {};
     dailyData.forEach((d) => {
       if (d.status === 'under') {

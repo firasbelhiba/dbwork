@@ -1152,9 +1152,9 @@ export class IssuesService {
     const weeklyHours = weeklySeconds / 3600;
     const monthlyHours = monthlySeconds / 3600;
 
-    const DAILY_TARGET = 8;
-    const WEEKLY_TARGET = 40;
-    const MONTHLY_TARGET = workingDaysInMonth * 8;
+    const DAILY_TARGET = 7;
+    const WEEKLY_TARGET = 35;
+    const MONTHLY_TARGET = workingDaysInMonth * 7;
 
     return {
       projects,
