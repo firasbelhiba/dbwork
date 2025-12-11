@@ -55,6 +55,8 @@ export class TimeTrackingService {
       { new: true }
     ).exec();
 
+    console.log(`[TIMER_START] User ${userIdStr} STARTED timer on issue ${issue.key} at ${now.toISOString()}`);
+
     return updatedIssue;
   }
 
@@ -123,6 +125,9 @@ export class TimeTrackingService {
       { new: true }
     ).exec();
 
+    const durationFormatted = `${Math.floor(totalDuration / 3600)}h ${Math.floor((totalDuration % 3600) / 60)}m`;
+    console.log(`[TIMER_STOP] User ${userIdStr} STOPPED timer on issue ${issue.key} at ${now.toISOString()} (duration: ${durationFormatted})`);
+
     return updatedIssue;
   }
 
@@ -149,16 +154,19 @@ export class TimeTrackingService {
       throw new BadRequestException('Timer is already paused');
     }
 
+    const now = new Date();
     const updatedIssue = await this.issueModel.findByIdAndUpdate(
       issueId,
       {
         $set: {
           'timeTracking.activeTimeEntry.isPaused': true,
-          'timeTracking.activeTimeEntry.pausedAt': new Date(),
+          'timeTracking.activeTimeEntry.pausedAt': now,
         },
       },
       { new: true }
     ).exec();
+
+    console.log(`[TIMER_PAUSE] User ${userIdStr} PAUSED timer on issue ${issue.key} at ${now.toISOString()}`);
 
     return updatedIssue;
   }
@@ -228,6 +236,9 @@ export class TimeTrackingService {
       { $set: updateData },
       { new: true }
     ).exec();
+
+    const isExtraHours = updateData['timeTracking.activeTimeEntry.isExtraHours'] === true;
+    console.log(`[TIMER_RESUME] User ${userIdStr} RESUMED timer on issue ${issue.key} at ${now.toISOString()}${isExtraHours ? ' (EXTRA HOURS)' : ''}`);
 
     return updatedIssue;
   }
@@ -621,7 +632,7 @@ export class TimeTrackingService {
           userId: activeEntry.userId.toString(),
           projectId: issue.projectId.toString(),
         });
-        console.log(`[TIME_TRACKING] Paused timer for issue ${issue.key} (user: ${activeEntry.userId})`);
+        console.log(`[TIMER_AUTO_PAUSE] SYSTEM auto-paused timer for user ${activeEntry.userId} on issue ${issue.key} at ${now.toISOString()} (end-of-day)`);
       } catch (error) {
         const errorMsg = `Failed to pause timer for issue ${issue._id}: ${error.message}`;
         errors.push(errorMsg);
@@ -696,7 +707,7 @@ export class TimeTrackingService {
           userId: activeEntry.userId.toString(),
           projectId: issue.projectId.toString(),
         });
-        console.log(`[TIME_TRACKING] Resumed timer for issue ${issue.key} (user: ${activeEntry.userId})`);
+        console.log(`[TIMER_AUTO_RESUME] SYSTEM auto-resumed timer for user ${activeEntry.userId} on issue ${issue.key} at ${now.toISOString()} (start-of-day)`);
       } catch (error) {
         const errorMsg = `Failed to resume timer for issue ${issue._id}: ${error.message}`;
         errors.push(errorMsg);
@@ -790,7 +801,8 @@ export class TimeTrackingService {
           userId: activeEntry.userId.toString(),
           projectId: issue.projectId.toString(),
         });
-        console.log(`[TIME_TRACKING] Stopped extra hours timer for issue ${issue.key} (user: ${activeEntry.userId}, duration: ${totalDuration}s)`);
+        const durationFormatted = `${Math.floor(totalDuration / 3600)}h ${Math.floor((totalDuration % 3600) / 60)}m`;
+        console.log(`[TIMER_AUTO_STOP] SYSTEM auto-stopped extra hours timer for user ${activeEntry.userId} on issue ${issue.key} at ${now.toISOString()} (duration: ${durationFormatted})`);
       } catch (error) {
         const errorMsg = `Failed to stop extra hours timer for issue ${issue._id}: ${error.message}`;
         errors.push(errorMsg);
