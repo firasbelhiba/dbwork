@@ -1032,6 +1032,13 @@ export class IssuesService {
     let monthlySeconds = 0;
     let activeTimerInfo: any = null;
 
+    // Collect all active timers for this user
+    const activeTimers: Array<{
+      issue: any;
+      entry: any;
+      isPaused: boolean;
+    }> = [];
+
     for (const issue of issues) {
       const timeEntries = issue.timeTracking?.timeEntries || [];
 
@@ -1056,64 +1063,78 @@ export class IssuesService {
         }
       }
 
-      // Process active timer
+      // Collect active timer info
       const activeEntry = issue.timeTracking?.activeTimeEntry;
       if (activeEntry && activeEntry.userId === userId) {
-        const entryStartTime = new Date(activeEntry.startTime);
-
-        // Store active timer info
-        const projectData = issue.projectId as any;
-        activeTimerInfo = {
-          issueKey: issue.key,
-          issueTitle: issue.title,
-          projectKey: projectData?.key || 'UNK',
-          startedAt: activeEntry.startTime,
+        activeTimers.push({
+          issue,
+          entry: activeEntry,
           isPaused: activeEntry.isPaused || false,
-        };
+        });
+      }
+    }
 
-        // Calculate active timer duration for today only (using 9 AM work start)
-        const workStart = new Date(todayStart);
-        workStart.setHours(9, 0, 0, 0);
-
-        const effectiveStart = entryStartTime > workStart ? entryStartTime : workStart;
-        let activeSeconds = Math.floor((now.getTime() - effectiveStart.getTime()) / 1000);
-
-        // Subtract pause time if currently paused
-        if (activeEntry.isPaused && activeEntry.pausedAt) {
-          const pausedAt = new Date(activeEntry.pausedAt);
-          if (pausedAt > effectiveStart) {
-            activeSeconds -= Math.floor((now.getTime() - pausedAt.getTime()) / 1000);
-          }
+    // Process active timers - only count ONE
+    // Priority: running timer > most recently started paused timer
+    if (activeTimers.length > 0) {
+      // Sort: running timers first, then by start time (most recent first)
+      activeTimers.sort((a, b) => {
+        if (a.isPaused !== b.isPaused) {
+          return a.isPaused ? 1 : -1; // Running timers first
         }
+        // Both same state, sort by start time (most recent first)
+        return new Date(b.entry.startTime).getTime() - new Date(a.entry.startTime).getTime();
+      });
 
-        // Cap at reasonable max
+      // Use the first (best) timer
+      const { issue, entry: activeEntry, isPaused } = activeTimers[0];
+      const entryStartTime = new Date(activeEntry.startTime);
+      const projectData = issue.projectId as any;
+
+      // Determine end time: now for running timers, pausedAt for paused timers
+      const endTime = isPaused && activeEntry.pausedAt
+        ? new Date(activeEntry.pausedAt)
+        : now;
+
+      // Store active timer info for display
+      activeTimerInfo = {
+        issueKey: issue.key,
+        issueTitle: issue.title,
+        projectKey: projectData?.key || 'UNK',
+        startedAt: activeEntry.startTime,
+        isPaused,
+      };
+
+      // Calculate active timer duration for today only (using 9 AM work start)
+      const workStart = new Date(todayStart);
+      workStart.setHours(9, 0, 0, 0);
+
+      // For daily: only count time within today's work hours
+      const effectiveStart = entryStartTime > workStart ? entryStartTime : workStart;
+      const effectiveEnd = endTime < todayEnd ? endTime : todayEnd;
+
+      // Only add daily time if the timer was active during today
+      if (effectiveEnd > effectiveStart) {
+        let activeSeconds = Math.floor((effectiveEnd.getTime() - effectiveStart.getTime()) / 1000);
+
+        // Cap at reasonable max for today (in case of data issues)
         activeSeconds = Math.max(0, Math.min(activeSeconds, 12 * 3600));
-
-        // Add to daily
         dailySeconds += activeSeconds;
+      }
 
-        // For weekly/monthly, calculate actual timer duration (not capped to today)
-        if (entryStartTime >= weekStart) {
-          let weekActiveSeconds = Math.floor((now.getTime() - entryStartTime.getTime()) / 1000);
-          if (activeEntry.isPaused && activeEntry.pausedAt) {
-            const pausedAt = new Date(activeEntry.pausedAt);
-            weekActiveSeconds -= Math.floor((now.getTime() - pausedAt.getTime()) / 1000);
-          }
-          weekActiveSeconds -= (activeEntry.accumulatedPausedTime || 0);
-          weekActiveSeconds = Math.max(0, weekActiveSeconds);
-          weeklySeconds += weekActiveSeconds;
-        }
+      // For weekly/monthly, calculate actual timer duration since start
+      if (entryStartTime >= weekStart) {
+        let weekActiveSeconds = Math.floor((endTime.getTime() - entryStartTime.getTime()) / 1000);
+        weekActiveSeconds -= (activeEntry.accumulatedPausedTime || 0);
+        weekActiveSeconds = Math.max(0, weekActiveSeconds);
+        weeklySeconds += weekActiveSeconds;
+      }
 
-        if (entryStartTime >= monthStart) {
-          let monthActiveSeconds = Math.floor((now.getTime() - entryStartTime.getTime()) / 1000);
-          if (activeEntry.isPaused && activeEntry.pausedAt) {
-            const pausedAt = new Date(activeEntry.pausedAt);
-            monthActiveSeconds -= Math.floor((now.getTime() - pausedAt.getTime()) / 1000);
-          }
-          monthActiveSeconds -= (activeEntry.accumulatedPausedTime || 0);
-          monthActiveSeconds = Math.max(0, monthActiveSeconds);
-          monthlySeconds += monthActiveSeconds;
-        }
+      if (entryStartTime >= monthStart) {
+        let monthActiveSeconds = Math.floor((endTime.getTime() - entryStartTime.getTime()) / 1000);
+        monthActiveSeconds -= (activeEntry.accumulatedPausedTime || 0);
+        monthActiveSeconds = Math.max(0, monthActiveSeconds);
+        monthlySeconds += monthActiveSeconds;
       }
     }
 
