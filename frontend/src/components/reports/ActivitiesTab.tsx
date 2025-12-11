@@ -384,7 +384,7 @@ export const ActivitiesTab: React.FC<ActivitiesTabProps> = ({ startDate, endDate
               </div>
               {/* Entity Breakdown */}
               <div className="ml-14 flex flex-wrap gap-2">
-                {user.entityBreakdown
+                {(user.entityBreakdown || [])
                   .sort((a, b) => b.percentage - a.percentage)
                   .map((entity) => (
                     <span
