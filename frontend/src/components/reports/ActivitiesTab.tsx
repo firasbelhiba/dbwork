@@ -145,9 +145,20 @@ const getTimeAgo = (dateString: string): string => {
   return formatDate(dateString);
 };
 
+interface UserActivityData {
+  userId: string;
+  userName: string;
+  userAvatar: string | null;
+  count: number;
+  entityBreakdown: Array<{ entityType: string; count: number; percentage: number }>;
+}
+
 export const ActivitiesTab: React.FC<ActivitiesTabProps> = ({ startDate, endDate }) => {
   const [data, setData] = useState<ActivityAnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showAllUsersModal, setShowAllUsersModal] = useState(false);
+  const [allUsersData, setAllUsersData] = useState<UserActivityData[]>([]);
+  const [loadingAllUsers, setLoadingAllUsers] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -163,6 +174,23 @@ export const ActivitiesTab: React.FC<ActivitiesTabProps> = ({ startDate, endDate
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchAllUsers = async () => {
+    setLoadingAllUsers(true);
+    try {
+      const response = await activitiesAPI.getAllUserActivities(startDate, endDate);
+      setAllUsersData(response.data);
+    } catch (error) {
+      console.error('Error fetching all users activities:', error);
+    } finally {
+      setLoadingAllUsers(false);
+    }
+  };
+
+  const handleViewAllUsers = () => {
+    setShowAllUsersModal(true);
+    fetchAllUsers();
   };
 
   if (loading) {
@@ -349,7 +377,15 @@ export const ActivitiesTab: React.FC<ActivitiesTabProps> = ({ startDate, endDate
 
       {/* Most Active Users with Entity Breakdown */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Most Active Users</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Most Active Users</h3>
+          <button
+            onClick={handleViewAllUsers}
+            className="text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
+          >
+            View All Users
+          </button>
+        </div>
         <div className="space-y-4">
           {data.byUser.map((user, index) => (
             <div key={user.userId} className="border-b border-gray-100 dark:border-gray-700 pb-4 last:border-0 last:pb-0">
@@ -481,6 +517,108 @@ export const ActivitiesTab: React.FC<ActivitiesTabProps> = ({ startDate, endDate
           )}
         </div>
       </div>
+
+      {/* All Users Modal */}
+      {showAllUsersModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-75"
+              onClick={() => setShowAllUsersModal(false)}
+            />
+
+            {/* Modal */}
+            <div className="inline-block w-full max-w-3xl my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-gray-800 rounded-xl shadow-xl">
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    All Users Activity
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    {allUsersData.length} users with activity in this period
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowAllUsersModal(false)}
+                  className="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="px-6 py-4 max-h-[60vh] overflow-y-auto">
+                {loadingAllUsers ? (
+                  <div className="flex items-center justify-center py-12">
+                    <LogoLoader size="md" text="Loading all users" />
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {allUsersData.map((user, index) => (
+                      <div key={user.userId} className="border-b border-gray-100 dark:border-gray-700 pb-4 last:border-0 last:pb-0">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="w-8 text-sm font-medium text-gray-500 dark:text-gray-400">
+                            #{index + 1}
+                          </span>
+                          <UserAvatar
+                            src={user.userAvatar}
+                            name={user.userName}
+                            size="sm"
+                          />
+                          <span className="flex-1 text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                            {user.userName}
+                          </span>
+                          <span className="text-sm font-bold text-primary-600 dark:text-primary-400">
+                            {user.count} activities
+                          </span>
+                        </div>
+                        {/* Entity Breakdown */}
+                        <div className="ml-16 flex flex-wrap gap-2">
+                          {(user.entityBreakdown || [])
+                            .sort((a, b) => b.percentage - a.percentage)
+                            .map((entity) => (
+                              <span
+                                key={entity.entityType}
+                                className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                  entity.entityType === 'issue' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                                  entity.entityType === 'comment' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
+                                  entity.entityType === 'project' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
+                                  entity.entityType === 'sprint' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                                  entity.entityType === 'feedback' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                  entity.entityType === 'changelog' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' :
+                                  'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                                }`}
+                              >
+                                {ENTITY_LABELS[entity.entityType] || entity.entityType}: {entity.percentage}%
+                              </span>
+                            ))}
+                        </div>
+                      </div>
+                    ))}
+                    {allUsersData.length === 0 && !loadingAllUsers && (
+                      <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-8">No user activity in this period</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="flex justify-end px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                <button
+                  onClick={() => setShowAllUsersModal(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -375,6 +375,86 @@ export class ActivitiesService {
     };
   }
 
+  async getAllUserActivities(startDate: string, endDate: string): Promise<Array<{
+    userId: string;
+    userName: string;
+    userAvatar: string | null;
+    count: number;
+    entityBreakdown: Array<{ entityType: string; count: number; percentage: number }>;
+  }>> {
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+
+    const dateFilter = { createdAt: { $gte: start, $lte: end } };
+
+    const allUsers = await this.activityModel.aggregate([
+      { $match: dateFilter },
+      // First group by userId and entityType to get counts per entity type
+      {
+        $group: {
+          _id: { userId: '$userId', entityType: '$entityType' },
+          count: { $sum: 1 },
+        },
+      },
+      // Then group by userId to collect all entity types
+      {
+        $group: {
+          _id: '$_id.userId',
+          totalCount: { $sum: '$count' },
+          entityBreakdown: {
+            $push: {
+              entityType: '$_id.entityType',
+              count: '$count',
+            },
+          },
+        },
+      },
+      { $sort: { totalCount: -1 } },
+      // No limit - get all users
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          userId: '$_id',
+          count: '$totalCount',
+          entityBreakdown: {
+            $map: {
+              input: '$entityBreakdown',
+              as: 'eb',
+              in: {
+                entityType: '$$eb.entityType',
+                count: '$$eb.count',
+                percentage: {
+                  $round: [{ $multiply: [{ $divide: ['$$eb.count', '$totalCount'] }, 100] }, 1],
+                },
+              },
+            },
+          },
+          userName: {
+            $cond: {
+              if: { $and: ['$user.firstName', '$user.lastName'] },
+              then: { $concat: ['$user.firstName', ' ', '$user.lastName'] },
+              else: 'Unknown User',
+            },
+          },
+          userAvatar: { $ifNull: ['$user.avatar', null] },
+          _id: 0,
+        },
+      },
+    ]);
+
+    return allUsers;
+  }
+
   // Helper method to log activity from other services
   async logActivity(
     userId: string,

@@ -58,4 +58,15 @@ export class ActivitiesController {
   ) {
     return this.activitiesService.getAnalytics(startDate, endDate);
   }
+
+  @Get('users/all')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Get all users activity counts with date range (Admin only)' })
+  @ApiResponse({ status: 200, description: 'All users activity data' })
+  async getAllUserActivities(
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+  ) {
+    return this.activitiesService.getAllUserActivities(startDate, endDate);
+  }
 }
