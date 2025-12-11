@@ -83,14 +83,29 @@ export class TimeTrackingService {
     const startTime = new Date(activeEntry.startTime);
 
     // Calculate duration excluding paused time
-    let totalDuration = Math.floor((now.getTime() - startTime.getTime()) / 1000);
+    const elapsedSeconds = Math.floor((now.getTime() - startTime.getTime()) / 1000);
+    const accumulatedPausedTime = Number(activeEntry.accumulatedPausedTime) || 0;
+
+    let totalDuration = elapsedSeconds;
 
     // If currently paused, add the current pause duration
     if (activeEntry.isPaused && activeEntry.pausedAt) {
       const currentPauseDuration = Math.floor((now.getTime() - new Date(activeEntry.pausedAt).getTime()) / 1000);
-      totalDuration -= (activeEntry.accumulatedPausedTime + currentPauseDuration);
+      totalDuration -= (accumulatedPausedTime + currentPauseDuration);
     } else {
-      totalDuration -= activeEntry.accumulatedPausedTime;
+      totalDuration -= accumulatedPausedTime;
+    }
+
+    // Log for debugging if duration would be 0 or negative
+    if (totalDuration <= 0 && elapsedSeconds > 60) {
+      console.log(`[TIME_TRACKING] WARNING: Duration calculated as ${totalDuration}s for issue ${issue.key}`);
+      console.log(`  Elapsed: ${elapsedSeconds}s, AccumulatedPaused: ${accumulatedPausedTime}s`);
+      console.log(`  StartTime: ${startTime.toISOString()}, Now: ${now.toISOString()}`);
+      // Use elapsed time if paused time is corrupted (shouldn't exceed elapsed)
+      if (accumulatedPausedTime > elapsedSeconds) {
+        console.log(`  Correcting: accumulatedPausedTime (${accumulatedPausedTime}) > elapsed (${elapsedSeconds}), using elapsed`);
+        totalDuration = elapsedSeconds;
+      }
     }
 
     // Ensure duration is not negative
