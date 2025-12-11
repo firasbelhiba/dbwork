@@ -43,6 +43,12 @@ interface ActivityAnalyticsData {
     count: number;
     entityBreakdown: Array<{ entityType: string; count: number; percentage: number }>;
   }>;
+  leastActiveUsers: Array<{
+    userId: string;
+    userName: string;
+    userAvatar: string | null;
+    count: number;
+  }>;
   byProject: Array<{ projectId: string; projectName: string; count: number }>;
   dailyTrend: Array<{ date: string; count: number }>;
   recentActivities: Array<{
@@ -467,6 +473,34 @@ export const ActivitiesTab: React.FC<ActivitiesTabProps> = ({ startDate, endDate
             ))}
             {data.byProject.length === 0 && (
               <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No project activity in this period</p>
+            )}
+          </div>
+        </div>
+
+        {/* Least Active Users */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Least Active Users</h3>
+          <div className="space-y-3">
+            {data.leastActiveUsers.map((user, index) => (
+              <div key={user.userId} className="flex items-center gap-3">
+                <span className="w-6 text-sm font-medium text-gray-500 dark:text-gray-400">
+                  #{index + 1}
+                </span>
+                <UserAvatar
+                  src={user.userAvatar}
+                  name={user.userName}
+                  size="sm"
+                />
+                <span className="flex-1 text-sm text-gray-700 dark:text-gray-300 truncate">
+                  {user.userName}
+                </span>
+                <span className="text-sm font-medium text-orange-600 dark:text-orange-400">
+                  {user.count} {user.count === 1 ? 'activity' : 'activities'}
+                </span>
+              </div>
+            ))}
+            {data.leastActiveUsers.length === 0 && (
+              <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No user activity in this period</p>
             )}
           </div>
         </div>

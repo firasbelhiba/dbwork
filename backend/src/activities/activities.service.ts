@@ -213,6 +213,12 @@ export class ActivitiesService {
       count: number;
       entityBreakdown: Array<{ entityType: string; count: number; percentage: number }>;
     }>;
+    leastActiveUsers: Array<{
+      userId: string;
+      userName: string;
+      userAvatar: string | null;
+      count: number;
+    }>;
     byProject: Array<{ projectId: string; projectName: string; count: number }>;
     dailyTrend: Array<{ date: string; count: number }>;
     recentActivities: any[];
@@ -232,6 +238,7 @@ export class ActivitiesService {
       byActionType,
       byEntityType,
       byUser,
+      leastActiveUsers,
       byProject,
       dailyTrend,
       recentActivities,
@@ -314,6 +321,37 @@ export class ActivitiesService {
           },
         },
       ]),
+      // Least active users (sorted ascending by count)
+      this.activityModel.aggregate([
+        { $match: dateFilter },
+        { $group: { _id: '$userId', count: { $sum: 1 } } },
+        { $sort: { count: 1 } }, // Ascending order for least active
+        { $limit: 10 },
+        {
+          $lookup: {
+            from: 'users',
+            localField: '_id',
+            foreignField: '_id',
+            as: 'user',
+          },
+        },
+        { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+        {
+          $project: {
+            userId: '$_id',
+            count: 1,
+            userName: {
+              $cond: {
+                if: { $and: ['$user.firstName', '$user.lastName'] },
+                then: { $concat: ['$user.firstName', ' ', '$user.lastName'] },
+                else: 'Unknown User',
+              },
+            },
+            userAvatar: { $ifNull: ['$user.avatar', null] },
+            _id: 0,
+          },
+        },
+      ]),
       this.activityModel.aggregate([
         { $match: { ...dateFilter, projectId: { $ne: null } } },
         { $group: { _id: '$projectId', count: { $sum: 1 } } },
@@ -369,6 +407,7 @@ export class ActivitiesService {
       byActionType,
       byEntityType,
       byUser,
+      leastActiveUsers,
       byProject,
       dailyTrend,
       recentActivities,
