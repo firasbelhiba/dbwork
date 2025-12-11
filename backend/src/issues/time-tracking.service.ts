@@ -636,7 +636,8 @@ export class TimeTrackingService {
 
   /**
    * Resume all paused timers at start of work day (9 AM)
-   * This automatically restarts timers that were paused at end of previous day
+   * This automatically restarts ALL paused timers for in_progress issues
+   * regardless of how they were paused (end-of-day, manual, inactivity, etc.)
    */
   async resumeAllTimersStartOfDay(): Promise<{
     resumedCount: number;
@@ -650,12 +651,15 @@ export class TimeTrackingService {
 
     console.log(`[TIME_TRACKING] Running start-of-day timer resume at ${now.toISOString()}`);
 
-    // Find all in_progress issues with paused timers (autoPausedEndOfDay)
+    // Find ALL in_progress issues with paused timers (regardless of how they were paused)
+    // This ensures all timers resume at 9 AM, whether they were:
+    // - Auto-paused at end of day (5:30 PM)
+    // - Manually paused by the user
+    // - Paused due to inactivity
     const issuesWithPausedTimers = await this.issueModel.find({
       status: 'in_progress',
       'timeTracking.activeTimeEntry': { $ne: null },
       'timeTracking.activeTimeEntry.isPaused': true,
-      'timeTracking.activeTimeEntry.autoPausedEndOfDay': true,
     }).exec();
 
     console.log(`[TIME_TRACKING] Found ${issuesWithPausedTimers.length} paused timers to resume`);
