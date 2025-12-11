@@ -187,6 +187,27 @@ export class TimeTrackingSchedulerService implements OnModuleInit {
         this.logger.log('No paused timers to resume');
       }
 
+      // Step 3: Start timers for in_progress issues that don't have any timer
+      // This handles cases where tickets were set to in_progress but never had a timer started
+      this.logger.log('Step 3: Starting timers for in_progress issues without active timer...');
+      const startResult = await this.timeTrackingService.startTimersForInProgressIssuesWithoutTimer();
+
+      if (startResult.startedCount > 0) {
+        this.logger.log(`Started ${startResult.startedCount} new timer(s) for in_progress issues`);
+
+        // Emit WebSocket events for each started timer
+        for (const startedTimer of startResult.startedTimers) {
+          this.webSocketGateway.emitTimerResumed(
+            startedTimer.userId,
+            startedTimer.projectId,
+            startedTimer.issueId,
+            startedTimer.issueKey,
+          );
+        }
+      } else {
+        this.logger.log('No in_progress issues without timer found');
+      }
+
       // Log any errors
       if (stopResult.errors.length > 0) {
         this.logger.warn(`Encountered ${stopResult.errors.length} error(s) while stopping extra hours`);
@@ -196,6 +217,11 @@ export class TimeTrackingSchedulerService implements OnModuleInit {
       if (resumeResult.errors.length > 0) {
         this.logger.warn(`Encountered ${resumeResult.errors.length} error(s) while resuming timers`);
         resumeResult.errors.forEach((err) => this.logger.error(err));
+      }
+
+      if (startResult.errors.length > 0) {
+        this.logger.warn(`Encountered ${startResult.errors.length} error(s) while starting new timers`);
+        startResult.errors.forEach((err) => this.logger.error(err));
       }
 
       this.logger.log('=== START OF DAY TIMER MANAGEMENT COMPLETE ===');

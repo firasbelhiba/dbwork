@@ -814,4 +814,89 @@ export class TimeTrackingService {
 
     return { stoppedCount, errors, stoppedTimers };
   }
+
+  /**
+   * Start timers for all in_progress issues that don't have an active timer
+   * This ensures all in_progress tickets have running counters at 9 AM
+   * Handles cases where:
+   * - Ticket was set to in_progress but timer was never started
+   * - Timer was stopped completely (not paused) previously
+   */
+  async startTimersForInProgressIssuesWithoutTimer(): Promise<{
+    startedCount: number;
+    errors: string[];
+    startedTimers: Array<{ issueId: string; issueKey: string; userId: string; projectId: string }>;
+  }> {
+    const now = new Date();
+    const errors: string[] = [];
+    let startedCount = 0;
+    const startedTimers: Array<{ issueId: string; issueKey: string; userId: string; projectId: string }> = [];
+
+    console.log(`[TIME_TRACKING] Starting timers for in_progress issues without active timer at ${now.toISOString()}`);
+
+    // Find all in_progress issues that have NO active timer (null or missing)
+    // These are issues that are in progress but have no counter running
+    const issuesWithoutTimer = await this.issueModel.find({
+      status: 'in_progress',
+      isArchived: { $ne: true },
+      $or: [
+        { 'timeTracking.activeTimeEntry': null },
+        { 'timeTracking.activeTimeEntry': { $exists: false } },
+        { timeTracking: { $exists: false } },
+      ],
+    }).populate('assignees', '_id').exec();
+
+    console.log(`[TIME_TRACKING] Found ${issuesWithoutTimer.length} in_progress issues without active timer`);
+
+    for (const issue of issuesWithoutTimer) {
+      try {
+        // Get the first assignee to start the timer for
+        // If no assignees, we can't start a timer (need a user)
+        const assignees = issue.assignees as any[];
+        if (!assignees || assignees.length === 0) {
+          console.log(`[TIME_TRACKING] Issue ${issue.key} has no assignees, skipping timer start`);
+          continue;
+        }
+
+        // Use the first assignee's ID
+        const userId = assignees[0]._id ? assignees[0]._id.toString() : assignees[0].toString();
+
+        // Create new active timer entry
+        const activeTimeEntry: ActiveTimeEntry = {
+          id: new Types.ObjectId().toString(),
+          userId: userId,
+          startTime: now,
+          lastActivityAt: now,
+          isPaused: false,
+          accumulatedPausedTime: 0,
+        };
+
+        await this.issueModel.findByIdAndUpdate(
+          issue._id,
+          {
+            $set: {
+              'timeTracking.activeTimeEntry': activeTimeEntry,
+            },
+          },
+        ).exec();
+
+        startedCount++;
+        startedTimers.push({
+          issueId: issue._id.toString(),
+          issueKey: issue.key,
+          userId: userId,
+          projectId: issue.projectId.toString(),
+        });
+        console.log(`[TIMER_AUTO_START] SYSTEM auto-started timer for user ${userId} on issue ${issue.key} at ${now.toISOString()} (start-of-day, no previous timer)`);
+      } catch (error) {
+        const errorMsg = `Failed to start timer for issue ${issue._id}: ${error.message}`;
+        errors.push(errorMsg);
+        console.error(`[TIME_TRACKING] ${errorMsg}`);
+      }
+    }
+
+    console.log(`[TIME_TRACKING] Start-of-day timer start complete. Started: ${startedCount}, Errors: ${errors.length}`);
+
+    return { startedCount, errors, startedTimers };
+  }
 }
