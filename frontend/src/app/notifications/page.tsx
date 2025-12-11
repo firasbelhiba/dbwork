@@ -5,14 +5,17 @@ import Link from 'next/link';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Breadcrumb, LogoLoader } from '@/components/common';
 import { notificationsAPI } from '@/lib/api';
-import { Notification, NotificationType } from '@/types/notification';
+import { Notification, NotificationType, NOTIFICATION_TYPE_GROUPS } from '@/types/notification';
 import toast from 'react-hot-toast';
+
+// Type filter options using groups
+type TypeFilterOption = 'all' | 'assignments' | 'updates' | 'comments' | 'mentions' | 'sprints' | 'invitations';
 
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
-  const [typeFilter, setTypeFilter] = useState<NotificationType | 'all'>('all');
+  const [typeFilter, setTypeFilter] = useState<TypeFilterOption>('all');
 
   useEffect(() => {
     loadNotifications();
@@ -81,58 +84,74 @@ export default function NotificationsPage() {
   };
 
   const getNotificationIcon = (type: NotificationType) => {
-    switch (type) {
-      case NotificationType.ISSUE_ASSIGNED:
-        return (
-          <div className="flex-shrink-0 w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center">
-            <svg className="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-          </div>
-        );
-      case NotificationType.ISSUE_UPDATED:
-      case NotificationType.ISSUE_COMMENTED:
-        return (
-          <div className="flex-shrink-0 w-12 h-12 bg-success-100 dark:bg-success-900/30 rounded-full flex items-center justify-center">
-            <svg className="w-6 h-6 text-success-600 dark:text-success-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-          </div>
-        );
-      case NotificationType.MENTION:
-        return (
-          <div className="flex-shrink-0 w-12 h-12 bg-warning-100 dark:bg-warning-900/30 rounded-full flex items-center justify-center">
-            <svg className="w-6 h-6 text-warning-600 dark:text-warning-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-            </svg>
-          </div>
-        );
-      case NotificationType.SPRINT_STARTED:
-      case NotificationType.SPRINT_COMPLETED:
-        return (
-          <div className="flex-shrink-0 w-12 h-12 bg-info-100 dark:bg-info-900/30 rounded-full flex items-center justify-center">
-            <svg className="w-6 h-6 text-info-600 dark:text-info-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-          </div>
-        );
-      case NotificationType.PROJECT_INVITATION:
-        return (
-          <div className="flex-shrink-0 w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
-            <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76" />
-            </svg>
-          </div>
-        );
-      default:
-        return (
-          <div className="flex-shrink-0 w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-            <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-        );
+    // Assignments
+    if (NOTIFICATION_TYPE_GROUPS.assignments.includes(type)) {
+      return (
+        <div className="flex-shrink-0 w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center">
+          <svg className="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        </div>
+      );
     }
+    // Updates (status, priority, due date changes)
+    if (NOTIFICATION_TYPE_GROUPS.updates.includes(type)) {
+      return (
+        <div className="flex-shrink-0 w-12 h-12 bg-success-100 dark:bg-success-900/30 rounded-full flex items-center justify-center">
+          <svg className="w-6 h-6 text-success-600 dark:text-success-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+      );
+    }
+    // Comments
+    if (NOTIFICATION_TYPE_GROUPS.comments.includes(type)) {
+      return (
+        <div className="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+          <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+        </div>
+      );
+    }
+    // Mentions
+    if (NOTIFICATION_TYPE_GROUPS.mentions.includes(type)) {
+      return (
+        <div className="flex-shrink-0 w-12 h-12 bg-warning-100 dark:bg-warning-900/30 rounded-full flex items-center justify-center">
+          <svg className="w-6 h-6 text-warning-600 dark:text-warning-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+          </svg>
+        </div>
+      );
+    }
+    // Sprints
+    if (NOTIFICATION_TYPE_GROUPS.sprints.includes(type)) {
+      return (
+        <div className="flex-shrink-0 w-12 h-12 bg-info-100 dark:bg-info-900/30 rounded-full flex items-center justify-center">
+          <svg className="w-6 h-6 text-info-600 dark:text-info-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </div>
+      );
+    }
+    // Invitations / Project membership
+    if (NOTIFICATION_TYPE_GROUPS.invitations.includes(type)) {
+      return (
+        <div className="flex-shrink-0 w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
+          <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76" />
+          </svg>
+        </div>
+      );
+    }
+    // Default icon for any other type
+    return (
+      <div className="flex-shrink-0 w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+        <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+    );
   };
 
   const getRelativeTime = (date: Date) => {
@@ -154,17 +173,22 @@ export default function NotificationsPage() {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  // Apply type filter
+  // Get the types for a filter group
+  const getGroupTypes = (group: TypeFilterOption): NotificationType[] => {
+    if (group === 'all') return [];
+    return NOTIFICATION_TYPE_GROUPS[group] || [];
+  };
+
+  // Apply type filter using groups
   const filteredNotifications = typeFilter === 'all'
     ? notifications
-    : typeFilter === NotificationType.SPRINT_STARTED
-    ? notifications.filter(n => n.type === NotificationType.SPRINT_STARTED || n.type === NotificationType.SPRINT_COMPLETED)
-    : notifications.filter(n => n.type === typeFilter);
+    : notifications.filter(n => getGroupTypes(typeFilter).includes(n.type));
 
-  // Get counts for each notification type
-  const getTypeCount = (type: NotificationType | 'all') => {
-    if (type === 'all') return notifications.length;
-    return notifications.filter(n => n.type === type).length;
+  // Get counts for each notification type group
+  const getGroupCount = (group: TypeFilterOption): number => {
+    if (group === 'all') return notifications.length;
+    const types = getGroupTypes(group);
+    return notifications.filter(n => types.includes(n.type)).length;
   };
 
   return (
@@ -277,73 +301,73 @@ export default function NotificationsPage() {
               }`}
             >
               All Types
-              <span className="ml-2 text-xs opacity-75">({getTypeCount('all')})</span>
+              <span className="ml-2 text-xs opacity-75">({getGroupCount('all')})</span>
             </button>
             <button
-              onClick={() => setTypeFilter(NotificationType.ISSUE_ASSIGNED)}
+              onClick={() => setTypeFilter('assignments')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                typeFilter === NotificationType.ISSUE_ASSIGNED
+                typeFilter === 'assignments'
                   ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 border-2 border-primary-500'
                   : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
             >
               Assignments
-              <span className="ml-2 text-xs opacity-75">({getTypeCount(NotificationType.ISSUE_ASSIGNED)})</span>
+              <span className="ml-2 text-xs opacity-75">({getGroupCount('assignments')})</span>
             </button>
             <button
-              onClick={() => setTypeFilter(NotificationType.ISSUE_UPDATED)}
+              onClick={() => setTypeFilter('updates')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                typeFilter === NotificationType.ISSUE_UPDATED
+                typeFilter === 'updates'
                   ? 'bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-400 border-2 border-success-500'
                   : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
             >
               Updates
-              <span className="ml-2 text-xs opacity-75">({getTypeCount(NotificationType.ISSUE_UPDATED)})</span>
+              <span className="ml-2 text-xs opacity-75">({getGroupCount('updates')})</span>
             </button>
             <button
-              onClick={() => setTypeFilter(NotificationType.ISSUE_COMMENTED)}
+              onClick={() => setTypeFilter('comments')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                typeFilter === NotificationType.ISSUE_COMMENTED
-                  ? 'bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-400 border-2 border-success-500'
+                typeFilter === 'comments'
+                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-2 border-blue-500'
                   : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
             >
               Comments
-              <span className="ml-2 text-xs opacity-75">({getTypeCount(NotificationType.ISSUE_COMMENTED)})</span>
+              <span className="ml-2 text-xs opacity-75">({getGroupCount('comments')})</span>
             </button>
             <button
-              onClick={() => setTypeFilter(NotificationType.MENTION)}
+              onClick={() => setTypeFilter('mentions')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                typeFilter === NotificationType.MENTION
+                typeFilter === 'mentions'
                   ? 'bg-warning-100 dark:bg-warning-900/30 text-warning-700 dark:text-warning-400 border-2 border-warning-500'
                   : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
             >
               Mentions
-              <span className="ml-2 text-xs opacity-75">({getTypeCount(NotificationType.MENTION)})</span>
+              <span className="ml-2 text-xs opacity-75">({getGroupCount('mentions')})</span>
             </button>
             <button
-              onClick={() => setTypeFilter(NotificationType.SPRINT_STARTED)}
+              onClick={() => setTypeFilter('sprints')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                typeFilter === NotificationType.SPRINT_STARTED
+                typeFilter === 'sprints'
                   ? 'bg-info-100 dark:bg-info-900/30 text-info-700 dark:text-info-400 border-2 border-info-500'
                   : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
             >
               Sprints
-              <span className="ml-2 text-xs opacity-75">({getTypeCount(NotificationType.SPRINT_STARTED) + getTypeCount(NotificationType.SPRINT_COMPLETED)})</span>
+              <span className="ml-2 text-xs opacity-75">({getGroupCount('sprints')})</span>
             </button>
             <button
-              onClick={() => setTypeFilter(NotificationType.PROJECT_INVITATION)}
+              onClick={() => setTypeFilter('invitations')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                typeFilter === NotificationType.PROJECT_INVITATION
+                typeFilter === 'invitations'
                   ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border-2 border-purple-500'
                   : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
             >
               Invitations
-              <span className="ml-2 text-xs opacity-75">({getTypeCount(NotificationType.PROJECT_INVITATION)})</span>
+              <span className="ml-2 text-xs opacity-75">({getGroupCount('invitations')})</span>
             </button>
           </div>
         </div>
