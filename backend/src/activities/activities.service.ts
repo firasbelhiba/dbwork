@@ -321,37 +321,57 @@ export class ActivitiesService {
           },
         },
       ]),
-      // Least active users (sorted ascending by count)
-      this.activityModel.aggregate([
-        { $match: dateFilter },
-        { $group: { _id: '$userId', count: { $sum: 1 } } },
-        { $sort: { count: 1 } }, // Ascending order for least active
-        { $limit: 10 },
+      // Least active users - start from users collection to include those with zero activity
+      this.activityModel.db.collection('users').aggregate([
+        // Only include active users (not deleted)
+        { $match: { isActive: { $ne: false } } },
+        // Left join with activities in the date range
         {
           $lookup: {
-            from: 'users',
-            localField: '_id',
-            foreignField: '_id',
-            as: 'user',
+            from: 'activities',
+            let: { userId: '$_id' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ['$userId', '$$userId'] },
+                      { $gte: ['$createdAt', start] },
+                      { $lte: ['$createdAt', end] },
+                    ],
+                  },
+                },
+              },
+            ],
+            as: 'activities',
           },
         },
-        { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+        // Add activity count
+        {
+          $addFields: {
+            count: { $size: '$activities' },
+          },
+        },
+        // Sort by count ascending (least active first)
+        { $sort: { count: 1 } },
+        { $limit: 10 },
+        // Project the fields we need
         {
           $project: {
             userId: '$_id',
             count: 1,
             userName: {
               $cond: {
-                if: { $and: ['$user.firstName', '$user.lastName'] },
-                then: { $concat: ['$user.firstName', ' ', '$user.lastName'] },
+                if: { $and: ['$firstName', '$lastName'] },
+                then: { $concat: ['$firstName', ' ', '$lastName'] },
                 else: 'Unknown User',
               },
             },
-            userAvatar: { $ifNull: ['$user.avatar', null] },
+            userAvatar: { $ifNull: ['$avatar', null] },
             _id: 0,
           },
         },
-      ]),
+      ]).toArray(),
       this.activityModel.aggregate([
         { $match: { ...dateFilter, projectId: { $ne: null } } },
         { $group: { _id: '$projectId', count: { $sum: 1 } } },
