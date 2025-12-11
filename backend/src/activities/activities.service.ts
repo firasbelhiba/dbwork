@@ -371,7 +371,7 @@ export class ActivitiesService {
             _id: 0,
           },
         },
-      ]).toArray(),
+      ]).toArray() as Promise<Array<{ userId: string; userName: string; userAvatar: string | null; count: number }>>,
       this.activityModel.aggregate([
         { $match: { ...dateFilter, projectId: { $ne: null } } },
         { $group: { _id: '$projectId', count: { $sum: 1 } } },
