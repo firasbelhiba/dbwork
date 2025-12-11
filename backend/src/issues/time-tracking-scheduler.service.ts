@@ -116,22 +116,28 @@ export class TimeTrackingSchedulerService implements OnModuleInit {
   }
 
   /**
-   * Also check for inactive timers every 15 minutes during work hours
-   * This auto-pauses timers that have been inactive for 30+ minutes
+   * DISABLED - Was causing unexpected timer pauses
+   * Previously: Check for inactive timers every 15 minutes during work hours
+   * This auto-paused timers that have been inactive for 30+ minutes
+   *
+   * Removed because:
+   * - Users work on tasks for hours without interacting with the ticket page
+   * - The end-of-day auto-pause is sufficient for timer management
+   * - Manual pause/resume gives users control when needed
    */
-  @Cron('0 */15 8-18 * * 1-5', {
-    name: 'inactive-timer-check',
-    timeZone: 'Africa/Tunis',
-  })
-  async handleInactiveTimerCheck() {
-    this.logger.debug('Checking for inactive timers...');
-
-    try {
-      await this.timeTrackingService.checkInactiveTimers();
-    } catch (error) {
-      this.logger.error('Failed to check inactive timers', error.stack);
-    }
-  }
+  // @Cron('0 */15 8-18 * * 1-5', {
+  //   name: 'inactive-timer-check',
+  //   timeZone: 'Africa/Tunis',
+  // })
+  // async handleInactiveTimerCheck() {
+  //   this.logger.debug('Checking for inactive timers...');
+  //
+  //   try {
+  //     await this.timeTrackingService.checkInactiveTimers();
+  //   } catch (error) {
+  //     this.logger.error('Failed to check inactive timers', error.stack);
+  //   }
+  // }
 
   /**
    * Resume all paused timers at 9 AM (start of work day)
