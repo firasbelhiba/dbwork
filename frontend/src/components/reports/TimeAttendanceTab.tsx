@@ -4,6 +4,15 @@ import React, { useState, useEffect } from 'react';
 import { reportsAPI } from '@/lib/api';
 import { LogoLoader } from '@/components/common';
 
+interface TicketBreakdown {
+  issueKey: string;
+  issueTitle: string;
+  projectKey: string;
+  seconds: number;
+  hours: number;
+  isExtra: boolean;
+}
+
 interface TimeAttendanceData {
   dailyData: Array<{
     odataKey: string;
@@ -17,6 +26,7 @@ interface TimeAttendanceData {
     target: number;
     diff: number;
     status: 'on_track' | 'under' | 'over';
+    tickets: TicketBreakdown[];
   }>;
   summary: {
     totalHours: number;
@@ -54,6 +64,19 @@ export const TimeAttendanceTab: React.FC<TimeAttendanceTabProps> = ({ startDate,
   const [selectedUser, setSelectedUser] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'date' | 'hours' | 'user'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+
+  const toggleRowExpansion = (rowKey: string) => {
+    setExpandedRows((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(rowKey)) {
+        newSet.delete(rowKey);
+      } else {
+        newSet.add(rowKey);
+      }
+      return newSet;
+    });
+  };
 
   useEffect(() => {
     fetchData();
@@ -225,50 +248,113 @@ export const TimeAttendanceTab: React.FC<TimeAttendanceTabProps> = ({ startDate,
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredData.slice(0, 100).map((row, index) => (
-                <tr key={`${row.userId}-${row.date}-${index}`} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      {row.userAvatar ? (
-                        <img src={row.userAvatar} alt={row.userName} className="w-8 h-8 rounded-full" />
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                          {row.userName.charAt(0)}
+              {filteredData.slice(0, 100).map((row, index) => {
+                const rowKey = `${row.userId}-${row.date}-${index}`;
+                const isExpanded = expandedRows.has(rowKey);
+                const hasTickets = row.tickets && row.tickets.length > 0;
+
+                return (
+                  <React.Fragment key={rowKey}>
+                    <tr
+                      className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 ${hasTickets ? 'cursor-pointer' : ''}`}
+                      onClick={() => hasTickets && toggleRowExpansion(rowKey)}
+                    >
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          {hasTickets && (
+                            <span className="text-gray-400 dark:text-gray-500 transition-transform duration-200" style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}>
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </span>
+                          )}
+                          {!hasTickets && <span className="w-4" />}
+                          {row.userAvatar ? (
+                            <img src={row.userAvatar} alt={row.userName} className="w-8 h-8 rounded-full" />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                              {row.userName.charAt(0)}
+                            </div>
+                          )}
+                          <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{row.userName}</span>
                         </div>
-                      )}
-                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{row.userName}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                    {new Date(row.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                    {formatHours(row.hoursWorked)}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {row.target}h
-                  </td>
-                  <td className={`px-4 py-3 whitespace-nowrap text-sm font-medium ${
-                    row.diff >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                  }`}>
-                    {row.diff >= 0 ? '+' : ''}{formatHours(Math.abs(row.diff))}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-600 dark:text-purple-400 font-medium">
-                    {row.extraHours > 0 ? formatHours(row.extraHours) : '-'}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      row.status === 'on_track'
-                        ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
-                        : row.status === 'over'
-                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
-                        : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
-                    }`}>
-                      {row.status === 'on_track' ? '✓ On Track' : row.status === 'over' ? '↑ Over' : '↓ Under'}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                        {new Date(row.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {formatHours(row.hoursWorked)}
+                        {hasTickets && (
+                          <span className="ml-2 text-xs text-gray-400 dark:text-gray-500">
+                            ({row.tickets.length} ticket{row.tickets.length !== 1 ? 's' : ''})
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        {row.target}h
+                      </td>
+                      <td className={`px-4 py-3 whitespace-nowrap text-sm font-medium ${
+                        row.diff >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                      }`}>
+                        {row.diff >= 0 ? '+' : ''}{formatHours(Math.abs(row.diff))}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-600 dark:text-purple-400 font-medium">
+                        {row.extraHours > 0 ? formatHours(row.extraHours) : '-'}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          row.status === 'on_track'
+                            ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+                            : row.status === 'over'
+                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
+                            : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
+                        }`}>
+                          {row.status === 'on_track' ? '✓ On Track' : row.status === 'over' ? '↑ Over' : '↓ Under'}
+                        </span>
+                      </td>
+                    </tr>
+                    {/* Expanded ticket breakdown */}
+                    {isExpanded && hasTickets && (
+                      <tr className="bg-gray-50 dark:bg-gray-800/50">
+                        <td colSpan={7} className="px-4 py-3">
+                          <div className="ml-10 space-y-2">
+                            <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                              Ticket Breakdown
+                            </div>
+                            <div className="grid gap-2">
+                              {row.tickets.map((ticket, ticketIndex) => (
+                                <div
+                                  key={`${ticket.issueKey}-${ticketIndex}`}
+                                  className="flex items-center justify-between bg-white dark:bg-gray-700 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-600"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
+                                      {ticket.issueKey}
+                                    </span>
+                                    <span className="text-sm text-gray-900 dark:text-gray-100 truncate max-w-md">
+                                      {ticket.issueTitle}
+                                    </span>
+                                    {ticket.isExtra && (
+                                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">
+                                        Extra
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                      {formatHours(ticket.hours)}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>

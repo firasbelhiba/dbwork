@@ -647,8 +647,18 @@ export class ReportsService {
       ],
     }).exec();
 
-    // Build a map of userId -> date -> { regularSeconds, extraSeconds }
-    const userDailyTime: Record<string, Record<string, { regularSeconds: number; extraSeconds: number }>> = {};
+    // Build a map of userId -> date -> { regularSeconds, extraSeconds, tickets }
+    const userDailyTime: Record<string, Record<string, {
+      regularSeconds: number;
+      extraSeconds: number;
+      tickets: Array<{
+        issueKey: string;
+        issueTitle: string;
+        projectKey: string;
+        seconds: number;
+        isExtra: boolean;
+      }>;
+    }>> = {};
 
     // Initialize for all users
     users.forEach((user) => {
@@ -658,6 +668,7 @@ export class ReportsService {
     // Collect all active timers per user (to pick only ONE per user later)
     const userActiveTimers: Record<string, Array<{
       entry: any;
+      issue: any;
       isPaused: boolean;
       startTime: Date;
     }>> = {};
@@ -665,6 +676,7 @@ export class ReportsService {
     // Process completed time entries and collect active timers
     for (const issue of issues) {
       const timeEntries = issue.timeTracking?.timeEntries || [];
+      const projectKey = (issue.projectId as any)?.key || (issue as any).projectKey || 'UNK';
 
       for (const entry of timeEntries) {
         const entryDate = new Date(entry.startTime);
@@ -677,7 +689,7 @@ export class ReportsService {
           userDailyTime[userId] = {};
         }
         if (!userDailyTime[userId][dateKey]) {
-          userDailyTime[userId][dateKey] = { regularSeconds: 0, extraSeconds: 0 };
+          userDailyTime[userId][dateKey] = { regularSeconds: 0, extraSeconds: 0, tickets: [] };
         }
 
         // Check if this was an extra hours entry (based on description or isExtraHours flag)
@@ -688,6 +700,22 @@ export class ReportsService {
           userDailyTime[userId][dateKey].extraSeconds += entry.duration;
         } else {
           userDailyTime[userId][dateKey].regularSeconds += entry.duration;
+        }
+
+        // Add to tickets breakdown (or update existing ticket entry)
+        const existingTicket = userDailyTime[userId][dateKey].tickets.find(
+          (t) => t.issueKey === issue.key && t.isExtra === isExtra
+        );
+        if (existingTicket) {
+          existingTicket.seconds += entry.duration;
+        } else {
+          userDailyTime[userId][dateKey].tickets.push({
+            issueKey: issue.key,
+            issueTitle: issue.title,
+            projectKey,
+            seconds: entry.duration,
+            isExtra,
+          });
         }
       }
 
@@ -700,6 +728,7 @@ export class ReportsService {
         }
         userActiveTimers[userId].push({
           entry: activeEntry,
+          issue,
           isPaused: activeEntry.isPaused || false,
           startTime: new Date(activeEntry.startTime),
         });
@@ -723,14 +752,15 @@ export class ReportsService {
         });
 
         // Pick only the first (best) timer
-        const { entry: activeEntry, isPaused } = timers[0];
+        const { entry: activeEntry, isPaused, issue: activeIssue } = timers[0];
         const entryStartTime = new Date(activeEntry.startTime);
+        const activeProjectKey = (activeIssue.projectId as any)?.key || (activeIssue as any).projectKey || 'UNK';
 
         if (!userDailyTime[userId]) {
           userDailyTime[userId] = {};
         }
         if (!userDailyTime[userId][todayStr]) {
-          userDailyTime[userId][todayStr] = { regularSeconds: 0, extraSeconds: 0 };
+          userDailyTime[userId][todayStr] = { regularSeconds: 0, extraSeconds: 0, tickets: [] };
         }
 
         // Calculate TODAY's work time only
@@ -760,6 +790,22 @@ export class ReportsService {
           } else {
             userDailyTime[userId][todayStr].regularSeconds += todaySeconds;
           }
+
+          // Add active timer ticket to breakdown
+          const existingActiveTicket = userDailyTime[userId][todayStr].tickets.find(
+            (t) => t.issueKey === activeIssue.key && t.isExtra === isExtra
+          );
+          if (existingActiveTicket) {
+            existingActiveTicket.seconds += todaySeconds;
+          } else {
+            userDailyTime[userId][todayStr].tickets.push({
+              issueKey: activeIssue.key,
+              issueTitle: activeIssue.title,
+              projectKey: activeProjectKey,
+              seconds: todaySeconds,
+              isExtra,
+            });
+          }
         }
       }
     }
@@ -784,7 +830,7 @@ export class ReportsService {
       const userData = userDailyTime[userId] || {};
 
       for (const dateKey of dateRange) {
-        const dayData = userData[dateKey] || { regularSeconds: 0, extraSeconds: 0 };
+        const dayData = userData[dateKey] || { regularSeconds: 0, extraSeconds: 0, tickets: [] };
         const totalSeconds = dayData.regularSeconds + dayData.extraSeconds;
         const hoursWorked = totalSeconds / 3600;
         const diff = totalSeconds - TARGET_SECONDS;
@@ -792,6 +838,12 @@ export class ReportsService {
         let status: 'on_track' | 'under' | 'over' = 'on_track';
         if (diff < -1800) status = 'under'; // More than 30 min under
         else if (diff > 1800) status = 'over'; // More than 30 min over
+
+        // Format tickets with hours
+        const formattedTickets = (dayData.tickets || []).map((ticket) => ({
+          ...ticket,
+          hours: Math.round((ticket.seconds / 3600) * 100) / 100,
+        })).sort((a, b) => b.seconds - a.seconds);
 
         dailyData.push({
           odataKey: dateKey,
@@ -805,6 +857,7 @@ export class ReportsService {
           target: TARGET_HOURS,
           diff: Math.round((diff / 3600) * 100) / 100,
           status,
+          tickets: formattedTickets,
         });
       }
     }
