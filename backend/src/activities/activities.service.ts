@@ -206,7 +206,13 @@ export class ActivitiesService {
     };
     byActionType: Array<{ action: string; count: number }>;
     byEntityType: Array<{ entityType: string; count: number }>;
-    byUser: Array<{ userId: string; userName: string; userAvatar: string | null; count: number }>;
+    byUser: Array<{
+      userId: string;
+      userName: string;
+      userAvatar: string | null;
+      count: number;
+      entityBreakdown: Array<{ entityType: string; count: number; percentage: number }>;
+    }>;
     byProject: Array<{ projectId: string; projectName: string; count: number }>;
     dailyTrend: Array<{ date: string; count: number }>;
     recentActivities: any[];
@@ -248,8 +254,27 @@ export class ActivitiesService {
       ]),
       this.activityModel.aggregate([
         { $match: dateFilter },
-        { $group: { _id: '$userId', count: { $sum: 1 } } },
-        { $sort: { count: -1 } },
+        // First group by userId and entityType to get counts per entity type
+        {
+          $group: {
+            _id: { userId: '$userId', entityType: '$entityType' },
+            count: { $sum: 1 },
+          },
+        },
+        // Then group by userId to collect all entity types
+        {
+          $group: {
+            _id: '$_id.userId',
+            totalCount: { $sum: '$count' },
+            entityBreakdown: {
+              $push: {
+                entityType: '$_id.entityType',
+                count: '$count',
+              },
+            },
+          },
+        },
+        { $sort: { totalCount: -1 } },
         { $limit: 10 },
         {
           $lookup: {
@@ -263,7 +288,20 @@ export class ActivitiesService {
         {
           $project: {
             userId: '$_id',
-            count: 1,
+            count: '$totalCount',
+            entityBreakdown: {
+              $map: {
+                input: '$entityBreakdown',
+                as: 'eb',
+                in: {
+                  entityType: '$$eb.entityType',
+                  count: '$$eb.count',
+                  percentage: {
+                    $round: [{ $multiply: [{ $divide: ['$$eb.count', '$totalCount'] }, 100] }, 1],
+                  },
+                },
+              },
+            },
             userName: {
               $cond: {
                 if: { $and: ['$user.firstName', '$user.lastName'] },

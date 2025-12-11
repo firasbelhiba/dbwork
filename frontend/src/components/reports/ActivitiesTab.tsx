@@ -36,7 +36,13 @@ interface ActivityAnalyticsData {
   };
   byActionType: Array<{ action: string; count: number }>;
   byEntityType: Array<{ entityType: string; count: number }>;
-  byUser: Array<{ userId: string; userName: string; userAvatar: string | null; count: number }>;
+  byUser: Array<{
+    userId: string;
+    userName: string;
+    userAvatar: string | null;
+    count: number;
+    entityBreakdown: Array<{ entityType: string; count: number; percentage: number }>;
+  }>;
   byProject: Array<{ projectId: string; projectName: string; count: number }>;
   dailyTrend: Array<{ date: string; count: number }>;
   recentActivities: Array<{
@@ -323,13 +329,13 @@ export const ActivitiesTab: React.FC<ActivitiesTabProps> = ({ startDate, endDate
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Most Active Users */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Most Active Users</h3>
-          <div className="space-y-3">
-            {data.byUser.map((user, index) => (
-              <div key={user.userId} className="flex items-center gap-3">
+      {/* Most Active Users with Entity Breakdown */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Most Active Users</h3>
+        <div className="space-y-4">
+          {data.byUser.map((user, index) => (
+            <div key={user.userId} className="border-b border-gray-100 dark:border-gray-700 pb-4 last:border-0 last:pb-0">
+              <div className="flex items-center gap-3 mb-2">
                 <span className="w-6 text-sm font-medium text-gray-500 dark:text-gray-400">
                   #{index + 1}
                 </span>
@@ -338,28 +344,43 @@ export const ActivitiesTab: React.FC<ActivitiesTabProps> = ({ startDate, endDate
                   name={user.userName}
                   size="sm"
                 />
-                <span className="flex-1 text-sm text-gray-700 dark:text-gray-300 truncate">
+                <span className="flex-1 text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                   {user.userName}
                 </span>
-                <div className="flex items-center gap-2">
-                  <div className="w-20 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div
-                      className="h-2 rounded-full bg-primary-500"
-                      style={{ width: `${(user.count / maxUserCount) * 100}%` }}
-                    />
-                  </div>
-                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100 w-12 text-right">
-                    {user.count}
-                  </span>
-                </div>
+                <span className="text-sm font-bold text-primary-600 dark:text-primary-400">
+                  {user.count} activities
+                </span>
               </div>
-            ))}
-            {data.byUser.length === 0 && (
-              <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No user activity in this period</p>
-            )}
-          </div>
+              {/* Entity Breakdown */}
+              <div className="ml-14 flex flex-wrap gap-2">
+                {user.entityBreakdown
+                  .sort((a, b) => b.percentage - a.percentage)
+                  .map((entity) => (
+                    <span
+                      key={entity.entityType}
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        entity.entityType === 'issue' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                        entity.entityType === 'comment' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
+                        entity.entityType === 'project' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
+                        entity.entityType === 'sprint' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                        entity.entityType === 'feedback' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                        entity.entityType === 'changelog' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' :
+                        'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      {ENTITY_LABELS[entity.entityType] || entity.entityType}: {entity.percentage}%
+                    </span>
+                  ))}
+              </div>
+            </div>
+          ))}
+          {data.byUser.length === 0 && (
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No user activity in this period</p>
+          )}
         </div>
+      </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Most Active Projects */}
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Most Active Projects</h3>
