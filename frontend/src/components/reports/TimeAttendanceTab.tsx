@@ -3,15 +3,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { reportsAPI } from '@/lib/api';
 import { LogoLoader } from '@/components/common';
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
 
 interface TicketBreakdown {
   issueKey: string;
@@ -71,12 +62,6 @@ interface UserGroupedData {
   days: DailyData[];
 }
 
-interface HourlyData {
-  hour: string;
-  minutes: number;
-  label: string;
-}
-
 interface TimeAttendanceTabProps {
   startDate: string;
   endDate: string;
@@ -96,73 +81,200 @@ const formatTime = (isoString: string): string => {
   return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
 };
 
-// Calculate hourly distribution from tickets
-const calculateHourlyDistribution = (days: DailyData[]): HourlyData[] => {
-  // Initialize hours from 6AM to 11PM
-  const hourlyMinutes: Record<number, number> = {};
-  for (let h = 6; h <= 23; h++) {
-    hourlyMinutes[h] = 0;
-  }
+// Calculate 24-hour activity distribution
+const calculate24HourDistribution = (days: DailyData[]): number[] => {
+  const hourlyMinutes: number[] = new Array(24).fill(0);
 
-  // Process all tickets
   days.forEach((day) => {
     day.tickets?.forEach((ticket) => {
       const start = new Date(ticket.startTime);
       const end = new Date(ticket.endTime);
 
-      // For each minute of work, add to the appropriate hour bucket
       let current = new Date(start);
       while (current < end) {
         const hour = current.getHours();
-        if (hour >= 6 && hour <= 23) {
-          hourlyMinutes[hour] += 1;
-        }
-        current = new Date(current.getTime() + 60000); // Add 1 minute
+        hourlyMinutes[hour] += 1;
+        current = new Date(current.getTime() + 60000);
       }
     });
   });
 
-  // Convert to array format for chart
-  return Object.entries(hourlyMinutes).map(([hour, minutes]) => ({
-    hour: `${hour.padStart(2, '0')}:00`,
-    minutes: Math.round(minutes),
-    label: parseInt(hour) < 12 ? `${hour}AM` : parseInt(hour) === 12 ? '12PM' : `${parseInt(hour) - 12}PM`,
-  }));
+  return hourlyMinutes;
 };
 
-// Find peak hours
-const findPeakHours = (hourlyData: HourlyData[]): { start: string; end: string; avgMinutes: number } | null => {
-  if (hourlyData.every(h => h.minutes === 0)) return null;
+// Activity Wave Chart Component
+const ActivityWaveChart: React.FC<{ hourlyData: number[] }> = ({ hourlyData }) => {
+  const width = 800;
+  const height = 200;
+  const padding = 40;
+  const waveHeight = 60;
+  const centerY = height / 2;
 
-  const maxMinutes = Math.max(...hourlyData.map(h => h.minutes));
-  const threshold = maxMinutes * 0.7; // 70% of peak is considered "peak zone"
+  // Normalize data for dot sizes
+  const maxMinutes = Math.max(...hourlyData, 1);
 
-  const peakHours = hourlyData.filter(h => h.minutes >= threshold);
-  if (peakHours.length === 0) return null;
-
-  return {
-    start: peakHours[0].label,
-    end: peakHours[peakHours.length - 1].label,
-    avgMinutes: Math.round(peakHours.reduce((sum, h) => sum + h.minutes, 0) / peakHours.length),
+  // Generate wave path and dots
+  // Wave goes: 06:00 (left, middle) → 12:00 (top) → 18:00 (middle) → 24:00 (bottom) → 06:00 (right, middle)
+  const getWaveY = (hour: number): number => {
+    // Shift hours so 6am is at start, then 12, 18, 0, 6
+    const adjustedHour = (hour + 18) % 24; // Makes 6am = 0, 12pm = 6, 6pm = 12, midnight = 18
+    const progress = adjustedHour / 24;
+    // Sine wave: peaks at 12:00 (progress ~0.25), troughs at midnight (progress ~0.75)
+    return centerY - Math.sin(progress * 2 * Math.PI) * waveHeight;
   };
-};
 
-// Custom tooltip for chart
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    const minutes = payload[0].value;
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return (
-      <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
-        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{label}</p>
-        <p className="text-sm text-blue-600 dark:text-blue-400">
-          {hours > 0 ? `${hours}h ${mins}m` : `${mins}m`} worked
-        </p>
-      </div>
-    );
-  }
-  return null;
+  const getX = (index: number): number => {
+    return padding + (index / 24) * (width - 2 * padding);
+  };
+
+  // Reorder hours: 6, 7, 8, ... 23, 0, 1, 2, 3, 4, 5
+  const orderedHours = [...Array(24)].map((_, i) => (i + 6) % 24);
+
+  // Generate smooth wave path
+  const pathPoints = orderedHours.map((hour, index) => {
+    const x = getX(index);
+    const y = getWaveY(hour);
+    return { x, y, hour };
+  });
+
+  // Create smooth curve through points
+  const pathD = pathPoints.reduce((acc, point, index) => {
+    if (index === 0) return `M ${point.x} ${point.y}`;
+    const prev = pathPoints[index - 1];
+    const cpX = (prev.x + point.x) / 2;
+    return `${acc} Q ${cpX} ${prev.y} ${point.x} ${point.y}`;
+  }, '');
+
+  // Time labels
+  const timeLabels = [
+    { hour: 6, label: '06:00' },
+    { hour: 12, label: '12:00' },
+    { hour: 18, label: '18:00' },
+    { hour: 0, label: '24:00' },
+    { hour: 6, label: '06:00', isEnd: true },
+  ];
+
+  return (
+    <div className="w-full">
+      <svg viewBox={`0 0 ${width} ${height + 40}`} className="w-full h-auto">
+        {/* Gradient for wave */}
+        <defs>
+          <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#F97316" stopOpacity="0.3" />
+            <stop offset="25%" stopColor="#FBBF24" stopOpacity="0.5" />
+            <stop offset="50%" stopColor="#F97316" stopOpacity="0.3" />
+            <stop offset="75%" stopColor="#6366F1" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#F97316" stopOpacity="0.3" />
+          </linearGradient>
+        </defs>
+
+        {/* Wave line */}
+        <path
+          d={pathD}
+          fill="none"
+          stroke="#6B7280"
+          strokeWidth="2"
+          strokeOpacity="0.5"
+        />
+
+        {/* Activity dots */}
+        {pathPoints.map((point, index) => {
+          const hour = orderedHours[index];
+          const minutes = hourlyData[hour];
+          const normalizedSize = minutes / maxMinutes;
+          const baseSize = 6;
+          const maxSize = 20;
+          const size = baseSize + normalizedSize * (maxSize - baseSize);
+          const opacity = 0.3 + normalizedSize * 0.7;
+
+          return (
+            <g key={`dot-${index}`}>
+              {/* Glow effect for active hours */}
+              {minutes > 0 && (
+                <circle
+                  cx={point.x}
+                  cy={point.y}
+                  r={size + 4}
+                  fill="#9CA3AF"
+                  opacity={opacity * 0.3}
+                />
+              )}
+              <circle
+                cx={point.x}
+                cy={point.y}
+                r={size}
+                fill={minutes > 0 ? '#9CA3AF' : '#4B5563'}
+                opacity={minutes > 0 ? opacity : 0.4}
+              />
+              {/* Show time on hover - title tooltip */}
+              <title>{`${hour.toString().padStart(2, '0')}:00 - ${Math.round(minutes)} min`}</title>
+            </g>
+          );
+        })}
+
+        {/* Sun icon at noon (peak) */}
+        <g transform={`translate(${getX(6)}, ${centerY - waveHeight - 15})`}>
+          <circle cx="0" cy="0" r="8" fill="#F97316" />
+          {/* Sun rays */}
+          {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
+            <line
+              key={angle}
+              x1={Math.cos((angle * Math.PI) / 180) * 10}
+              y1={Math.sin((angle * Math.PI) / 180) * 10}
+              x2={Math.cos((angle * Math.PI) / 180) * 14}
+              y2={Math.sin((angle * Math.PI) / 180) * 14}
+              stroke="#F97316"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          ))}
+        </g>
+
+        {/* Sunrise icon at 6am (left) */}
+        <g transform={`translate(${padding - 5}, ${centerY})`}>
+          <circle cx="0" cy="0" r="6" fill="#F97316" />
+          <line x1="-8" y1="8" x2="8" y2="8" stroke="#F97316" strokeWidth="2" />
+        </g>
+
+        {/* Sunset icon at 6pm */}
+        <g transform={`translate(${getX(12)}, ${centerY})`}>
+          <circle cx="0" cy="-8" r="6" fill="#F97316" />
+        </g>
+
+        {/* Moon icon at midnight (bottom) */}
+        <g transform={`translate(${getX(18)}, ${centerY + waveHeight + 15})`}>
+          <path
+            d="M-4,-6 A6,6 0 1,1 -4,6 A4,4 0 1,0 -4,-6"
+            fill="#FBBF24"
+          />
+        </g>
+
+        {/* Sunrise icon at 6am (right) */}
+        <g transform={`translate(${width - padding + 5}, ${centerY})`}>
+          <circle cx="0" cy="0" r="6" fill="#F97316" />
+          <line x1="-8" y1="8" x2="8" y2="8" stroke="#F97316" strokeWidth="2" />
+        </g>
+
+        {/* Time labels */}
+        {timeLabels.map((item, index) => {
+          const hourIndex = item.isEnd ? 24 : orderedHours.indexOf(item.hour);
+          const x = item.isEnd ? width - padding : getX(hourIndex >= 0 ? hourIndex : 0);
+          return (
+            <text
+              key={`label-${index}`}
+              x={x}
+              y={height + 20}
+              textAnchor="middle"
+              className="fill-gray-400 text-xs"
+              fontSize="12"
+            >
+              {item.label}
+            </text>
+          );
+        })}
+      </svg>
+    </div>
+  );
 };
 
 export const TimeAttendanceTab: React.FC<TimeAttendanceTabProps> = ({ startDate, endDate }) => {
@@ -412,9 +524,8 @@ export const TimeAttendanceTab: React.FC<TimeAttendanceTabProps> = ({ startDate,
               {filteredUsers.map((user) => {
                 const isUserExpanded = expandedUsers.has(user.userId);
                 const hasDays = user.days.length > 0;
-                const hourlyData = isUserExpanded ? calculateHourlyDistribution(user.days) : [];
-                const peakHours = isUserExpanded ? findPeakHours(hourlyData) : null;
-                const hasTimeData = hourlyData.some(h => h.minutes > 0);
+                const hourlyData = isUserExpanded ? calculate24HourDistribution(user.days) : [];
+                const hasTimeData = hourlyData.some(h => h > 0);
 
                 return (
                   <React.Fragment key={user.userId}>
@@ -473,67 +584,18 @@ export const TimeAttendanceTab: React.FC<TimeAttendanceTabProps> = ({ startDate,
                       </td>
                     </tr>
 
-                    {/* Time Distribution Chart */}
+                    {/* Activity Wave Chart */}
                     {isUserExpanded && hasTimeData && (
-                      <tr className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
+                      <tr className="bg-gray-900 dark:bg-gray-900">
                         <td colSpan={7} className="px-4 py-4">
                           <div className="ml-6">
-                            <div className="flex items-center justify-between mb-3">
-                              <div className="flex items-center gap-2">
-                                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                  Work Time Distribution
-                                </span>
-                              </div>
-                              {peakHours && (
-                                <div className="flex items-center gap-2">
-                                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-500 to-purple-500 text-white">
-                                    🔥 Peak Hours: {peakHours.start} - {peakHours.end}
-                                  </span>
-                                </div>
-                              )}
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-sm font-medium text-gray-300">
+                                Work Activity Periods
+                              </span>
+                              <span className="text-gray-500 text-xs">ⓘ</span>
                             </div>
-                            <div className="h-32 bg-white dark:bg-gray-800 rounded-lg p-2">
-                              <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={hourlyData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                                  <defs>
-                                    <linearGradient id={`colorGradient-${user.userId}`} x1="0" y1="0" x2="0" y2="1">
-                                      <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
-                                      <stop offset="50%" stopColor="#8B5CF6" stopOpacity={0.6}/>
-                                      <stop offset="95%" stopColor="#EC4899" stopOpacity={0.2}/>
-                                    </linearGradient>
-                                    <linearGradient id={`strokeGradient-${user.userId}`} x1="0" y1="0" x2="1" y2="0">
-                                      <stop offset="0%" stopColor="#3B82F6"/>
-                                      <stop offset="50%" stopColor="#8B5CF6"/>
-                                      <stop offset="100%" stopColor="#EC4899"/>
-                                    </linearGradient>
-                                  </defs>
-                                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" strokeOpacity={0.5} />
-                                  <XAxis
-                                    dataKey="label"
-                                    tick={{ fontSize: 10, fill: '#6B7280' }}
-                                    axisLine={{ stroke: '#E5E7EB' }}
-                                    tickLine={{ stroke: '#E5E7EB' }}
-                                  />
-                                  <YAxis
-                                    tick={{ fontSize: 10, fill: '#6B7280' }}
-                                    axisLine={{ stroke: '#E5E7EB' }}
-                                    tickLine={{ stroke: '#E5E7EB' }}
-                                    tickFormatter={(value) => `${Math.round(value)}m`}
-                                  />
-                                  <Tooltip content={<CustomTooltip />} />
-                                  <Area
-                                    type="monotone"
-                                    dataKey="minutes"
-                                    stroke={`url(#strokeGradient-${user.userId})`}
-                                    strokeWidth={2}
-                                    fill={`url(#colorGradient-${user.userId})`}
-                                  />
-                                </AreaChart>
-                              </ResponsiveContainer>
-                            </div>
+                            <ActivityWaveChart hourlyData={hourlyData} />
                           </div>
                         </td>
                       </tr>
