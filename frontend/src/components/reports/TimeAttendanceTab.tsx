@@ -102,12 +102,12 @@ const calculate24HourDistribution = (days: DailyData[]): number[] => {
   return hourlyMinutes;
 };
 
-// Activity Wave Chart Component
-const ActivityWaveChart: React.FC<{ hourlyData: number[] }> = ({ hourlyData }) => {
-  const width = 600;
-  const height = 120;
-  const padding = 30;
-  const waveHeight = 35;
+// Activity Wave Chart Component (Full size for modal)
+const ActivityWaveChart: React.FC<{ hourlyData: number[]; userName: string }> = ({ hourlyData, userName }) => {
+  const width = 800;
+  const height = 200;
+  const padding = 50;
+  const waveHeight = 60;
   const centerY = height / 2;
 
   // Normalize data for dot sizes
@@ -155,8 +155,8 @@ const ActivityWaveChart: React.FC<{ hourlyData: number[] }> = ({ hourlyData }) =
   ];
 
   return (
-    <div className="w-full max-w-2xl">
-      <svg viewBox={`0 0 ${width} ${height + 25}`} className="w-full h-auto">
+    <div className="w-full">
+      <svg viewBox={`0 0 ${width} ${height + 40}`} className="w-full h-auto">
         {/* Gradient for wave */}
         <defs>
           <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -182,8 +182,8 @@ const ActivityWaveChart: React.FC<{ hourlyData: number[] }> = ({ hourlyData }) =
           const hour = orderedHours[index];
           const minutes = hourlyData[hour];
           const normalizedSize = minutes / maxMinutes;
-          const baseSize = 4;
-          const maxSize = 12;
+          const baseSize = 6;
+          const maxSize = 18;
           const size = baseSize + normalizedSize * (maxSize - baseSize);
           const opacity = 0.3 + normalizedSize * 0.7;
 
@@ -194,7 +194,7 @@ const ActivityWaveChart: React.FC<{ hourlyData: number[] }> = ({ hourlyData }) =
                 <circle
                   cx={point.x}
                   cy={point.y}
-                  r={size + 2}
+                  r={size + 4}
                   fill="#9CA3AF"
                   opacity={opacity * 0.3}
                 />
@@ -213,46 +213,46 @@ const ActivityWaveChart: React.FC<{ hourlyData: number[] }> = ({ hourlyData }) =
         })}
 
         {/* Sun icon at noon (peak) */}
-        <g transform={`translate(${getX(6)}, ${centerY - waveHeight - 10})`}>
-          <circle cx="0" cy="0" r="5" fill="#F97316" />
+        <g transform={`translate(${getX(6)}, ${centerY - waveHeight - 15})`}>
+          <circle cx="0" cy="0" r="8" fill="#F97316" />
           {/* Sun rays */}
           {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
             <line
               key={angle}
-              x1={Math.cos((angle * Math.PI) / 180) * 7}
-              y1={Math.sin((angle * Math.PI) / 180) * 7}
-              x2={Math.cos((angle * Math.PI) / 180) * 10}
-              y2={Math.sin((angle * Math.PI) / 180) * 10}
+              x1={Math.cos((angle * Math.PI) / 180) * 11}
+              y1={Math.sin((angle * Math.PI) / 180) * 11}
+              x2={Math.cos((angle * Math.PI) / 180) * 16}
+              y2={Math.sin((angle * Math.PI) / 180) * 16}
               stroke="#F97316"
-              strokeWidth="1.5"
+              strokeWidth="2"
               strokeLinecap="round"
             />
           ))}
         </g>
 
         {/* Sunrise icon at 6am (left) */}
-        <g transform={`translate(${padding - 3}, ${centerY})`}>
-          <circle cx="0" cy="0" r="4" fill="#F97316" />
-          <line x1="-6" y1="6" x2="6" y2="6" stroke="#F97316" strokeWidth="1.5" />
+        <g transform={`translate(${padding - 5}, ${centerY})`}>
+          <circle cx="0" cy="0" r="6" fill="#F97316" />
+          <line x1="-10" y1="8" x2="10" y2="8" stroke="#F97316" strokeWidth="2" />
         </g>
 
         {/* Sunset icon at 6pm */}
         <g transform={`translate(${getX(12)}, ${centerY})`}>
-          <circle cx="0" cy="-5" r="4" fill="#F97316" />
+          <circle cx="0" cy="-8" r="6" fill="#F97316" />
         </g>
 
         {/* Moon icon at midnight (bottom) */}
-        <g transform={`translate(${getX(18)}, ${centerY + waveHeight + 10})`}>
+        <g transform={`translate(${getX(18)}, ${centerY + waveHeight + 15})`}>
           <path
-            d="M-3,-4 A4,4 0 1,1 -3,4 A3,3 0 1,0 -3,-4"
+            d="M-5,-7 A7,7 0 1,1 -5,7 A5,5 0 1,0 -5,-7"
             fill="#FBBF24"
           />
         </g>
 
         {/* Sunrise icon at 6am (right) */}
-        <g transform={`translate(${width - padding + 3}, ${centerY})`}>
-          <circle cx="0" cy="0" r="4" fill="#F97316" />
-          <line x1="-6" y1="6" x2="6" y2="6" stroke="#F97316" strokeWidth="1.5" />
+        <g transform={`translate(${width - padding + 5}, ${centerY})`}>
+          <circle cx="0" cy="0" r="6" fill="#F97316" />
+          <line x1="-10" y1="8" x2="10" y2="8" stroke="#F97316" strokeWidth="2" />
         </g>
 
         {/* Time labels */}
@@ -263,16 +263,78 @@ const ActivityWaveChart: React.FC<{ hourlyData: number[] }> = ({ hourlyData }) =
             <text
               key={`label-${index}`}
               x={x}
-              y={height + 15}
+              y={height + 25}
               textAnchor="middle"
               className="fill-gray-400"
-              fontSize="10"
+              fontSize="14"
             >
               {item.label}
             </text>
           );
         })}
       </svg>
+    </div>
+  );
+};
+
+// Activity Modal Component
+const ActivityModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  userName: string;
+  hourlyData: number[];
+}> = ({ isOpen, onClose, userName, hourlyData }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      {/* Modal */}
+      <div className="relative bg-gray-900 rounded-xl shadow-2xl max-w-4xl w-full mx-4 overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
+          <div>
+            <h3 className="text-lg font-semibold text-white">Work Activity Periods</h3>
+            <p className="text-sm text-gray-400">{userName}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-lg hover:bg-gray-800 transition-colors"
+          >
+            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Chart */}
+        <div className="p-6">
+          <ActivityWaveChart hourlyData={hourlyData} userName={userName} />
+        </div>
+
+        {/* Legend */}
+        <div className="px-6 pb-6">
+          <div className="flex items-center justify-center gap-6 text-sm text-gray-400">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-gray-400"></div>
+              <span>Active hours (size = intensity)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+              <span>Day time</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+              <span>Night time</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
@@ -285,6 +347,11 @@ export const TimeAttendanceTab: React.FC<TimeAttendanceTabProps> = ({ startDate,
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [expandedUsers, setExpandedUsers] = useState<Set<string>>(new Set());
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
+  const [activityModal, setActivityModal] = useState<{ isOpen: boolean; userName: string; hourlyData: number[] }>({
+    isOpen: false,
+    userName: '',
+    hourlyData: [],
+  });
 
   const toggleUserExpansion = (userId: string) => {
     setExpandedUsers((prev) => {
@@ -584,18 +651,30 @@ export const TimeAttendanceTab: React.FC<TimeAttendanceTabProps> = ({ startDate,
                       </td>
                     </tr>
 
-                    {/* Activity Wave Chart */}
+                    {/* Activity Chart Button */}
                     {isUserExpanded && hasTimeData && (
-                      <tr className="bg-gray-900 dark:bg-gray-900">
-                        <td colSpan={7} className="px-4 py-4">
+                      <tr className="bg-gray-50 dark:bg-gray-800/30">
+                        <td colSpan={7} className="px-4 py-3">
                           <div className="ml-6">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-sm font-medium text-gray-300">
-                                Work Activity Periods
-                              </span>
-                              <span className="text-gray-500 text-xs">ⓘ</span>
-                            </div>
-                            <ActivityWaveChart hourlyData={hourlyData} />
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActivityModal({
+                                  isOpen: true,
+                                  userName: user.userName,
+                                  hourlyData: hourlyData,
+                                });
+                              }}
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg transition-colors"
+                            >
+                              <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                              </svg>
+                              View Work Activity Chart
+                              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                              </svg>
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -718,6 +797,14 @@ export const TimeAttendanceTab: React.FC<TimeAttendanceTabProps> = ({ startDate,
           </table>
         </div>
       </div>
+
+      {/* Activity Modal */}
+      <ActivityModal
+        isOpen={activityModal.isOpen}
+        onClose={() => setActivityModal({ isOpen: false, userName: '', hourlyData: [] })}
+        userName={activityModal.userName}
+        hourlyData={activityModal.hourlyData}
+      />
     </div>
   );
 };
