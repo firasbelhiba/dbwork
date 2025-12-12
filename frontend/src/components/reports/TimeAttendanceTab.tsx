@@ -3,6 +3,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { reportsAPI } from '@/lib/api';
 import { LogoLoader } from '@/components/common';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 
 interface TicketBreakdown {
   issueKey: string;
@@ -62,6 +71,12 @@ interface UserGroupedData {
   days: DailyData[];
 }
 
+interface HourlyData {
+  hour: string;
+  minutes: number;
+  label: string;
+}
+
 interface TimeAttendanceTabProps {
   startDate: string;
   endDate: string;
@@ -79,6 +94,75 @@ const formatHours = (hours: number): string => {
 const formatTime = (isoString: string): string => {
   const date = new Date(isoString);
   return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+};
+
+// Calculate hourly distribution from tickets
+const calculateHourlyDistribution = (days: DailyData[]): HourlyData[] => {
+  // Initialize hours from 6AM to 11PM
+  const hourlyMinutes: Record<number, number> = {};
+  for (let h = 6; h <= 23; h++) {
+    hourlyMinutes[h] = 0;
+  }
+
+  // Process all tickets
+  days.forEach((day) => {
+    day.tickets?.forEach((ticket) => {
+      const start = new Date(ticket.startTime);
+      const end = new Date(ticket.endTime);
+
+      // For each minute of work, add to the appropriate hour bucket
+      let current = new Date(start);
+      while (current < end) {
+        const hour = current.getHours();
+        if (hour >= 6 && hour <= 23) {
+          hourlyMinutes[hour] += 1;
+        }
+        current = new Date(current.getTime() + 60000); // Add 1 minute
+      }
+    });
+  });
+
+  // Convert to array format for chart
+  return Object.entries(hourlyMinutes).map(([hour, minutes]) => ({
+    hour: `${hour.padStart(2, '0')}:00`,
+    minutes: Math.round(minutes),
+    label: parseInt(hour) < 12 ? `${hour}AM` : parseInt(hour) === 12 ? '12PM' : `${parseInt(hour) - 12}PM`,
+  }));
+};
+
+// Find peak hours
+const findPeakHours = (hourlyData: HourlyData[]): { start: string; end: string; avgMinutes: number } | null => {
+  if (hourlyData.every(h => h.minutes === 0)) return null;
+
+  const maxMinutes = Math.max(...hourlyData.map(h => h.minutes));
+  const threshold = maxMinutes * 0.7; // 70% of peak is considered "peak zone"
+
+  const peakHours = hourlyData.filter(h => h.minutes >= threshold);
+  if (peakHours.length === 0) return null;
+
+  return {
+    start: peakHours[0].label,
+    end: peakHours[peakHours.length - 1].label,
+    avgMinutes: Math.round(peakHours.reduce((sum, h) => sum + h.minutes, 0) / peakHours.length),
+  };
+};
+
+// Custom tooltip for chart
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    const minutes = payload[0].value;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return (
+      <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{label}</p>
+        <p className="text-sm text-blue-600 dark:text-blue-400">
+          {hours > 0 ? `${hours}h ${mins}m` : `${mins}m`} worked
+        </p>
+      </div>
+    );
+  }
+  return null;
 };
 
 export const TimeAttendanceTab: React.FC<TimeAttendanceTabProps> = ({ startDate, endDate }) => {
@@ -328,6 +412,9 @@ export const TimeAttendanceTab: React.FC<TimeAttendanceTabProps> = ({ startDate,
               {filteredUsers.map((user) => {
                 const isUserExpanded = expandedUsers.has(user.userId);
                 const hasDays = user.days.length > 0;
+                const hourlyData = isUserExpanded ? calculateHourlyDistribution(user.days) : [];
+                const peakHours = isUserExpanded ? findPeakHours(hourlyData) : null;
+                const hasTimeData = hourlyData.some(h => h.minutes > 0);
 
                 return (
                   <React.Fragment key={user.userId}>
@@ -385,6 +472,72 @@ export const TimeAttendanceTab: React.FC<TimeAttendanceTabProps> = ({ startDate,
                         )}
                       </td>
                     </tr>
+
+                    {/* Time Distribution Chart */}
+                    {isUserExpanded && hasTimeData && (
+                      <tr className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
+                        <td colSpan={7} className="px-4 py-4">
+                          <div className="ml-6">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center gap-2">
+                                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                  Work Time Distribution
+                                </span>
+                              </div>
+                              {peakHours && (
+                                <div className="flex items-center gap-2">
+                                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+                                    🔥 Peak Hours: {peakHours.start} - {peakHours.end}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="h-32 bg-white dark:bg-gray-800 rounded-lg p-2">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={hourlyData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                                  <defs>
+                                    <linearGradient id={`colorGradient-${user.userId}`} x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
+                                      <stop offset="50%" stopColor="#8B5CF6" stopOpacity={0.6}/>
+                                      <stop offset="95%" stopColor="#EC4899" stopOpacity={0.2}/>
+                                    </linearGradient>
+                                    <linearGradient id={`strokeGradient-${user.userId}`} x1="0" y1="0" x2="1" y2="0">
+                                      <stop offset="0%" stopColor="#3B82F6"/>
+                                      <stop offset="50%" stopColor="#8B5CF6"/>
+                                      <stop offset="100%" stopColor="#EC4899"/>
+                                    </linearGradient>
+                                  </defs>
+                                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" strokeOpacity={0.5} />
+                                  <XAxis
+                                    dataKey="label"
+                                    tick={{ fontSize: 10, fill: '#6B7280' }}
+                                    axisLine={{ stroke: '#E5E7EB' }}
+                                    tickLine={{ stroke: '#E5E7EB' }}
+                                  />
+                                  <YAxis
+                                    tick={{ fontSize: 10, fill: '#6B7280' }}
+                                    axisLine={{ stroke: '#E5E7EB' }}
+                                    tickLine={{ stroke: '#E5E7EB' }}
+                                    tickFormatter={(value) => `${Math.round(value)}m`}
+                                  />
+                                  <Tooltip content={<CustomTooltip />} />
+                                  <Area
+                                    type="monotone"
+                                    dataKey="minutes"
+                                    stroke={`url(#strokeGradient-${user.userId})`}
+                                    strokeWidth={2}
+                                    fill={`url(#colorGradient-${user.userId})`}
+                                  />
+                                </AreaChart>
+                              </ResponsiveContainer>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
 
                     {/* Expanded Days */}
                     {isUserExpanded && hasDays && user.days.map((day, dayIndex) => {
