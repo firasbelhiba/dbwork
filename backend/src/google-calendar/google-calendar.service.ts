@@ -80,7 +80,7 @@ export class GoogleCalendarService {
     const user = await this.userModel.findById(userId).exec();
 
     if (!user?.googleCalendar?.isConnected) {
-      throw new UnauthorizedException('Google Calendar not connected. Please connect your Google account first.');
+      throw new UnauthorizedException('Google Calendar not connected. Please go to your Profile and connect your Google Calendar.');
     }
 
     const oauth2Client = new google.auth.OAuth2(
@@ -107,6 +107,23 @@ export class GoogleCalendarService {
         'googleCalendar.expiryDate': tokens.expiry_date,
       });
     });
+
+    // Try to refresh the token proactively if it's expired
+    try {
+      const tokenInfo = oauth2Client.credentials;
+      if (tokenInfo.expiry_date && tokenInfo.expiry_date < Date.now()) {
+        await oauth2Client.refreshAccessToken();
+      }
+    } catch (error: any) {
+      console.error('[GoogleCalendar] Token refresh failed:', error);
+      if (error.message?.includes('invalid_grant') || error.response?.data?.error === 'invalid_grant') {
+        await this.userModel.findByIdAndUpdate(userId, {
+          'googleCalendar.isConnected': false,
+        });
+        throw new UnauthorizedException('Your Google Calendar session has expired (tokens are valid for 7 days). Please go to your Profile and reconnect your Google Calendar.');
+      }
+      throw error;
+    }
 
     return google.calendar({ version: 'v3', auth: oauth2Client });
   }
@@ -178,8 +195,20 @@ export class GoogleCalendarService {
       console.error('[GoogleCalendar] Error creating event:', error);
       console.error('[GoogleCalendar] Error details:', JSON.stringify(error.response?.data || error.message || error, null, 2));
 
-      if (error.code === 401) {
-        throw new UnauthorizedException('Google Calendar authorization expired. Please reconnect your account.');
+      // Check for invalid_grant error (token expired/revoked)
+      const errorType = error.response?.data?.error;
+      const errorDescription = error.response?.data?.error_description;
+
+      if (errorType === 'invalid_grant' || errorDescription?.includes('invalid_grant') || error.message?.includes('invalid_grant')) {
+        // Mark calendar as disconnected
+        await this.userModel.findByIdAndUpdate(userId, {
+          'googleCalendar.isConnected': false,
+        });
+        throw new UnauthorizedException('Your Google Calendar session has expired (tokens are valid for 7 days). Please go to your Profile and reconnect your Google Calendar.');
+      }
+
+      if (error.code === 401 || error.response?.status === 401) {
+        throw new UnauthorizedException('Google Calendar authorization expired. Please go to your Profile and reconnect your Google Calendar.');
       }
 
       // Provide more specific error message if available
