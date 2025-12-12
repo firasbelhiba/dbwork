@@ -104,10 +104,10 @@ const calculate24HourDistribution = (days: DailyData[]): number[] => {
 
 // Activity Wave Chart Component
 const ActivityWaveChart: React.FC<{ hourlyData: number[] }> = ({ hourlyData }) => {
-  const width = 800;
-  const height = 200;
-  const padding = 40;
-  const waveHeight = 60;
+  const width = 600;
+  const height = 120;
+  const padding = 30;
+  const waveHeight = 35;
   const centerY = height / 2;
 
   // Normalize data for dot sizes
@@ -155,8 +155,8 @@ const ActivityWaveChart: React.FC<{ hourlyData: number[] }> = ({ hourlyData }) =
   ];
 
   return (
-    <div className="w-full">
-      <svg viewBox={`0 0 ${width} ${height + 40}`} className="w-full h-auto">
+    <div className="w-full max-w-2xl">
+      <svg viewBox={`0 0 ${width} ${height + 25}`} className="w-full h-auto">
         {/* Gradient for wave */}
         <defs>
           <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -182,8 +182,8 @@ const ActivityWaveChart: React.FC<{ hourlyData: number[] }> = ({ hourlyData }) =
           const hour = orderedHours[index];
           const minutes = hourlyData[hour];
           const normalizedSize = minutes / maxMinutes;
-          const baseSize = 6;
-          const maxSize = 20;
+          const baseSize = 4;
+          const maxSize = 12;
           const size = baseSize + normalizedSize * (maxSize - baseSize);
           const opacity = 0.3 + normalizedSize * 0.7;
 
@@ -194,7 +194,7 @@ const ActivityWaveChart: React.FC<{ hourlyData: number[] }> = ({ hourlyData }) =
                 <circle
                   cx={point.x}
                   cy={point.y}
-                  r={size + 4}
+                  r={size + 2}
                   fill="#9CA3AF"
                   opacity={opacity * 0.3}
                 />
@@ -213,46 +213,46 @@ const ActivityWaveChart: React.FC<{ hourlyData: number[] }> = ({ hourlyData }) =
         })}
 
         {/* Sun icon at noon (peak) */}
-        <g transform={`translate(${getX(6)}, ${centerY - waveHeight - 15})`}>
-          <circle cx="0" cy="0" r="8" fill="#F97316" />
+        <g transform={`translate(${getX(6)}, ${centerY - waveHeight - 10})`}>
+          <circle cx="0" cy="0" r="5" fill="#F97316" />
           {/* Sun rays */}
           {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
             <line
               key={angle}
-              x1={Math.cos((angle * Math.PI) / 180) * 10}
-              y1={Math.sin((angle * Math.PI) / 180) * 10}
-              x2={Math.cos((angle * Math.PI) / 180) * 14}
-              y2={Math.sin((angle * Math.PI) / 180) * 14}
+              x1={Math.cos((angle * Math.PI) / 180) * 7}
+              y1={Math.sin((angle * Math.PI) / 180) * 7}
+              x2={Math.cos((angle * Math.PI) / 180) * 10}
+              y2={Math.sin((angle * Math.PI) / 180) * 10}
               stroke="#F97316"
-              strokeWidth="2"
+              strokeWidth="1.5"
               strokeLinecap="round"
             />
           ))}
         </g>
 
         {/* Sunrise icon at 6am (left) */}
-        <g transform={`translate(${padding - 5}, ${centerY})`}>
-          <circle cx="0" cy="0" r="6" fill="#F97316" />
-          <line x1="-8" y1="8" x2="8" y2="8" stroke="#F97316" strokeWidth="2" />
+        <g transform={`translate(${padding - 3}, ${centerY})`}>
+          <circle cx="0" cy="0" r="4" fill="#F97316" />
+          <line x1="-6" y1="6" x2="6" y2="6" stroke="#F97316" strokeWidth="1.5" />
         </g>
 
         {/* Sunset icon at 6pm */}
         <g transform={`translate(${getX(12)}, ${centerY})`}>
-          <circle cx="0" cy="-8" r="6" fill="#F97316" />
+          <circle cx="0" cy="-5" r="4" fill="#F97316" />
         </g>
 
         {/* Moon icon at midnight (bottom) */}
-        <g transform={`translate(${getX(18)}, ${centerY + waveHeight + 15})`}>
+        <g transform={`translate(${getX(18)}, ${centerY + waveHeight + 10})`}>
           <path
-            d="M-4,-6 A6,6 0 1,1 -4,6 A4,4 0 1,0 -4,-6"
+            d="M-3,-4 A4,4 0 1,1 -3,4 A3,3 0 1,0 -3,-4"
             fill="#FBBF24"
           />
         </g>
 
         {/* Sunrise icon at 6am (right) */}
-        <g transform={`translate(${width - padding + 5}, ${centerY})`}>
-          <circle cx="0" cy="0" r="6" fill="#F97316" />
-          <line x1="-8" y1="8" x2="8" y2="8" stroke="#F97316" strokeWidth="2" />
+        <g transform={`translate(${width - padding + 3}, ${centerY})`}>
+          <circle cx="0" cy="0" r="4" fill="#F97316" />
+          <line x1="-6" y1="6" x2="6" y2="6" stroke="#F97316" strokeWidth="1.5" />
         </g>
 
         {/* Time labels */}
@@ -263,10 +263,10 @@ const ActivityWaveChart: React.FC<{ hourlyData: number[] }> = ({ hourlyData }) =
             <text
               key={`label-${index}`}
               x={x}
-              y={height + 20}
+              y={height + 15}
               textAnchor="middle"
-              className="fill-gray-400 text-xs"
-              fontSize="12"
+              className="fill-gray-400"
+              fontSize="10"
             >
               {item.label}
             </text>
