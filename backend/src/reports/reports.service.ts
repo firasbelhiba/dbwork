@@ -664,6 +664,8 @@ export class ReportsService {
         projectKey: string;
         seconds: number;
         isExtra: boolean;
+        startTime: string;
+        endTime: string;
       }>;
     }>> = {};
 
@@ -709,21 +711,19 @@ export class ReportsService {
           userDailyTime[userId][dateKey].regularSeconds += entry.duration;
         }
 
-        // Add to tickets breakdown (or update existing ticket entry)
-        const existingTicket = userDailyTime[userId][dateKey].tickets.find(
-          (t) => t.issueKey === issue.key && t.isExtra === isExtra
-        );
-        if (existingTicket) {
-          existingTicket.seconds += entry.duration;
-        } else {
-          userDailyTime[userId][dateKey].tickets.push({
-            issueKey: issue.key,
-            issueTitle: issue.title,
-            projectKey,
-            seconds: entry.duration,
-            isExtra,
-          });
-        }
+        // Add each time entry as individual session with start/end times
+        const entryStartTime = new Date(entry.startTime);
+        const entryEndTime = new Date(entryStartTime.getTime() + entry.duration * 1000);
+
+        userDailyTime[userId][dateKey].tickets.push({
+          issueKey: issue.key,
+          issueTitle: issue.title,
+          projectKey,
+          seconds: entry.duration,
+          isExtra,
+          startTime: entryStartTime.toISOString(),
+          endTime: entryEndTime.toISOString(),
+        });
       }
 
       // Collect active timer (don't process yet - we'll pick ONE per user later)
@@ -798,21 +798,16 @@ export class ReportsService {
             userDailyTime[userId][todayStr].regularSeconds += todaySeconds;
           }
 
-          // Add active timer ticket to breakdown
-          const existingActiveTicket = userDailyTime[userId][todayStr].tickets.find(
-            (t) => t.issueKey === activeIssue.key && t.isExtra === isExtra
-          );
-          if (existingActiveTicket) {
-            existingActiveTicket.seconds += todaySeconds;
-          } else {
-            userDailyTime[userId][todayStr].tickets.push({
-              issueKey: activeIssue.key,
-              issueTitle: activeIssue.title,
-              projectKey: activeProjectKey,
-              seconds: todaySeconds,
-              isExtra,
-            });
-          }
+          // Add active timer ticket to breakdown with start/end times
+          userDailyTime[userId][todayStr].tickets.push({
+            issueKey: activeIssue.key,
+            issueTitle: activeIssue.title,
+            projectKey: activeProjectKey,
+            seconds: todaySeconds,
+            isExtra,
+            startTime: effectiveStart.toISOString(),
+            endTime: effectiveEnd.toISOString(),
+          });
         }
       }
     }
@@ -846,11 +841,11 @@ export class ReportsService {
         if (diff < -1800) status = 'under'; // More than 30 min under
         else if (diff > 1800) status = 'over'; // More than 30 min over
 
-        // Format tickets with hours
+        // Format tickets with hours and sort by start time
         const formattedTickets = (dayData.tickets || []).map((ticket) => ({
           ...ticket,
           hours: Math.round((ticket.seconds / 3600) * 100) / 100,
-        })).sort((a, b) => b.seconds - a.seconds);
+        })).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
         dailyData.push({
           odataKey: dateKey,

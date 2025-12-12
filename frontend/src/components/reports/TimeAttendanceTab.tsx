@@ -11,6 +11,8 @@ interface TicketBreakdown {
   seconds: number;
   hours: number;
   isExtra: boolean;
+  startTime: string;
+  endTime: string;
 }
 
 interface TimeAttendanceData {
@@ -56,6 +58,11 @@ const formatHours = (hours: number): string => {
   if (h === 0) return `${m}m`;
   if (m === 0) return `${h}h`;
   return `${h}h ${m}m`;
+};
+
+const formatTime = (isoString: string): string => {
+  const date = new Date(isoString);
+  return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
 };
 
 export const TimeAttendanceTab: React.FC<TimeAttendanceTabProps> = ({ startDate, endDate }) => {
@@ -328,6 +335,9 @@ export const TimeAttendanceTab: React.FC<TimeAttendanceTabProps> = ({ startDate,
                                   className="flex items-center justify-between bg-white dark:bg-gray-700 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-600"
                                 >
                                   <div className="flex items-center gap-3">
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 font-mono">
+                                      {formatTime(ticket.startTime)} - {formatTime(ticket.endTime)}
+                                    </span>
                                     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
                                       {ticket.issueKey}
                                     </span>
