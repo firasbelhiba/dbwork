@@ -5,6 +5,21 @@ import { Audit, AuditDocument } from './schemas/audit.schema';
 import { CreateAuditDto } from './dto/create-audit.dto';
 import { getCloudinary } from '../attachments/cloudinary.config';
 
+// Helper to generate signed URL for raw files (PDFs)
+function generateSignedUrl(cloudinaryId: string): string {
+  const cloudinary = getCloudinary();
+
+  // Generate a signed URL that expires in 1 hour (3600 seconds)
+  const signedUrl = cloudinary.url(cloudinaryId, {
+    resource_type: 'raw',
+    type: 'upload',
+    sign_url: true,
+    expires_at: Math.floor(Date.now() / 1000) + 3600, // 1 hour expiry
+  });
+
+  return signedUrl;
+}
+
 @Injectable()
 export class AuditsService {
   constructor(
@@ -74,11 +89,18 @@ export class AuditsService {
   }
 
   async findByProject(projectId: string): Promise<AuditDocument[]> {
-    return this.auditModel
+    const audits = await this.auditModel
       .find({ projectId })
       .populate('userId', 'firstName lastName avatar')
       .sort({ createdAt: -1 })
       .exec();
+
+    // Replace stored URLs with signed URLs for secure access
+    return audits.map((audit) => {
+      const auditObj = audit.toObject();
+      auditObj.url = generateSignedUrl(audit.cloudinaryId);
+      return auditObj as AuditDocument;
+    });
   }
 
   async findOne(id: string): Promise<AuditDocument> {
@@ -91,7 +113,10 @@ export class AuditsService {
       throw new NotFoundException('Audit not found');
     }
 
-    return audit;
+    // Replace stored URL with signed URL for secure access
+    const auditObj = audit.toObject();
+    auditObj.url = generateSignedUrl(audit.cloudinaryId);
+    return auditObj as AuditDocument;
   }
 
   async remove(id: string): Promise<void> {
