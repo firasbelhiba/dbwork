@@ -51,6 +51,11 @@ function ProjectDetailPageContent() {
   const [view, setView] = useState<'board' | 'list' | 'calendar' | 'audits'>(() => {
     const urlView = searchParams.get('view');
     if (urlView === 'list' || urlView === 'calendar' || urlView === 'audits') return urlView;
+    // Fallback to localStorage
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('kanban-view');
+      if (saved === 'list' || saved === 'calendar' || saved === 'audits') return saved;
+    }
     return 'board';
   });
   const [loading, setLoading] = useState(true);
@@ -65,9 +70,16 @@ function ProjectDetailPageContent() {
   const [isDemoEventModalOpen, setIsDemoEventModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [zoomLevel, setZoomLevel] = useState(100);
-  const [showArchived, setShowArchived] = useState(() =>
-    searchParams.get('archived') === 'true'
-  );
+  const [showArchived, setShowArchived] = useState(() => {
+    const urlValue = searchParams.get('archived');
+    if (urlValue !== null) return urlValue === 'true';
+    // Fallback to localStorage
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('kanban-showArchived');
+      return saved === 'true';
+    }
+    return false;
+  });
   const [myTasksOnly, setMyTasksOnly] = useState(() => {
     // URL param takes precedence, then localStorage
     const urlValue = searchParams.get('myTasks');
@@ -137,6 +149,20 @@ function ProjectDetailPageContent() {
     design: 'Design',
     marketing: 'Marketing',
   };
+
+  // Save to localStorage when view changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('kanban-view', view);
+    }
+  }, [view]);
+
+  // Save to localStorage when showArchived changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('kanban-showArchived', String(showArchived));
+    }
+  }, [showArchived]);
 
   // Save to localStorage when myTasksOnly changes
   useEffect(() => {

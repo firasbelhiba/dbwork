@@ -27,6 +27,27 @@ export default function IssuesPage() {
   );
 }
 
+const ISSUES_FILTERS_STORAGE_KEY = 'issues-page-filters';
+
+// Helper to get saved filters from localStorage
+function getSavedFilters(): {
+  search?: string;
+  project?: string;
+  type?: string;
+  status?: string;
+  priority?: string;
+  assignees?: string[];
+  view?: 'list' | 'board';
+} {
+  if (typeof window === 'undefined') return {};
+  try {
+    const saved = localStorage.getItem(ISSUES_FILTERS_STORAGE_KEY);
+    return saved ? JSON.parse(saved) : {};
+  } catch {
+    return {};
+  }
+}
+
 function IssuesPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -36,19 +57,42 @@ function IssuesPageContent() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Initialize filters from URL parameters
-  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
-  const [selectedProject, setSelectedProject] = useState<string>(() => searchParams.get('project') || '');
-  const [selectedType, setSelectedType] = useState<string>(() => searchParams.get('type') || '');
-  const [selectedStatus, setSelectedStatus] = useState<string>(() => searchParams.get('status') || '');
-  const [selectedPriority, setSelectedPriority] = useState<string>(() => searchParams.get('priority') || '');
+  // Initialize filters from URL parameters, fallback to localStorage
+  const [searchQuery, setSearchQuery] = useState(() => {
+    const urlValue = searchParams.get('search');
+    if (urlValue) return urlValue;
+    return getSavedFilters().search || '';
+  });
+  const [selectedProject, setSelectedProject] = useState<string>(() => {
+    const urlValue = searchParams.get('project');
+    if (urlValue) return urlValue;
+    return getSavedFilters().project || '';
+  });
+  const [selectedType, setSelectedType] = useState<string>(() => {
+    const urlValue = searchParams.get('type');
+    if (urlValue) return urlValue;
+    return getSavedFilters().type || '';
+  });
+  const [selectedStatus, setSelectedStatus] = useState<string>(() => {
+    const urlValue = searchParams.get('status');
+    if (urlValue) return urlValue;
+    return getSavedFilters().status || '';
+  });
+  const [selectedPriority, setSelectedPriority] = useState<string>(() => {
+    const urlValue = searchParams.get('priority');
+    if (urlValue) return urlValue;
+    return getSavedFilters().priority || '';
+  });
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>(() => {
-    const assignees = searchParams.get('assignees');
-    return assignees ? assignees.split(',') : [];
+    const urlValue = searchParams.get('assignees');
+    if (urlValue) return urlValue.split(',');
+    return getSavedFilters().assignees || [];
   });
   const [viewMode, setViewMode] = useState<'list' | 'board'>(() => {
-    const mode = searchParams.get('view');
-    return mode === 'board' ? 'board' : 'list';
+    const urlValue = searchParams.get('view');
+    if (urlValue === 'board') return 'board';
+    if (urlValue === 'list') return 'list';
+    return getSavedFilters().view || 'list';
   });
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(100);
@@ -97,6 +141,22 @@ function IssuesPageContent() {
       view: viewMode,
     });
   }, [searchQuery, selectedProject, selectedType, selectedStatus, selectedPriority, selectedAssignees, viewMode, updateURL]);
+
+  // Save filters to localStorage when they change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const filters = {
+        search: searchQuery,
+        project: selectedProject,
+        type: selectedType,
+        status: selectedStatus,
+        priority: selectedPriority,
+        assignees: selectedAssignees,
+        view: viewMode,
+      };
+      localStorage.setItem(ISSUES_FILTERS_STORAGE_KEY, JSON.stringify(filters));
+    }
+  }, [searchQuery, selectedProject, selectedType, selectedStatus, selectedPriority, selectedAssignees, viewMode]);
 
   const fetchData = async () => {
     setLoading(true);
