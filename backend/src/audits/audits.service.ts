@@ -9,12 +9,11 @@ import { getCloudinary } from '../attachments/cloudinary.config';
 function generateSignedUrl(cloudinaryId: string): string {
   const cloudinary = getCloudinary();
 
-  // Generate a signed URL that expires in 1 hour (3600 seconds)
-  const signedUrl = cloudinary.url(cloudinaryId, {
-    resource_type: 'raw',
-    type: 'upload',
-    sign_url: true,
+  // Use private_download_url for authenticated raw file access
+  // This is the proper method for generating download URLs for raw resources
+  const signedUrl = cloudinary.utils.private_download_url(cloudinaryId, 'raw', {
     expires_at: Math.floor(Date.now() / 1000) + 3600, // 1 hour expiry
+    attachment: false, // Display inline instead of forcing download
   });
 
   return signedUrl;
