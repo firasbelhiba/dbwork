@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Badge, Button, Input, Select, Breadcrumb, LogoLoader } from '@/components/common';
 import { issuesAPI, projectsAPI, usersAPI } from '@/lib/api';
@@ -9,33 +9,94 @@ import { Project } from '@/types/project';
 import { User, UserRole } from '@/types/user';
 import { KanbanBoard } from '@/components/kanban';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
+// Wrapper component to handle Suspense boundary for useSearchParams
 export default function IssuesPage() {
+  return (
+    <Suspense fallback={
+      <DashboardLayout>
+        <div className="flex items-center justify-center py-12">
+          <LogoLoader size="lg" text="Loading issues" />
+        </div>
+      </DashboardLayout>
+    }>
+      <IssuesPageContent />
+    </Suspense>
+  );
+}
+
+function IssuesPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
   const [issues, setIssues] = useState<Issue[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Filters
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedProject, setSelectedProject] = useState<string>('');
-  const [selectedType, setSelectedType] = useState<string>('');
-  const [selectedStatus, setSelectedStatus] = useState<string>('');
-  const [selectedPriority, setSelectedPriority] = useState<string>('');
-  const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
-  const [viewMode, setViewMode] = useState<'list' | 'board'>('list');
+  // Initialize filters from URL parameters
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
+  const [selectedProject, setSelectedProject] = useState<string>(() => searchParams.get('project') || '');
+  const [selectedType, setSelectedType] = useState<string>(() => searchParams.get('type') || '');
+  const [selectedStatus, setSelectedStatus] = useState<string>(() => searchParams.get('status') || '');
+  const [selectedPriority, setSelectedPriority] = useState<string>(() => searchParams.get('priority') || '');
+  const [selectedAssignees, setSelectedAssignees] = useState<string[]>(() => {
+    const assignees = searchParams.get('assignees');
+    return assignees ? assignees.split(',') : [];
+  });
+  const [viewMode, setViewMode] = useState<'list' | 'board'>(() => {
+    const mode = searchParams.get('view');
+    return mode === 'board' ? 'board' : 'list';
+  });
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(100);
+
+  // Update URL with current filters
+  const updateURL = useCallback((filters: {
+    search?: string;
+    project?: string;
+    type?: string;
+    status?: string;
+    priority?: string;
+    assignees?: string[];
+    view?: 'list' | 'board';
+  }) => {
+    const params = new URLSearchParams();
+
+    if (filters.search) params.set('search', filters.search);
+    if (filters.project) params.set('project', filters.project);
+    if (filters.type) params.set('type', filters.type);
+    if (filters.status) params.set('status', filters.status);
+    if (filters.priority) params.set('priority', filters.priority);
+    if (filters.assignees && filters.assignees.length > 0) {
+      params.set('assignees', filters.assignees.join(','));
+    }
+    if (filters.view && filters.view !== 'list') params.set('view', filters.view);
+
+    const queryString = params.toString();
+    router.replace(`/issues${queryString ? `?${queryString}` : ''}`, { scroll: false });
+  }, [router]);
 
   useEffect(() => {
     if (user) {
       fetchData();
     }
   }, [user, selectedProject, selectedType, selectedStatus, selectedPriority, selectedAssignees]);
+
+  // Sync filters to URL when they change
+  useEffect(() => {
+    updateURL({
+      search: searchQuery,
+      project: selectedProject,
+      type: selectedType,
+      status: selectedStatus,
+      priority: selectedPriority,
+      assignees: selectedAssignees,
+      view: viewMode,
+    });
+  }, [searchQuery, selectedProject, selectedType, selectedStatus, selectedPriority, selectedAssignees, viewMode, updateURL]);
 
   const fetchData = async () => {
     setLoading(true);
