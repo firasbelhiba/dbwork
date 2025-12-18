@@ -27,12 +27,20 @@ export class AuditsService {
       const cloudinary = getCloudinary();
 
       // Upload to Cloudinary
+      // Ensure .pdf extension is preserved in the public_id for proper serving
+      const sanitizedFilename = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const publicId = sanitizedFilename.toLowerCase().endsWith('.pdf')
+        ? `${Date.now()}-${sanitizedFilename}`
+        : `${Date.now()}-${sanitizedFilename}.pdf`;
+
       const result = await new Promise<any>((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           {
             folder: `dbwork/audits/${projectId}`,
             resource_type: 'raw',
-            public_id: `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_')}`,
+            public_id: publicId,
+            // Enable public access for the file
+            access_mode: 'public',
           },
           (error, result) => {
             if (error) reject(error);
