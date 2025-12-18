@@ -430,7 +430,7 @@ export function AuditSection({ projectId }: AuditSectionProps) {
                       View
                     </button>
                     <a
-                      href={audit.url}
+                      href={auditsAPI.getViewUrl(audit._id)}
                       download={audit.originalName}
                       className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-200 rounded-md transition-colors"
                     >
@@ -463,7 +463,7 @@ export function AuditSection({ projectId }: AuditSectionProps) {
         <PDFViewerModal
           isOpen={!!viewingAudit}
           onClose={() => setViewingAudit(null)}
-          pdfUrl={viewingAudit.url}
+          pdfUrl={auditsAPI.getViewUrl(viewingAudit._id)}
           title={viewingAudit.title}
           originalName={viewingAudit.originalName}
         />

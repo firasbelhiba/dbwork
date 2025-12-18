@@ -10,7 +10,11 @@ import {
   UploadedFile,
   BadRequestException,
   ForbiddenException,
+  Res,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -62,6 +66,46 @@ export class AuditsController {
   @Get('audits/:id')
   async findOne(@Param('id') id: string) {
     return this.auditsService.findOne(id);
+  }
+
+  @Get('audits/:id/view')
+  async viewPdf(@Param('id') id: string, @Res() res: Response) {
+    try {
+      const audit = await this.auditsService.findOneRaw(id);
+
+      // Fetch the PDF from Cloudinary
+      const response = await fetch(audit.url);
+
+      if (!response.ok) {
+        throw new HttpException(
+          'Failed to fetch PDF from storage',
+          HttpStatus.BAD_GATEWAY,
+        );
+      }
+
+      // Get the PDF content as buffer
+      const buffer = await response.arrayBuffer();
+
+      // Set proper headers for inline PDF viewing
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader(
+        'Content-Disposition',
+        `inline; filename="${audit.originalName}"`,
+      );
+      res.setHeader('Content-Length', buffer.byteLength);
+      res.setHeader('Cache-Control', 'private, max-age=3600');
+
+      // Send the PDF buffer
+      res.send(Buffer.from(buffer));
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        'Failed to load PDF',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Delete('audits/:id')

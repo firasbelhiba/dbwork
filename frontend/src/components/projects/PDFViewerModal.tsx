@@ -13,33 +13,19 @@ interface PDFViewerModalProps {
 
 export function PDFViewerModal({ isOpen, onClose, pdfUrl, title, originalName }: PDFViewerModalProps) {
   const [loadError, setLoadError] = useState(false);
-  const [viewerType, setViewerType] = useState<'direct' | 'google' | 'object'>('direct');
   const [isLoading, setIsLoading] = useState(true);
-
-  // Google Docs Viewer URL - works well for most PDFs
-  const googleViewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
-
-  const tryNextViewer = () => {
-    if (viewerType === 'direct') {
-      // Try object tag next
-      setViewerType('object');
-      setIsLoading(true);
-    } else if (viewerType === 'object') {
-      // Try Google Docs viewer as last resort
-      setViewerType('google');
-      setIsLoading(true);
-    } else {
-      setLoadError(true);
-    }
-  };
 
   const handleLoad = () => {
     setIsLoading(false);
   };
 
+  const handleError = () => {
+    setLoadError(true);
+    setIsLoading(false);
+  };
+
   const resetViewer = () => {
     setLoadError(false);
-    setViewerType('direct');
     setIsLoading(true);
   };
 
@@ -121,39 +107,13 @@ export function PDFViewerModal({ isOpen, onClose, pdfUrl, title, originalName }:
             </div>
           </div>
         ) : (
-          <>
-            {viewerType === 'direct' && (
-              <iframe
-                src={pdfUrl}
-                className="w-full h-full border-0"
-                title={title}
-                onLoad={handleLoad}
-                onError={tryNextViewer}
-              />
-            )}
-            {viewerType === 'object' && (
-              <object
-                data={pdfUrl}
-                type="application/pdf"
-                className="w-full h-full"
-                onLoad={handleLoad}
-                onError={tryNextViewer}
-              >
-                <p className="p-8 text-center text-gray-500 dark:text-gray-400">
-                  Loading alternative viewer...
-                </p>
-              </object>
-            )}
-            {viewerType === 'google' && (
-              <iframe
-                src={googleViewerUrl}
-                className="w-full h-full border-0"
-                title={title}
-                onLoad={handleLoad}
-                onError={() => setLoadError(true)}
-              />
-            )}
-          </>
+          <iframe
+            src={pdfUrl}
+            className="w-full h-full border-0"
+            title={title}
+            onLoad={handleLoad}
+            onError={handleError}
+          />
         )}
       </div>
     </Modal>

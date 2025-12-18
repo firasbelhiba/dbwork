@@ -396,6 +396,11 @@ export const auditsAPI = {
     });
   },
   delete: (id: string) => api.delete(`/audits/${id}`),
+  // Get the URL for viewing a PDF through the backend proxy
+  getViewUrl: (id: string) => {
+    const token = localStorage.getItem('accessToken');
+    return `${API_URL}/audits/${id}/view?token=${token}`;
+  },
 };
 
 export default api;

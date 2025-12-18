@@ -5,20 +5,6 @@ import { Audit, AuditDocument } from './schemas/audit.schema';
 import { CreateAuditDto } from './dto/create-audit.dto';
 import { getCloudinary } from '../attachments/cloudinary.config';
 
-// Helper to generate signed URL for raw files (PDFs)
-function generateSignedUrl(cloudinaryId: string): string {
-  const cloudinary = getCloudinary();
-
-  // Use private_download_url for authenticated raw file access
-  // This is the proper method for generating download URLs for raw resources
-  const signedUrl = cloudinary.utils.private_download_url(cloudinaryId, 'raw', {
-    expires_at: Math.floor(Date.now() / 1000) + 3600, // 1 hour expiry
-    attachment: false, // Display inline instead of forcing download
-  });
-
-  return signedUrl;
-}
-
 @Injectable()
 export class AuditsService {
   constructor(
@@ -88,18 +74,11 @@ export class AuditsService {
   }
 
   async findByProject(projectId: string): Promise<AuditDocument[]> {
-    const audits = await this.auditModel
+    return this.auditModel
       .find({ projectId })
       .populate('userId', 'firstName lastName avatar')
       .sort({ createdAt: -1 })
       .exec();
-
-    // Replace stored URLs with signed URLs for secure access
-    return audits.map((audit) => {
-      const auditObj = audit.toObject();
-      auditObj.url = generateSignedUrl(audit.cloudinaryId);
-      return auditObj as AuditDocument;
-    });
   }
 
   async findOne(id: string): Promise<AuditDocument> {
@@ -112,10 +91,21 @@ export class AuditsService {
       throw new NotFoundException('Audit not found');
     }
 
-    // Replace stored URL with signed URL for secure access
+    // Return audit with proxy URL for viewing
     const auditObj = audit.toObject();
-    auditObj.url = generateSignedUrl(audit.cloudinaryId);
+    // URL will be set by frontend to use the proxy endpoint
     return auditObj as AuditDocument;
+  }
+
+  // Returns audit with original Cloudinary URL (for backend use only)
+  async findOneRaw(id: string): Promise<AuditDocument> {
+    const audit = await this.auditModel.findById(id).exec();
+
+    if (!audit) {
+      throw new NotFoundException('Audit not found');
+    }
+
+    return audit;
   }
 
   async remove(id: string): Promise<void> {
