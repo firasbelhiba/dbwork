@@ -35,7 +35,7 @@ export class Audit {
   @Prop({ required: true })
   url: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   cloudinaryId: string;
 
   @Prop()
