@@ -3,7 +3,16 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Audit, AuditDocument } from './schemas/audit.schema';
 import { CreateAuditDto } from './dto/create-audit.dto';
-import { getCloudinary } from '../attachments/cloudinary.config';
+import * as fs from 'fs';
+import * as path from 'path';
+
+// Directory for storing audit PDFs
+const UPLOADS_DIR = path.join(process.cwd(), 'uploads', 'audits');
+
+// Ensure uploads directory exists
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
 
 @Injectable()
 export class AuditsService {
@@ -24,44 +33,33 @@ export class AuditsService {
     }
 
     try {
-      const cloudinary = getCloudinary();
+      // Create project-specific directory
+      const projectDir = path.join(UPLOADS_DIR, projectId);
+      if (!fs.existsSync(projectDir)) {
+        fs.mkdirSync(projectDir, { recursive: true });
+      }
 
-      // Upload to Cloudinary
-      // Ensure .pdf extension is preserved in the public_id for proper serving
+      // Generate unique filename
       const sanitizedFilename = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
-      const publicId = sanitizedFilename.toLowerCase().endsWith('.pdf')
-        ? `${Date.now()}-${sanitizedFilename}`
-        : `${Date.now()}-${sanitizedFilename}.pdf`;
+      const filename = `${Date.now()}-${sanitizedFilename}`;
+      const filepath = path.join(projectDir, filename);
 
-      const result = await new Promise<any>((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
-          {
-            folder: `dbwork/audits/${projectId}`,
-            resource_type: 'raw',
-            public_id: publicId,
-            // Enable public access for the file
-            access_mode: 'public',
-          },
-          (error, result) => {
-            if (error) reject(error);
-            else resolve(result);
-          },
-        );
-        uploadStream.end(file.buffer);
-      });
+      // Save file to disk
+      fs.writeFileSync(filepath, file.buffer);
 
+      // Create audit record (url field will be used by the view endpoint)
       const audit = new this.auditModel({
         projectId,
         userId,
         title: createAuditDto.title,
         auditType: createAuditDto.auditType,
         description: createAuditDto.description,
-        filename: result.public_id,
+        filename: filename,
         originalName: file.originalname,
         mimeType: file.mimetype,
         size: file.size,
-        url: result.secure_url,
-        cloudinaryId: result.public_id,
+        url: filepath, // Store local path
+        cloudinaryId: null, // Not using Cloudinary anymore
         auditDate: createAuditDto.auditDate
           ? new Date(createAuditDto.auditDate)
           : undefined,
@@ -109,16 +107,15 @@ export class AuditsService {
   }
 
   async remove(id: string): Promise<void> {
-    const audit = await this.findOne(id);
-    const cloudinary = getCloudinary();
+    const audit = await this.findOneRaw(id);
 
     try {
-      // Delete from Cloudinary (PDF uses 'raw' resource type)
-      await cloudinary.uploader.destroy(audit.cloudinaryId, {
-        resource_type: 'raw',
-      });
+      // Delete local file if it exists
+      if (audit.url && fs.existsSync(audit.url)) {
+        fs.unlinkSync(audit.url);
+      }
     } catch (error) {
-      console.error('Failed to delete audit from Cloudinary:', error);
+      console.error('Failed to delete audit file from disk:', error);
     }
 
     // Delete from database

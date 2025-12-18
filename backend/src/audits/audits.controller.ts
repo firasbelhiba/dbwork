@@ -72,19 +72,18 @@ export class AuditsController {
   async viewPdf(@Param('id') id: string, @Res() res: Response) {
     try {
       const audit = await this.auditsService.findOneRaw(id);
+      const fs = await import('fs');
 
-      // Fetch the PDF from Cloudinary
-      const response = await fetch(audit.url);
-
-      if (!response.ok) {
+      // Check if file exists locally
+      if (!audit.url || !fs.existsSync(audit.url)) {
         throw new HttpException(
-          'Failed to fetch PDF from storage',
-          HttpStatus.BAD_GATEWAY,
+          'PDF file not found',
+          HttpStatus.NOT_FOUND,
         );
       }
 
-      // Get the PDF content as buffer
-      const buffer = await response.arrayBuffer();
+      // Read file from disk
+      const fileBuffer = fs.readFileSync(audit.url);
 
       // Set proper headers for inline PDF viewing
       res.setHeader('Content-Type', 'application/pdf');
@@ -92,11 +91,11 @@ export class AuditsController {
         'Content-Disposition',
         `inline; filename="${audit.originalName}"`,
       );
-      res.setHeader('Content-Length', buffer.byteLength);
+      res.setHeader('Content-Length', fileBuffer.length);
       res.setHeader('Cache-Control', 'private, max-age=3600');
 
       // Send the PDF buffer
-      res.send(Buffer.from(buffer));
+      res.send(fileBuffer);
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
