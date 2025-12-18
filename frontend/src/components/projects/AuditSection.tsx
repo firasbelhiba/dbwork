@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { auditsAPI } from '@/lib/api';
 import { Audit, formatFileSize } from '@/types/audit';
 import { Button, Input, Select } from '@/components/common';
+import { PDFViewerModal } from './PDFViewerModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserRole } from '@/types/user';
 import { getInitials } from '@/lib/utils';
@@ -39,6 +40,9 @@ export function AuditSection({ projectId }: AuditSectionProps) {
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // PDF Viewer state
+  const [viewingAudit, setViewingAudit] = useState<Audit | null>(null);
 
   // Form state
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -415,10 +419,8 @@ export function AuditSection({ projectId }: AuditSectionProps) {
 
                   {/* Actions */}
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <a
-                      href={audit.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      onClick={() => setViewingAudit(audit)}
                       className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-md transition-colors"
                     >
                       <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -426,7 +428,7 @@ export function AuditSection({ projectId }: AuditSectionProps) {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                       </svg>
                       View
-                    </a>
+                    </button>
                     <a
                       href={audit.url}
                       download={audit.originalName}
@@ -455,6 +457,17 @@ export function AuditSection({ projectId }: AuditSectionProps) {
           )}
         </div>
       </div>
+
+      {/* PDF Viewer Modal */}
+      {viewingAudit && (
+        <PDFViewerModal
+          isOpen={!!viewingAudit}
+          onClose={() => setViewingAudit(null)}
+          pdfUrl={viewingAudit.url}
+          title={viewingAudit.title}
+          originalName={viewingAudit.originalName}
+        />
+      )}
     </div>
   );
 }
