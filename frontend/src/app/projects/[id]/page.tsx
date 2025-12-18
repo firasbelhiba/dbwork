@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { projectsAPI, sprintsAPI, issuesAPI } from '@/lib/api';
 import { Project } from '@/types/project';
@@ -19,17 +19,40 @@ import { getInitials } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
 
+// Wrapper component to handle Suspense boundary for useSearchParams
 export default function ProjectDetailPage() {
+  return (
+    <Suspense fallback={
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-full">
+          <LogoLoader size="lg" text="Loading project" />
+        </div>
+      </DashboardLayout>
+    }>
+      <ProjectDetailPageContent />
+    </Suspense>
+  );
+}
+
+function ProjectDetailPageContent() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, loading: authLoading } = useAuth();
   const projectId = params.id as string;
 
   const [project, setProject] = useState<Project | null>(null);
   const [sprints, setSprints] = useState<Sprint[]>([]);
   const [activeSprint, setActiveSprint] = useState<Sprint | null>(null);
-  const [selectedSprintId, setSelectedSprintId] = useState<string>('all');
-  const [view, setView] = useState<'board' | 'list' | 'calendar' | 'audits'>('board');
+  // Initialize from URL params, fallback to 'all'
+  const [selectedSprintId, setSelectedSprintId] = useState<string>(() =>
+    searchParams.get('sprint') || 'all'
+  );
+  const [view, setView] = useState<'board' | 'list' | 'calendar' | 'audits'>(() => {
+    const urlView = searchParams.get('view');
+    if (urlView === 'list' || urlView === 'calendar' || urlView === 'audits') return urlView;
+    return 'board';
+  });
   const [loading, setLoading] = useState(true);
   const [issues, setIssues] = useState<Issue[]>([]);
   const [loadingIssues, setLoadingIssues] = useState(false);
@@ -42,9 +65,13 @@ export default function ProjectDetailPage() {
   const [isDemoEventModalOpen, setIsDemoEventModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [zoomLevel, setZoomLevel] = useState(100);
-  const [showArchived, setShowArchived] = useState(false);
+  const [showArchived, setShowArchived] = useState(() =>
+    searchParams.get('archived') === 'true'
+  );
   const [myTasksOnly, setMyTasksOnly] = useState(() => {
-    // Load from localStorage on mount
+    // URL param takes precedence, then localStorage
+    const urlValue = searchParams.get('myTasks');
+    if (urlValue !== null) return urlValue === 'true';
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('kanban-myTasksOnly');
       return saved === 'true';
@@ -52,7 +79,9 @@ export default function ProjectDetailPage() {
     return false;
   });
   const [sortByStartDate, setSortByStartDate] = useState(() => {
-    // Load from localStorage on mount
+    // URL param takes precedence, then localStorage
+    const urlValue = searchParams.get('sortByDate');
+    if (urlValue !== null) return urlValue === 'true';
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('kanban-sortByStartDate');
       return saved === 'true';
@@ -62,12 +91,37 @@ export default function ProjectDetailPage() {
   const [showFiltersMenu, setShowFiltersMenu] = useState(false);
   const [showSprintsMenu, setShowSprintsMenu] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<string>(() => {
+    // URL param takes precedence, then localStorage
+    const urlValue = searchParams.get('team');
+    if (urlValue && ['all', 'dev', 'design', 'marketing'].includes(urlValue)) return urlValue;
     if (typeof window !== 'undefined') {
       return localStorage.getItem('kanban-selectedTeam') || 'all';
     }
     return 'all';
   });
   const [isTeamExpanded, setIsTeamExpanded] = useState(false);
+
+  // Update URL with current filters
+  const updateURL = useCallback((filters: {
+    sprint?: string;
+    view?: string;
+    archived?: boolean;
+    myTasks?: boolean;
+    sortByDate?: boolean;
+    team?: string;
+  }) => {
+    const params = new URLSearchParams();
+
+    if (filters.sprint && filters.sprint !== 'all') params.set('sprint', filters.sprint);
+    if (filters.view && filters.view !== 'board') params.set('view', filters.view);
+    if (filters.archived) params.set('archived', 'true');
+    if (filters.myTasks) params.set('myTasks', 'true');
+    if (filters.sortByDate) params.set('sortByDate', 'true');
+    if (filters.team && filters.team !== 'all') params.set('team', filters.team);
+
+    const queryString = params.toString();
+    router.replace(`/projects/${projectId}${queryString ? `?${queryString}` : ''}`, { scroll: false });
+  }, [router, projectId]);
 
   // Team category mapping
   const TEAM_CATEGORIES: Record<string, string[] | null> = {
@@ -104,6 +158,18 @@ export default function ProjectDetailPage() {
       localStorage.setItem('kanban-selectedTeam', selectedTeam);
     }
   }, [selectedTeam]);
+
+  // Sync filters to URL when they change
+  useEffect(() => {
+    updateURL({
+      sprint: selectedSprintId,
+      view: view,
+      archived: showArchived,
+      myTasks: myTasksOnly,
+      sortByDate: sortByStartDate,
+      team: selectedTeam,
+    });
+  }, [selectedSprintId, view, showArchived, myTasksOnly, sortByStartDate, selectedTeam, updateURL]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -144,7 +210,8 @@ export default function ProjectDetailPage() {
       setSprints(sprintsRes.data);
       setActiveSprint(activeSprintRes.data);
 
-      if (activeSprintRes.data) {
+      // Only set active sprint if no sprint was specified in URL
+      if (activeSprintRes.data && !searchParams.get('sprint')) {
         setSelectedSprintId(activeSprintRes.data._id);
       }
     } catch (error) {
@@ -186,7 +253,8 @@ export default function ProjectDetailPage() {
       setSprints(sprintsRes.data);
       setActiveSprint(activeSprintRes.data);
 
-      if (activeSprintRes.data) {
+      // Only set active sprint if no sprint was specified in URL
+      if (activeSprintRes.data && !searchParams.get('sprint')) {
         setSelectedSprintId(activeSprintRes.data._id);
       }
     } catch (error) {
