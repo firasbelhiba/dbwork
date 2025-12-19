@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect, KeyboardEvent } from 'react';
 import api from '@/lib/api';
+import { UserAvatar } from '@/components/common/UserAvatar';
 
 interface User {
   _id: string;
@@ -187,17 +188,14 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
                 index === selectedIndex ? 'bg-gray-100 dark:bg-dark-400' : ''
               }`}
             >
-              {user.avatar ? (
-                <img
-                  src={user.avatar}
-                  alt={`${user.firstName} ${user.lastName}`}
-                  className="w-8 h-8 rounded-full"
-                />
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-primary-500 text-white flex items-center justify-center text-sm font-bold">
-                  {user.firstName[0]}{user.lastName[0]}
-                </div>
-              )}
+              <UserAvatar
+                userId={user._id}
+                avatar={user.avatar}
+                firstName={user.firstName}
+                lastName={user.lastName}
+                size="md"
+                showOnlineStatus={true}
+              />
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                   {user.firstName} {user.lastName}

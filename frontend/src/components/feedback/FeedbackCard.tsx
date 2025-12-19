@@ -2,7 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Feedback, FeedbackType, FeedbackStatus } from '@/types/feedback';
 import { Badge } from '@/components/common';
-import { getInitials } from '@/lib/utils';
+import { UserAvatar } from '@/components/common/UserAvatar';
 import { formatDistanceToNow } from 'date-fns';
 
 interface FeedbackCardProps {
@@ -113,20 +113,14 @@ export const FeedbackCard: React.FC<FeedbackCardProps> = ({
           {/* User Avatar */}
           {feedback.userId && (
             <div className="flex items-center gap-2">
-              {feedback.userId.avatar ? (
-                <img
-                  src={feedback.userId.avatar}
-                  alt={`${feedback.userId.firstName} ${feedback.userId.lastName}`}
-                  className="w-6 h-6 rounded-full object-cover"
-                />
-              ) : (
-                <div className="w-6 h-6 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center text-xs font-medium">
-                  {getInitials(
-                    feedback.userId.firstName,
-                    feedback.userId.lastName
-                  )}
-                </div>
-              )}
+              <UserAvatar
+                userId={feedback.userId._id}
+                avatar={feedback.userId.avatar}
+                firstName={feedback.userId.firstName}
+                lastName={feedback.userId.lastName}
+                size="sm"
+                showOnlineStatus={true}
+              />
               <span>
                 {feedback.userId.firstName} {feedback.userId.lastName}
               </span>

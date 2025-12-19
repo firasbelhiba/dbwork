@@ -12,6 +12,7 @@ import { MentionTextarea } from '@/components/common/MentionTextarea';
 import { SubIssues, SubIssueModal, EditIssueModal, AttachmentSection, TimeTracker } from '@/components/issues';
 import { useAuth } from '@/contexts/AuthContext';
 import { getInitials, formatDateTime, getRelativeTime } from '@/lib/utils';
+import { UserAvatar } from '@/components/common/UserAvatar';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 
@@ -532,17 +533,16 @@ export default function IssueDetailPage() {
                 {/* Add Comment */}
                 <form onSubmit={handleAddComment} className="mb-6">
                   <div className="flex gap-3">
-                    {user?.avatar ? (
-                      <img
-                        src={user.avatar}
-                        alt={`${user.firstName} ${user.lastName}`}
-                        className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                    <div className="flex-shrink-0">
+                      <UserAvatar
+                        userId={user?._id}
+                        avatar={user?.avatar}
+                        firstName={user?.firstName}
+                        lastName={user?.lastName}
+                        size="md"
+                        showOnlineStatus={true}
                       />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium flex-shrink-0">
-                        {user && getInitials(user.firstName, user.lastName)}
-                      </div>
-                    )}
+                    </div>
                     <div className="flex-1">
                       <div onPaste={handlePasteImage}>
                         <MentionTextarea
@@ -635,17 +635,16 @@ export default function IssueDetailPage() {
                         );
                         return (
                           <div key={comment._id} className="flex gap-3">
-                            {commentUser?.avatar ? (
-                              <img
-                                src={commentUser.avatar}
-                                alt={`${commentUser.firstName} ${commentUser.lastName}`}
-                                className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                            <div className="flex-shrink-0">
+                              <UserAvatar
+                                userId={commentUser?._id}
+                                avatar={commentUser?.avatar}
+                                firstName={commentUser?.firstName}
+                                lastName={commentUser?.lastName}
+                                size="md"
+                                showOnlineStatus={true}
                               />
-                            ) : (
-                              <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium flex-shrink-0">
-                                {commentUser && getInitials(commentUser.firstName, commentUser.lastName)}
-                              </div>
-                            )}
+                            </div>
                             <div className="flex-1">
                               <div className="bg-gray-50 dark:bg-dark-500 rounded-lg p-4">
                                 <div className="flex items-center justify-between mb-2">
@@ -707,17 +706,16 @@ export default function IssueDetailPage() {
                               {replyingTo?._id === comment._id && (
                                 <form onSubmit={handleReply} className="mt-3 pl-4 border-l-2 border-gray-200 dark:border-dark-400">
                                   <div className="flex gap-2">
-                                    {user?.avatar ? (
-                                      <img
-                                        src={user.avatar}
-                                        alt={`${user.firstName} ${user.lastName}`}
-                                        className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+                                    <div className="flex-shrink-0">
+                                      <UserAvatar
+                                        userId={user?._id}
+                                        avatar={user?.avatar}
+                                        firstName={user?.firstName}
+                                        lastName={user?.lastName}
+                                        size="sm"
+                                        showOnlineStatus={true}
                                       />
-                                    ) : (
-                                      <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-medium flex-shrink-0">
-                                        {user && getInitials(user.firstName, user.lastName)}
-                                      </div>
-                                    )}
+                                    </div>
                                     <div className="flex-1">
                                       <MentionTextarea
                                         value={replyContent}
@@ -749,17 +747,16 @@ export default function IssueDetailPage() {
                                     const replyUser = typeof reply.userId === 'object' ? reply.userId : null;
                                     return (
                                       <div key={reply._id} className="flex gap-2">
-                                        {replyUser?.avatar ? (
-                                          <img
-                                            src={replyUser.avatar}
-                                            alt={`${replyUser.firstName} ${replyUser.lastName}`}
-                                            className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+                                        <div className="flex-shrink-0">
+                                          <UserAvatar
+                                            userId={replyUser?._id}
+                                            avatar={replyUser?.avatar}
+                                            firstName={replyUser?.firstName}
+                                            lastName={replyUser?.lastName}
+                                            size="sm"
+                                            showOnlineStatus={true}
                                           />
-                                        ) : (
-                                          <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-medium flex-shrink-0">
-                                            {replyUser && getInitials(replyUser.firstName, replyUser.lastName)}
-                                          </div>
-                                        )}
+                                        </div>
                                         <div className="flex-1">
                                           <div className="bg-gray-100 dark:bg-dark-400 rounded-lg p-3">
                                             <div className="flex items-center justify-between mb-1">
@@ -838,17 +835,14 @@ export default function IssueDetailPage() {
                       <div className="flex flex-wrap gap-2">
                         {assignees.map((assignee: any) => (
                           <div key={assignee._id} className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md">
-                            {assignee.avatar ? (
-                              <img
-                                src={assignee.avatar}
-                                alt={`${assignee.firstName} ${assignee.lastName}`}
-                                className="w-5 h-5 rounded-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center text-xs font-medium">
-                                {getInitials(assignee.firstName, assignee.lastName)}
-                              </div>
-                            )}
+                            <UserAvatar
+                              userId={assignee._id}
+                              avatar={assignee.avatar}
+                              firstName={assignee.firstName}
+                              lastName={assignee.lastName}
+                              size="xs"
+                              showOnlineStatus={true}
+                            />
                             <span className="text-xs text-gray-900 dark:text-white">
                               {assignee.firstName} {assignee.lastName}
                             </span>
@@ -864,17 +858,14 @@ export default function IssueDetailPage() {
                     <span className="text-xs text-gray-600 dark:text-gray-400 block mb-1">Reporter</span>
                     {reporter && (
                       <div className="flex items-center gap-2">
-                        {reporter.avatar ? (
-                          <img
-                            src={reporter.avatar}
-                            alt={`${reporter.firstName} ${reporter.lastName}`}
-                            className="w-6 h-6 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-6 h-6 rounded-full bg-secondary text-white flex items-center justify-center text-xs font-medium">
-                            {getInitials(reporter.firstName, reporter.lastName)}
-                          </div>
-                        )}
+                        <UserAvatar
+                          userId={reporter._id}
+                          avatar={reporter.avatar}
+                          firstName={reporter.firstName}
+                          lastName={reporter.lastName}
+                          size="sm"
+                          showOnlineStatus={true}
+                        />
                         <span className="text-sm text-gray-900 dark:text-white">
                           {reporter.firstName} {reporter.lastName}
                         </span>

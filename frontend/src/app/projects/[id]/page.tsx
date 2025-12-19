@@ -16,6 +16,7 @@ import { CustomStatusModal, AuditSection } from '@/components/projects';
 import { ProjectCalendar, DemoEventModal } from '@/components/calendar';
 import Link from 'next/link';
 import { getInitials } from '@/lib/utils';
+import { UserAvatar } from '@/components/common/UserAvatar';
 import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -437,27 +438,23 @@ function ProjectDetailPageContent() {
                   const memberUser = typeof member.userId === 'object' ? member.userId : null;
                   return memberUser ? (
                     <div key={index} className="relative group">
-                      {memberUser.avatar ? (
-                        <img
-                          src={memberUser.avatar}
-                          alt={`${memberUser.firstName} ${memberUser.lastName}`}
-                          className="w-9 h-9 rounded-full object-cover shadow-sm border-2 border-white dark:border-gray-700 cursor-pointer transition-transform hover:scale-110"
-                          onClick={() => {
-                            setSelectedUser(memberUser);
-                            setIsProfileSidebarOpen(true);
-                          }}
+                      <div
+                        className="cursor-pointer transition-transform hover:scale-110"
+                        onClick={() => {
+                          setSelectedUser(memberUser);
+                          setIsProfileSidebarOpen(true);
+                        }}
+                      >
+                        <UserAvatar
+                          userId={memberUser._id}
+                          avatar={memberUser.avatar}
+                          firstName={memberUser.firstName}
+                          lastName={memberUser.lastName}
+                          size="md"
+                          showOnlineStatus={true}
+                          className="border-2 border-white dark:border-gray-700 shadow-sm"
                         />
-                      ) : (
-                        <div
-                          className="w-9 h-9 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center text-xs font-medium shadow-sm border-2 border-white dark:border-gray-700 cursor-pointer transition-transform hover:scale-110"
-                          onClick={() => {
-                            setSelectedUser(memberUser);
-                            setIsProfileSidebarOpen(true);
-                          }}
-                        >
-                          {getInitials(memberUser.firstName, memberUser.lastName)}
-                        </div>
-                      )}
+                      </div>
                       {/* Tooltip */}
                       <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50 pointer-events-none">
                         <div className="bg-gray-900 dark:bg-gray-800 text-white px-3 py-2 rounded-lg shadow-lg whitespace-nowrap">

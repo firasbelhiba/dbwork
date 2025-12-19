@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { User } from '@/types/user';
+import { UserAvatar } from '@/components/common/UserAvatar';
 
 interface MultiUserSelectProps {
   users: User[];
@@ -73,17 +74,14 @@ export const MultiUserSelect: React.FC<MultiUserSelectProps> = ({
                 key={user._id}
                 className="inline-flex items-center gap-1.5 px-2 py-1 bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 rounded-md text-sm"
               >
-                {user.avatar ? (
-                  <img
-                    src={user.avatar}
-                    alt={`${user.firstName} ${user.lastName}`}
-                    className="w-5 h-5 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-5 h-5 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center text-xs font-medium">
-                    {getInitials(user.firstName, user.lastName)}
-                  </div>
-                )}
+                <UserAvatar
+                  userId={user._id}
+                  avatar={user.avatar}
+                  firstName={user.firstName}
+                  lastName={user.lastName}
+                  size="xs"
+                  showOnlineStatus={true}
+                />
                 <span>{user.firstName} {user.lastName}</span>
                 {!disabled && (
                   <button
@@ -135,17 +133,16 @@ export const MultiUserSelect: React.FC<MultiUserSelectProps> = ({
                       isSelected ? 'bg-primary-50 dark:bg-primary-900/20' : ''
                     }`}
                   >
-                    {user.avatar ? (
-                      <img
-                        src={user.avatar}
-                        alt={`${user.firstName} ${user.lastName}`}
-                        className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                    <div className="flex-shrink-0">
+                      <UserAvatar
+                        userId={user._id}
+                        avatar={user.avatar}
+                        firstName={user.firstName}
+                        lastName={user.lastName}
+                        size="md"
+                        showOnlineStatus={true}
                       />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center text-sm font-medium flex-shrink-0">
-                        {getInitials(user.firstName, user.lastName)}
-                      </div>
-                    )}
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
                         {user.firstName} {user.lastName}

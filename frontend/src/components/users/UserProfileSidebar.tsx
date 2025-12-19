@@ -4,7 +4,8 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { User } from '@/types/user';
 import { Badge } from '@/components/common';
-import { getInitials, formatDateTime, getRelativeTime } from '@/lib/utils';
+import { UserAvatar } from '@/components/common/UserAvatar';
+import { formatDateTime, getRelativeTime } from '@/lib/utils';
 import { issuesAPI } from '@/lib/api';
 
 interface WorkloadData {
@@ -212,17 +213,17 @@ export const UserProfileSidebar: React.FC<UserProfileSidebarProps> = ({
           <div className="px-6 py-8 border-b border-gray-200 dark:border-dark-300">
             <div className="flex flex-col items-center">
               {/* Avatar */}
-              {user.avatar ? (
-                <img
-                  src={user.avatar}
-                  alt={`${user.firstName} ${user.lastName}`}
-                  className="w-24 h-24 rounded-full object-cover shadow-lg mb-4"
+              <div className="mb-4">
+                <UserAvatar
+                  userId={user._id}
+                  avatar={user.avatar}
+                  firstName={user.firstName}
+                  lastName={user.lastName}
+                  size="xl"
+                  showOnlineStatus={true}
+                  className="w-24 h-24 text-3xl shadow-lg"
                 />
-              ) : (
-                <div className="w-24 h-24 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center text-3xl font-bold shadow-lg mb-4">
-                  {getInitials(user.firstName, user.lastName)}
-                </div>
-              )}
+              </div>
 
               {/* Name */}
               <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2 text-center">

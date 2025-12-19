@@ -7,7 +7,8 @@ import { User } from '@/types/user';
 import { googleCalendarAPI, usersAPI } from '@/lib/api';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { formatDateTime, getInitials } from '@/lib/utils';
+import { formatDateTime } from '@/lib/utils';
+import { UserAvatar } from '@/components/common/UserAvatar';
 
 type InviteOption = 'none' | 'all' | 'select';
 
@@ -367,17 +368,14 @@ export const DemoEventModal: React.FC<DemoEventModalProps> = ({
                       Created By
                     </label>
                     <div className="flex items-center gap-3">
-                      {creator.avatar ? (
-                        <img
-                          src={creator.avatar}
-                          alt={`${creator.firstName} ${creator.lastName}`}
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-primary-600 dark:bg-primary-500 text-white flex items-center justify-center text-sm font-medium">
-                          {getInitials(creator.firstName, creator.lastName)}
-                        </div>
-                      )}
+                      <UserAvatar
+                        userId={creator._id}
+                        avatar={creator.avatar}
+                        firstName={creator.firstName}
+                        lastName={creator.lastName}
+                        size="lg"
+                        showOnlineStatus={true}
+                      />
                       <div>
                         <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                           {creator.firstName} {creator.lastName}
