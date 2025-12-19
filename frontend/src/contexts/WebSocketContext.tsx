@@ -11,9 +11,16 @@ interface TimerAutoStoppedData {
   reason: string;
 }
 
+interface OnlineUsersData {
+  count: number;
+  userIds: string[];
+}
+
 interface WebSocketContextType {
   socket: Socket | null;
   connected: boolean;
+  onlineCount: number;
+  onlineUserIds: string[];
   joinProject: (projectId: string) => void;
   leaveProject: (projectId: string) => void;
   joinSprint: (sprintId: string) => void;
@@ -28,6 +35,8 @@ const WebSocketContext = createContext<WebSocketContextType | undefined>(undefin
 export function WebSocketProvider({ children }: { children: ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [connected, setConnected] = useState(false);
+  const [onlineCount, setOnlineCount] = useState(0);
+  const [onlineUserIds, setOnlineUserIds] = useState<string[]>([]);
   const { user } = useAuth();
 
   // Use refs to avoid stale closures and unnecessary re-renders
@@ -99,6 +108,17 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
       timerAutoStoppedCallbacksRef.current.forEach(callback => callback(data));
     });
 
+    // Listen for online users count updates
+    newSocket.on('users:online-count', (data: OnlineUsersData) => {
+      setOnlineCount(data.count);
+      setOnlineUserIds(data.userIds);
+    });
+
+    // Request current online count when connected
+    newSocket.on('connected', () => {
+      newSocket.emit('get:online-count');
+    });
+
     setSocket(newSocket);
 
     // Cleanup on unmount
@@ -158,6 +178,8 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
       value={{
         socket,
         connected,
+        onlineCount,
+        onlineUserIds,
         joinProject,
         leaveProject,
         joinSprint,

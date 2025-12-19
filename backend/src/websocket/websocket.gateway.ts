@@ -81,6 +81,9 @@ export class AppWebSocketGateway
 
       // Join user's personal room
       client.join(`user:${payload.sub}`);
+
+      // Broadcast updated online count to all clients
+      this.broadcastOnlineCount();
     } catch (error) {
       console.error('WebSocket authentication error:', error);
       client.disconnect();
@@ -92,6 +95,9 @@ export class AppWebSocketGateway
       this.connectedUsers.delete(client.userId);
       this.socketRooms.delete(client.id);
       console.log(`Client disconnected: ${client.id} (User: ${client.userId})`);
+
+      // Broadcast updated online count to all clients
+      this.broadcastOnlineCount();
     }
   }
 
@@ -336,5 +342,30 @@ export class AppWebSocketGateway
     console.log(`[WEBSOCKET]   -> data:`, JSON.stringify(data));
     this.server.to(`user:${userId}`).emit('timer:resumed', data);
     this.server.to(`project:${projectId}`).emit('timer:resumed', data);
+  }
+
+  // Broadcast online users count to all connected clients
+  private broadcastOnlineCount() {
+    const count = this.connectedUsers.size;
+    const userIds = Array.from(this.connectedUsers.keys());
+    this.server.emit('users:online-count', { count, userIds });
+  }
+
+  // Handle request for current online count (called when client connects/needs refresh)
+  @SubscribeMessage('get:online-count')
+  handleGetOnlineCount(@ConnectedSocket() client: AuthenticatedSocket) {
+    const count = this.connectedUsers.size;
+    const userIds = Array.from(this.connectedUsers.keys());
+    return { event: 'users:online-count', data: { count, userIds } };
+  }
+
+  // Get online users count (for REST API)
+  getOnlineUsersCount(): number {
+    return this.connectedUsers.size;
+  }
+
+  // Get online user IDs (for REST API)
+  getOnlineUserIds(): string[] {
+    return Array.from(this.connectedUsers.keys());
   }
 }

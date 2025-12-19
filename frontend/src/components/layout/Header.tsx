@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useWebSocket } from '@/contexts/WebSocketContext';
 import { getInitials } from '@/lib/utils';
 import { CommandPalette } from '@/components/command/CommandPalette';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
@@ -17,6 +18,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { onlineCount, connected } = useWebSocket();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
 
@@ -114,6 +116,20 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
             </svg>
             <span className="hidden md:inline">Create</span>
           </Link>
+
+          {/* Online users indicator */}
+          {connected && onlineCount > 0 && (
+            <div
+              className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-100 dark:bg-dark-400"
+              title={`${onlineCount} user${onlineCount !== 1 ? 's' : ''} online`}
+            >
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+              </span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{onlineCount}</span>
+            </div>
+          )}
 
           {/* Theme toggle */}
           <button
