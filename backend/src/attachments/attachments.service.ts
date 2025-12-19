@@ -2,7 +2,16 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Attachment, AttachmentDocument } from './schemas/attachment.schema';
-import { getCloudinary } from './cloudinary.config';
+import * as fs from 'fs';
+import * as path from 'path';
+
+// Directory for storing attachments
+const UPLOADS_DIR = path.join(process.cwd(), 'uploads', 'attachments');
+
+// Ensure uploads directory exists
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
 
 @Injectable()
 export class AttachmentsService {
@@ -17,47 +26,30 @@ export class AttachmentsService {
     file: Express.Multer.File,
   ): Promise<AttachmentDocument> {
     try {
-      const cloudinary = getCloudinary();
-
-      // Upload to Cloudinary
-      const result = await new Promise<any>((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
-          {
-            folder: `dbwork/attachments/${issueId}`,
-            resource_type: 'auto',
-            public_id: `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_')}`,
-          },
-          (error, result) => {
-            if (error) reject(error);
-            else resolve(result);
-          },
-        );
-        uploadStream.end(file.buffer);
-      });
-
-      // Generate thumbnail URL for images
-      let thumbnail = null;
-      if (file.mimetype.startsWith('image/')) {
-        thumbnail = cloudinary.url(result.public_id, {
-          width: 200,
-          height: 200,
-          crop: 'fill',
-          quality: 'auto',
-          fetch_format: 'auto',
-          secure: true,
-        });
+      // Create issue-specific directory
+      const issueDir = path.join(UPLOADS_DIR, issueId);
+      if (!fs.existsSync(issueDir)) {
+        fs.mkdirSync(issueDir, { recursive: true });
       }
+
+      // Generate unique filename
+      const sanitizedFilename = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const filename = `${Date.now()}-${sanitizedFilename}`;
+      const filepath = path.join(issueDir, filename);
+
+      // Save file to disk
+      fs.writeFileSync(filepath, file.buffer);
 
       const attachment = new this.attachmentModel({
         issueId,
         userId,
-        filename: result.public_id,
+        filename: filename,
         originalName: file.originalname,
         mimeType: file.mimetype,
         size: file.size,
-        url: result.secure_url,
-        cloudinaryId: result.public_id,
-        thumbnail,
+        url: filepath, // Store local path
+        cloudinaryId: null, // Not using Cloudinary anymore
+        thumbnail: null, // No thumbnail for local storage
       });
 
       return (await attachment.save()).populate('userId', 'firstName lastName avatar');
@@ -87,24 +79,27 @@ export class AttachmentsService {
     return attachment;
   }
 
+  // Returns attachment with original path (for backend use only)
+  async findOneRaw(id: string): Promise<AttachmentDocument> {
+    const attachment = await this.attachmentModel.findById(id).exec();
+
+    if (!attachment) {
+      throw new NotFoundException('Attachment not found');
+    }
+
+    return attachment;
+  }
+
   async remove(id: string): Promise<void> {
-    const attachment = await this.findOne(id);
-    const cloudinary = getCloudinary();
+    const attachment = await this.findOneRaw(id);
 
     try {
-      // Delete from Cloudinary
-      await cloudinary.uploader.destroy(attachment.cloudinaryId, {
-        resource_type: 'raw',
-      });
-    } catch (error) {
-      // Try with 'image' resource type if 'raw' fails
-      try {
-        await cloudinary.uploader.destroy(attachment.cloudinaryId, {
-          resource_type: 'image',
-        });
-      } catch {
-        console.error('Failed to delete from Cloudinary:', error);
+      // Delete local file if it exists
+      if (attachment.url && fs.existsSync(attachment.url)) {
+        fs.unlinkSync(attachment.url);
       }
+    } catch (error) {
+      console.error('Failed to delete attachment file from disk:', error);
     }
 
     // Delete from database

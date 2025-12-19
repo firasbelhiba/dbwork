@@ -462,19 +462,15 @@ export class IssuesService {
           }
         }
 
-        // Stop timer completely when moving to done
+        // Pause timer when moving to done (instead of stopping, so it can be resumed if moved back)
         if (changes.status.to === 'done') {
           try {
-            await this.timeTrackingService.stopTimer(
-              id,
-              userId,
-              `Auto-stopped: Issue completed`,
-            );
-            console.log(`[TIME_TRACKING] Auto-stopped timer for completed issue ${id}`);
+            await this.timeTrackingService.pauseTimer(id, userId);
+            console.log(`[TIME_TRACKING] Auto-paused timer for completed issue ${id}`);
             timeTrackingModified = true;
           } catch (error) {
-            // Timer might not be running, that's okay
-            console.log(`[TIME_TRACKING] Could not auto-stop timer: ${error.message}`);
+            // Timer might not be running or already paused, that's okay
+            console.log(`[TIME_TRACKING] Could not auto-pause timer: ${error.message}`);
           }
         }
 

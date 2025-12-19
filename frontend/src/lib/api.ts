@@ -246,6 +246,11 @@ export const attachmentsAPI = {
   },
   download: (id: string) => api.get(`/attachments/${id}/download`, { responseType: 'blob' }),
   delete: (id: string) => api.delete(`/attachments/${id}`),
+  // Get the URL for viewing an attachment through the backend proxy
+  getViewUrl: (id: string) => {
+    const token = localStorage.getItem('accessToken');
+    return `${API_URL}/attachments/${id}/view?token=${token}`;
+  },
 };
 
 // Reports API

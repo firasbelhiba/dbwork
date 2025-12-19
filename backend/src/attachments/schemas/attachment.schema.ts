@@ -26,7 +26,7 @@ export class Attachment {
   @Prop({ required: true })
   url: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   cloudinaryId: string;
 
   @Prop({ default: null })

@@ -8,7 +8,11 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  Res,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import {
@@ -63,7 +67,7 @@ export class AttachmentsController {
       },
     }),
   )
-  @ApiOperation({ summary: 'Upload attachment to issue (stored on Cloudinary)' })
+  @ApiOperation({ summary: 'Upload attachment to issue (stored locally)' })
   @ApiResponse({ status: 201, description: 'Attachment uploaded successfully' })
   create(
     @Param('issueId') issueId: string,
@@ -96,6 +100,44 @@ export class AttachmentsController {
   @ApiResponse({ status: 200, description: 'Attachment information' })
   findOne(@Param('id') id: string) {
     return this.attachmentsService.findOne(id);
+  }
+
+  @Get(':id/view')
+  @ApiOperation({ summary: 'View/download attachment file' })
+  @ApiResponse({ status: 200, description: 'File content' })
+  async viewFile(@Param('id') id: string, @Res() res: Response) {
+    try {
+      const attachment = await this.attachmentsService.findOneRaw(id);
+      const fs = await import('fs');
+
+      // Check if file exists locally
+      if (!attachment.url || !fs.existsSync(attachment.url)) {
+        throw new HttpException('File not found', HttpStatus.NOT_FOUND);
+      }
+
+      // Read file from disk
+      const fileBuffer = fs.readFileSync(attachment.url);
+
+      // Set proper headers
+      res.setHeader('Content-Type', attachment.mimeType);
+      res.setHeader(
+        'Content-Disposition',
+        `inline; filename="${attachment.originalName}"`,
+      );
+      res.setHeader('Content-Length', fileBuffer.length);
+      res.setHeader('Cache-Control', 'private, max-age=3600');
+
+      // Send the file buffer
+      res.send(fileBuffer);
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        'Failed to load file',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Delete(':id')
