@@ -219,9 +219,9 @@ export const UserProfileSidebar: React.FC<UserProfileSidebarProps> = ({
                   avatar={user.avatar}
                   firstName={user.firstName}
                   lastName={user.lastName}
-                  size="xl"
+                  size="2xl"
                   showOnlineStatus={true}
-                  className="w-24 h-24 text-3xl shadow-lg"
+                  className="shadow-lg"
                 />
               </div>
 
