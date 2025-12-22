@@ -110,9 +110,21 @@ export class AuditsService {
     const audit = await this.findOneRaw(id);
 
     try {
+      // Resolve the file path - handle paths from different environments
+      let filePath = audit.url;
+
+      if (!fs.existsSync(filePath)) {
+        // Extract the relative path portion (uploads/audits/projectId/filename)
+        const uploadsIndex = audit.url?.indexOf('uploads/audits');
+        if (uploadsIndex !== -1) {
+          const relativePath = audit.url.substring(uploadsIndex);
+          filePath = path.join(process.cwd(), relativePath);
+        }
+      }
+
       // Delete local file if it exists
-      if (audit.url && fs.existsSync(audit.url)) {
-        fs.unlinkSync(audit.url);
+      if (filePath && fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
       }
     } catch (error) {
       console.error('Failed to delete audit file from disk:', error);

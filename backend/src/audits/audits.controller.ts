@@ -73,9 +73,24 @@ export class AuditsController {
     try {
       const audit = await this.auditsService.findOneRaw(id);
       const fs = await import('fs');
+      const path = await import('path');
 
-      // Check if file exists locally
-      if (!audit.url || !fs.existsSync(audit.url)) {
+      // Resolve the file path - handle both absolute paths from different environments
+      // and construct path based on current working directory
+      let filePath = audit.url;
+
+      // If stored path doesn't exist, try to reconstruct from relative components
+      if (!fs.existsSync(filePath)) {
+        // Extract the relative path portion (uploads/audits/projectId/filename)
+        const uploadsIndex = audit.url.indexOf('uploads/audits');
+        if (uploadsIndex !== -1) {
+          const relativePath = audit.url.substring(uploadsIndex);
+          filePath = path.join(process.cwd(), relativePath);
+        }
+      }
+
+      // Check if file exists
+      if (!filePath || !fs.existsSync(filePath)) {
         throw new HttpException(
           'PDF file not found',
           HttpStatus.NOT_FOUND,
@@ -83,7 +98,7 @@ export class AuditsController {
       }
 
       // Read file from disk
-      const fileBuffer = fs.readFileSync(audit.url);
+      const fileBuffer = fs.readFileSync(filePath);
 
       // Set proper headers for inline PDF viewing
       res.setHeader('Content-Type', 'application/pdf');
