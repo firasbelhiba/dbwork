@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsEnum, IsMongoId, IsArray, IsObject, IsDate, IsNumber } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsMongoId, IsArray, IsObject, IsDate, IsNumber, IsBoolean } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IssueType, IssuePriority, IssueStatus } from '@common/enums';
@@ -83,4 +83,15 @@ export class CreateIssueDto {
   @IsOptional()
   @IsMongoId()
   parentIssue?: string;
+
+  @ApiProperty({ required: false, description: 'Whether the issue is visible to everyone (admin only)' })
+  @IsOptional()
+  @IsBoolean()
+  isVisible?: boolean;
+
+  @ApiProperty({ required: false, type: [String], description: 'Array of user IDs who can see this issue when isVisible is false' })
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true })
+  visibleTo?: string[];
 }

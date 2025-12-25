@@ -82,4 +82,15 @@ export class UpdateIssueDto {
   @IsOptional()
   @IsBoolean()
   isArchived?: boolean;
+
+  @ApiProperty({ required: false, description: 'Whether the issue is visible to everyone (admin only)' })
+  @IsOptional()
+  @IsBoolean()
+  isVisible?: boolean;
+
+  @ApiProperty({ required: false, type: [String], description: 'Array of user IDs who can see this issue when isVisible is false' })
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true })
+  visibleTo?: string[];
 }

@@ -35,6 +35,8 @@ function NewIssueForm() {
     dueDate: '',
     labels: '',
     category: '',
+    isVisible: true,
+    visibleTo: [] as string[],
   });
 
   const [error, setError] = useState('');
@@ -140,6 +142,14 @@ function NewIssueForm() {
         issueData.labels = formData.labels.split(',').map(l => l.trim()).filter(l => l);
       }
       if (formData.category) issueData.category = formData.category;
+
+      // Add visibility settings (admin only)
+      if (user?.role === 'admin' && !formData.isVisible) {
+        issueData.isVisible = false;
+        if (formData.visibleTo.length > 0) {
+          issueData.visibleTo = formData.visibleTo;
+        }
+      }
 
       // Add parent issue if provided
       const parentIssueIdFromUrl = searchParams.get('parent');
@@ -413,6 +423,65 @@ function NewIssueForm() {
               placeholder="Enter labels separated by commas"
               helperText="e.g., frontend, urgent, feature"
             />
+
+            {/* Visibility Settings - Admin Only */}
+            {user?.role === 'admin' && (
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Visibility Settings</h3>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">(Admin only)</span>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.isVisible}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          isVisible: e.target.checked,
+                          visibleTo: e.target.checked ? [] : prev.visibleTo
+                        }))}
+                        className="sr-only peer"
+                        aria-label="Toggle issue visibility"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                    </label>
+                    <div>
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {formData.isVisible ? 'Visible to everyone' : 'Restricted visibility'}
+                      </span>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {formData.isVisible
+                          ? 'All team members can see this issue'
+                          : 'Only selected people can see this issue'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {!formData.isVisible && (
+                    <div className="ml-14">
+                      <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1.5">
+                        Who can see this issue?
+                      </label>
+                      <MultiUserSelect
+                        users={users}
+                        selectedUserIds={formData.visibleTo}
+                        onChange={(userIds) => setFormData(prev => ({ ...prev, visibleTo: userIds }))}
+                        placeholder="Select users who can view this issue..."
+                      />
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Note: Assignees and the reporter will always have access regardless of this setting.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Actions */}

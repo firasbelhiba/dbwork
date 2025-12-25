@@ -83,7 +83,7 @@ export class IssuesController {
     const categoriesArray = categories
       ? (Array.isArray(categories) ? categories : [categories])
       : undefined;
-    return this.issuesService.getIssuesByProject(projectId, status, isArchived, assignedTo, user?._id, categoriesArray);
+    return this.issuesService.getIssuesByProject(projectId, status, isArchived, assignedTo, user?._id, categoriesArray, user?.role);
   }
 
   @Get('project/:projectId/backlog')
@@ -107,7 +107,7 @@ export class IssuesController {
     const categoriesArray = categories
       ? (Array.isArray(categories) ? categories : [categories])
       : undefined;
-    return this.issuesService.getIssuesBySprint(sprintId, isArchived, assignedTo, user?._id, categoriesArray);
+    return this.issuesService.getIssuesBySprint(sprintId, isArchived, assignedTo, user?._id, categoriesArray, user?.role);
   }
 
   @Get('key/:key')

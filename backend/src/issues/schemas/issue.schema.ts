@@ -103,6 +103,13 @@ export class Issue {
   @Prop({ default: null })
   completedAt: Date;
 
+  // Visibility settings (admin-only feature)
+  @Prop({ default: true })
+  isVisible: boolean;
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
+  visibleTo: Types.ObjectId[];
+
   // Timestamps (automatically added by MongoDB with { timestamps: true })
   createdAt?: Date;
   updatedAt?: Date;
@@ -128,6 +135,8 @@ IssueSchema.index({ updatedAt: -1 });
 IssueSchema.index({ parentIssue: 1 });
 IssueSchema.index({ isArchived: 1 });
 IssueSchema.index({ completedAt: -1 });
+IssueSchema.index({ isVisible: 1 });
+IssueSchema.index({ visibleTo: 1 });
 
 // Text index for search
 IssueSchema.index({ title: 'text', description: 'text', key: 'text' });

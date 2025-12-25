@@ -684,7 +684,7 @@ export class IssuesService {
       .exec();
   }
 
-  async getIssuesByProject(projectId: string, status?: string, isArchived?: string, assignedTo?: string, userId?: string, categories?: string[]): Promise<IssueDocument[]> {
+  async getIssuesByProject(projectId: string, status?: string, isArchived?: string, assignedTo?: string, userId?: string, categories?: string[], userRole?: string): Promise<IssueDocument[]> {
     const query: any = {
       projectId: new Types.ObjectId(projectId),
     };
@@ -708,6 +708,17 @@ export class IssuesService {
       query.category = { $in: categories };
     }
 
+    // Handle visibility filter - admin can see all, others only visible issues or ones they're included in
+    if (userRole !== 'admin' && userId) {
+      query.$or = [
+        { isVisible: true },
+        { isVisible: { $exists: false } }, // Legacy issues without visibility field
+        { visibleTo: new Types.ObjectId(userId) },
+        { assignees: new Types.ObjectId(userId) }, // Assignees can always see their issues
+        { reporter: new Types.ObjectId(userId) }, // Reporter can always see their issues
+      ];
+    }
+
     // Count before query
     const count = await this.issueModel.countDocuments(query);
 
@@ -716,13 +727,14 @@ export class IssuesService {
       .populate({ path: 'assignees', select: 'firstName lastName email avatar', model: 'User' })
       .populate({ path: 'reporter', select: 'firstName lastName email avatar', model: 'User' })
       .populate('sprintId', 'name status')
+      .populate({ path: 'visibleTo', select: 'firstName lastName email avatar', model: 'User' })
       .sort({ order: 1, createdAt: -1 })
       .exec();
 
     return results;
   }
 
-  async getIssuesBySprint(sprintId: string, isArchived?: string, assignedTo?: string, userId?: string, categories?: string[]): Promise<IssueDocument[]> {
+  async getIssuesBySprint(sprintId: string, isArchived?: string, assignedTo?: string, userId?: string, categories?: string[], userRole?: string): Promise<IssueDocument[]> {
     const query: any = {
       sprintId: new Types.ObjectId(sprintId),
     };
@@ -744,11 +756,23 @@ export class IssuesService {
       query.category = { $in: categories };
     }
 
+    // Handle visibility filter - admin can see all, others only visible issues or ones they're included in
+    if (userRole !== 'admin' && userId) {
+      query.$or = [
+        { isVisible: true },
+        { isVisible: { $exists: false } }, // Legacy issues without visibility field
+        { visibleTo: new Types.ObjectId(userId) },
+        { assignees: new Types.ObjectId(userId) }, // Assignees can always see their issues
+        { reporter: new Types.ObjectId(userId) }, // Reporter can always see their issues
+      ];
+    }
+
     return this.issueModel
       .find(query)
       .populate({ path: 'assignees', select: 'firstName lastName email avatar', model: 'User' })
       .populate({ path: 'reporter', select: 'firstName lastName email avatar', model: 'User' })
       .populate('sprintId', 'name status')
+      .populate({ path: 'visibleTo', select: 'firstName lastName email avatar', model: 'User' })
       .sort({ status: 1, order: 1 })
       .exec();
   }

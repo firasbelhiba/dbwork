@@ -54,6 +54,8 @@ export interface Issue {
   order: number;
   isArchived?: boolean;
   archivedAt?: Date | null;
+  isVisible?: boolean;
+  visibleTo?: (User | string)[];
   createdAt: Date;
   updatedAt: Date;
 }
