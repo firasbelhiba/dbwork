@@ -7,6 +7,7 @@ import { issuesAPI, projectsAPI, usersAPI, sprintsAPI } from '@/lib/api';
 import { Issue } from '@/types/issue';
 import { User } from '@/types/user';
 import { Sprint } from '@/types/sprint';
+import { Project } from '@/types/project';
 import toast from 'react-hot-toast';
 
 interface EditIssueModalProps {
@@ -25,6 +26,7 @@ export const EditIssueModal: React.FC<EditIssueModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [sprints, setSprints] = useState<Sprint[]>([]);
+  const [project, setProject] = useState<Project | null>(null);
 
   // Get initial values from issue
   const getInitialFormData = () => {
@@ -66,13 +68,37 @@ export const EditIssueModal: React.FC<EditIssueModalProps> = ({
 
   const fetchData = async () => {
     try {
-      const usersRes = await usersAPI.getAll({ limit: 100 });
+      const projectId = typeof issue.projectId === 'object' ? issue.projectId._id : issue.projectId;
+      const [usersRes, projectRes] = await Promise.all([
+        usersAPI.getAll({ limit: 100 }),
+        projectsAPI.getById(projectId),
+      ]);
       // Handle paginated response - items contains the user array
       setUsers(usersRes.data.items || usersRes.data);
+      setProject(projectRes.data);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
+
+  // Filter users to only show project members
+  const projectMembers = project
+    ? users.filter(user => {
+        // Include project lead
+        const leadId = typeof project.lead === 'object'
+          ? (project.lead as any)?._id
+          : project.lead;
+        if (user._id === leadId) return true;
+
+        // Include project members
+        return project.members?.some(member => {
+          const memberId = typeof member.userId === 'object'
+            ? (member.userId as any)?._id
+            : member.userId;
+          return memberId === user._id;
+        });
+      })
+    : [];
 
   const fetchSprints = async (projectId: string) => {
     try {
@@ -266,11 +292,16 @@ export const EditIssueModal: React.FC<EditIssueModalProps> = ({
                 Assignees
               </label>
               <MultiUserSelect
-                users={users}
+                users={projectMembers}
                 selectedUserIds={formData.assignees}
                 onChange={(userIds) => setFormData(prev => ({ ...prev, assignees: userIds }))}
                 placeholder="Select assignees..."
               />
+              {projectMembers.length === 0 && project && (
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                  No members found. Add members in project settings.
+                </p>
+              )}
             </div>
 
             <div>

@@ -72,6 +72,8 @@ function NewIssueForm() {
   useEffect(() => {
     if (formData.projectId) {
       fetchSprints(formData.projectId);
+      // Clear assignees when project changes (they might not be members of the new project)
+      setFormData(prev => ({ ...prev, assignees: [] }));
     }
   }, [formData.projectId]);
 
@@ -92,6 +94,25 @@ function NewIssueForm() {
   // Get the selected project details
   const selectedProject = projects.find((p: Project) => p._id === formData.projectId);
   const isProjectPreselected = !!searchParams.get('project');
+
+  // Filter users to only show project members
+  const projectMembers = selectedProject
+    ? users.filter(user => {
+        // Include project lead
+        const leadId = typeof selectedProject.lead === 'object'
+          ? (selectedProject.lead as any)?._id
+          : selectedProject.lead;
+        if (user._id === leadId) return true;
+
+        // Include project members
+        return selectedProject.members?.some(member => {
+          const memberId = typeof member.userId === 'object'
+            ? (member.userId as any)?._id
+            : member.userId;
+          return memberId === user._id;
+        });
+      })
+    : [];
 
   const fetchSprints = async (projectId: string) => {
     try {
@@ -357,11 +378,17 @@ function NewIssueForm() {
                   Assignees
                 </label>
                 <MultiUserSelect
-                  users={users}
+                  users={projectMembers}
                   selectedUserIds={formData.assignees}
                   onChange={(userIds) => setFormData(prev => ({ ...prev, assignees: userIds }))}
-                  placeholder="Select assignees..."
+                  placeholder={formData.projectId ? "Select assignees..." : "Select a project first..."}
+                  disabled={!formData.projectId}
                 />
+                {formData.projectId && projectMembers.length === 0 && (
+                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                    No members found for this project. Add members in project settings.
+                  </p>
+                )}
               </div>
 
               <div>
