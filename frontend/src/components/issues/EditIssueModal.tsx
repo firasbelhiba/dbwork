@@ -121,6 +121,14 @@ export const EditIssueModal: React.FC<EditIssueModalProps> = ({
       toast.error('Please enter a title');
       return;
     }
+    if (!formData.startDate) {
+      toast.error('Please select a start date');
+      return;
+    }
+    if (!formData.dueDate) {
+      toast.error('Please select a due date');
+      return;
+    }
 
     setLoading(true);
 
@@ -331,12 +339,14 @@ export const EditIssueModal: React.FC<EditIssueModalProps> = ({
               type="date"
               value={formData.startDate}
               onChange={handleChange}
+              required
             />
 
             <Input
               label="Due Date"
               name="dueDate"
               type="date"
+              required
               value={formData.dueDate}
               onChange={handleChange}
             />

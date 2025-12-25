@@ -141,6 +141,14 @@ function NewIssueForm() {
       setError('Please enter a title');
       return;
     }
+    if (!formData.startDate) {
+      setError('Please select a start date');
+      return;
+    }
+    if (!formData.dueDate) {
+      setError('Please select a due date');
+      return;
+    }
 
     setLoading(true);
 
@@ -419,6 +427,7 @@ function NewIssueForm() {
                 type="date"
                 value={formData.startDate}
                 onChange={handleChange}
+                required
               />
 
               <Input
@@ -427,6 +436,7 @@ function NewIssueForm() {
                 type="date"
                 value={formData.dueDate}
                 onChange={handleChange}
+                required
               />
             </div>
 
