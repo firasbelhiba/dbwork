@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { availabilityAPI } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -312,14 +313,14 @@ export const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
       {/* Compact Calendar */}
       <CalendarContent expanded={false} />
 
-      {/* Expanded Calendar Modal */}
-      {isExpanded && (
+      {/* Expanded Calendar Modal - rendered via portal to escape sidebar */}
+      {isExpanded && typeof document !== 'undefined' && createPortal(
         <>
           <div
-            className="fixed inset-0 bg-black/50 z-[55]"
+            className="fixed inset-0 bg-black/50 z-[100]"
             onClick={() => setIsExpanded(false)}
           />
-          <div className="fixed inset-4 md:inset-8 lg:inset-16 z-[56] flex items-center justify-center">
+          <div className="fixed inset-4 md:inset-8 lg:inset-16 z-[101] flex items-center justify-center">
             <div className="bg-white dark:bg-dark-400 rounded-xl shadow-2xl w-full h-full p-6 overflow-auto">
               {/* Modal Header */}
               <div className="flex items-center justify-between mb-4">
@@ -338,7 +339,8 @@ export const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
               <CalendarContent expanded={true} />
             </div>
           </div>
-        </>
+        </>,
+        document.body
       )}
 
       {/* Edit Modal */}
