@@ -7,6 +7,7 @@ import { Badge } from '@/components/common';
 import { UserAvatar } from '@/components/common/UserAvatar';
 import { formatDateTime, getRelativeTime } from '@/lib/utils';
 import { issuesAPI } from '@/lib/api';
+import { AvailabilityCalendar } from './AvailabilityCalendar';
 
 interface WorkloadData {
   totalInProgress: number;
@@ -400,6 +401,14 @@ export const UserProfileSidebar: React.FC<UserProfileSidebarProps> = ({
                 <p className="text-sm text-gray-500 dark:text-gray-400">Not assigned to any projects</p>
               </div>
             )}
+          </div>
+
+          {/* Availability Calendar Section */}
+          <div className="px-6 py-6 border-b border-gray-200 dark:border-dark-300">
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4 uppercase tracking-wide">
+              Availability Calendar
+            </h4>
+            <AvailabilityCalendar userId={user._id} canEdit={true} />
           </div>
 
           {/* Current Tasks Section (condensed) */}

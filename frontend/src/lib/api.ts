@@ -385,6 +385,26 @@ export const googleCalendarAPI = {
   disconnect: () => api.post('/google-calendar/disconnect'),
 };
 
+// Availability API
+export const availabilityAPI = {
+  create: (data: any) => api.post('/availability', data),
+  getByUser: (userId: string, startDate?: string, endDate?: string) => {
+    const params: any = {};
+    if (startDate) params.startDate = startDate;
+    if (endDate) params.endDate = endDate;
+    return api.get(`/availability/user/${userId}`, { params });
+  },
+  getMonthlyAvailability: (userId: string, year: number, month: number) =>
+    api.get(`/availability/user/${userId}/month`, { params: { year, month } }),
+  getByDateRange: (startDate: string, endDate: string) =>
+    api.get('/availability/range', { params: { startDate, endDate } }),
+  getById: (id: string) => api.get(`/availability/${id}`),
+  update: (id: string, data: any) => api.patch(`/availability/${id}`, data),
+  delete: (id: string) => api.delete(`/availability/${id}`),
+  deleteByDate: (userId: string, date: string) =>
+    api.delete(`/availability/user/${userId}/date/${date}`),
+};
+
 // Audits API
 export const auditsAPI = {
   getByProject: (projectId: string) => api.get(`/projects/${projectId}/audits`),
