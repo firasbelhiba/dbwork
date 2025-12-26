@@ -11,6 +11,52 @@ interface TimerAutoStoppedData {
   reason: string;
 }
 
+interface NotificationData {
+  _id: string;
+  type: string;
+  title: string;
+  message: string;
+  userId: string;
+  relatedIssue?: any;
+  relatedProject?: any;
+  createdAt: string;
+}
+
+// Notification sound utility
+const playNotificationSound = () => {
+  try {
+    // Create audio context for notification sound
+    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContext) return;
+
+    const audioContext = new AudioContext();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    // Pleasant notification tone (similar to social media)
+    oscillator.frequency.setValueAtTime(880, audioContext.currentTime); // A5 note
+    oscillator.frequency.setValueAtTime(1100, audioContext.currentTime + 0.1); // C#6 note
+    oscillator.frequency.setValueAtTime(880, audioContext.currentTime + 0.2); // Back to A5
+
+    oscillator.type = 'sine';
+
+    // Volume envelope
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.02);
+    gainNode.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.1);
+    gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.12);
+    gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3);
+
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.3);
+  } catch (error) {
+    console.warn('Could not play notification sound:', error);
+  }
+};
+
 interface OnlineUsersData {
   count: number;
   userIds: string[];
@@ -112,6 +158,18 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     newSocket.on('users:online-count', (data: OnlineUsersData) => {
       setOnlineCount(data.count);
       setOnlineUserIds(data.userIds);
+    });
+
+    // Listen for new notifications and play sound
+    newSocket.on('notification:new', (notification: NotificationData) => {
+      console.log('[WebSocket] New notification received:', notification);
+      // Play notification sound
+      playNotificationSound();
+      // Show toast notification
+      toast(notification.message || notification.title || 'New notification', {
+        icon: '🔔',
+        duration: 5000,
+      });
     });
 
     // Request current online count when connected
