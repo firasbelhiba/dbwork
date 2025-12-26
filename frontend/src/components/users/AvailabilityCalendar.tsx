@@ -75,6 +75,7 @@ export const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
   const [selectedStatus, setSelectedStatus] = useState<AvailabilityStatus>(AvailabilityStatus.AVAILABLE);
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Check if current user can edit this user's availability
   const isOwnProfile = currentUser?._id === userId;
@@ -190,53 +191,69 @@ export const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
   const isToday = (day: number) =>
     today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
 
-  return (
-    <div className="w-full">
+  // Calendar content component to avoid duplication
+  const CalendarContent = ({ expanded = false }: { expanded?: boolean }) => (
+    <div className={expanded ? 'w-full' : 'w-full'}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <button
-          onClick={handlePrevMonth}
-          className="p-1 hover:bg-gray-100 dark:hover:bg-dark-300 rounded transition-colors"
-        >
-          <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+      <div className={`flex items-center justify-between ${expanded ? 'mb-6' : 'mb-4'}`}>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={handlePrevMonth}
+            className={`${expanded ? 'p-2' : 'p-1'} hover:bg-gray-100 dark:hover:bg-dark-300 rounded transition-colors`}
+          >
+            <svg className={`${expanded ? 'w-6 h-6' : 'w-5 h-5'} text-gray-600 dark:text-gray-400`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button
+            onClick={handleNextMonth}
+            className={`${expanded ? 'p-2' : 'p-1'} hover:bg-gray-100 dark:hover:bg-dark-300 rounded transition-colors`}
+          >
+            <svg className={`${expanded ? 'w-6 h-6' : 'w-5 h-5'} text-gray-600 dark:text-gray-400`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+        <h5 className={`${expanded ? 'text-xl' : 'text-sm'} font-semibold text-gray-900 dark:text-gray-100`}>
           {monthNames[month]} {year}
         </h5>
-        <button
-          onClick={handleNextMonth}
-          className="p-1 hover:bg-gray-100 dark:hover:bg-dark-300 rounded transition-colors"
-        >
-          <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
+        {!expanded ? (
+          <button
+            onClick={() => setIsExpanded(true)}
+            className="p-1.5 hover:bg-gray-100 dark:hover:bg-dark-300 rounded transition-colors"
+            title="Expand calendar"
+          >
+            <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+            </svg>
+          </button>
+        ) : (
+          <div className="w-10" />
+        )}
       </div>
 
       {/* Day Names */}
-      <div className="grid grid-cols-7 gap-1 mb-1">
+      <div className={`grid grid-cols-7 ${expanded ? 'gap-2 mb-2' : 'gap-1 mb-1'}`}>
         {dayNames.map((day) => (
           <div
             key={day}
-            className="text-center text-xs font-medium text-gray-500 dark:text-gray-400 py-1"
+            className={`text-center ${expanded ? 'text-sm py-2' : 'text-xs py-1'} font-medium text-gray-500 dark:text-gray-400`}
           >
-            {day}
+            {expanded ? ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dayNames.indexOf(day)] : day}
           </div>
         ))}
       </div>
 
       {/* Calendar Grid */}
       {loading ? (
-        <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
+        <div className={`flex items-center justify-center ${expanded ? 'py-16' : 'py-8'}`}>
+          <div className={`animate-spin rounded-full ${expanded ? 'h-8 w-8' : 'h-6 w-6'} border-b-2 border-primary-600`}></div>
         </div>
       ) : (
-        <div className="grid grid-cols-7 gap-1">
+        <div className={`grid grid-cols-7 ${expanded ? 'gap-2' : 'gap-1'}`}>
           {/* Empty cells for days before first day of month */}
           {Array.from({ length: firstDay }).map((_, i) => (
-            <div key={`empty-${i}`} className="h-8" />
+            <div key={`empty-${i}`} className={expanded ? 'h-20' : 'h-8'} />
           ))}
 
           {/* Days of the month */}
@@ -253,7 +270,7 @@ export const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
                 onClick={() => handleDayClick(day)}
                 disabled={!canModify}
                 className={`
-                  relative h-8 w-full rounded text-sm font-medium transition-colors
+                  relative ${expanded ? 'h-20 p-2' : 'h-8'} w-full rounded ${expanded ? 'rounded-lg' : ''} ${expanded ? 'text-base' : 'text-sm'} font-medium transition-colors
                   ${todayClass}
                   ${entry
                     ? `${statusConfig[entry.status].bgColor} text-white`
@@ -263,7 +280,15 @@ export const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
                 `}
                 title={entry ? `${statusConfig[entry.status].label}${entry.note ? `: ${entry.note}` : ''}` : ''}
               >
-                {day}
+                <span className={expanded ? 'absolute top-2 left-2' : ''}>{day}</span>
+                {expanded && entry && (
+                  <div className="absolute bottom-2 left-2 right-2">
+                    <span className="text-xs truncate block">{statusConfig[entry.status].label}</span>
+                    {entry.note && (
+                      <span className="text-xs opacity-75 truncate block">{entry.note}</span>
+                    )}
+                  </div>
+                )}
               </button>
             );
           })}
@@ -271,14 +296,50 @@ export const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
       )}
 
       {/* Legend */}
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className={`${expanded ? 'mt-6' : 'mt-4'} flex flex-wrap ${expanded ? 'gap-4' : 'gap-2'}`}>
         {Object.entries(statusConfig).map(([status, config]) => (
           <div key={status} className="flex items-center gap-1">
-            <div className={`w-3 h-3 rounded ${config.bgColor}`} />
-            <span className="text-xs text-gray-600 dark:text-gray-400">{config.label}</span>
+            <div className={`${expanded ? 'w-4 h-4' : 'w-3 h-3'} rounded ${config.bgColor}`} />
+            <span className={`${expanded ? 'text-sm' : 'text-xs'} text-gray-600 dark:text-gray-400`}>{config.label}</span>
           </div>
         ))}
       </div>
+    </div>
+  );
+
+  return (
+    <div className="w-full">
+      {/* Compact Calendar */}
+      <CalendarContent expanded={false} />
+
+      {/* Expanded Calendar Modal */}
+      {isExpanded && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/50 z-[55]"
+            onClick={() => setIsExpanded(false)}
+          />
+          <div className="fixed inset-4 md:inset-8 lg:inset-16 z-[56] flex items-center justify-center">
+            <div className="bg-white dark:bg-dark-400 rounded-xl shadow-2xl w-full h-full p-6 overflow-auto">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  Availability Calendar
+                </h3>
+                <button
+                  onClick={() => setIsExpanded(false)}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-dark-300 rounded-lg transition-colors"
+                >
+                  <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <CalendarContent expanded={true} />
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Edit Modal */}
       {showModal && selectedDate && (
