@@ -7,7 +7,7 @@ import { issuesAPI, commentsAPI } from '@/lib/api';
 import { Issue } from '@/types/issue';
 import { Comment, CommentImage } from '@/types/comment';
 import { UserRole } from '@/types/user';
-import { Button, Badge, Select, Breadcrumb, LogoLoader, EmojiReactionPicker } from '@/components/common';
+import { Button, Badge, Select, Breadcrumb, LogoLoader, EmojiReactionPicker, LinkifyText } from '@/components/common';
 import { MentionTextarea } from '@/components/common/MentionTextarea';
 import { SubIssues, SubIssueModal, EditIssueModal, AttachmentSection, TimeTracker } from '@/components/issues';
 import { useAuth } from '@/contexts/AuthContext';
@@ -521,7 +521,11 @@ export default function IssueDetailPage() {
               {/* Description */}
               <div className="bg-white dark:bg-dark-600 rounded-lg border border-gray-200 dark:border-dark-400 p-6">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Description</h2>
-                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{issue.description || 'No description provided.'}</p>
+                {issue.description ? (
+                  <LinkifyText text={issue.description} className="text-gray-700 dark:text-gray-300" />
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400 italic">No description provided.</p>
+                )}
               </div>
 
               {/* Comments */}
@@ -655,7 +659,7 @@ export default function IssueDetailPage() {
                                     {getRelativeTime(comment.createdAt)}
                                   </span>
                                 </div>
-                                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{comment.content}</p>
+                                <LinkifyText text={comment.content} className="text-gray-700 dark:text-gray-300" />
                                 {/* Comment Images */}
                                 {comment.images && comment.images.length > 0 && (
                                   <div className="flex flex-wrap gap-2 mt-3">
@@ -767,7 +771,7 @@ export default function IssueDetailPage() {
                                                 {getRelativeTime(reply.createdAt)}
                                               </span>
                                             </div>
-                                            <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{reply.content}</p>
+                                            <LinkifyText text={reply.content} className="text-sm text-gray-700 dark:text-gray-300" />
                                             {reply.isEdited && (
                                               <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 block">(edited)</span>
                                             )}

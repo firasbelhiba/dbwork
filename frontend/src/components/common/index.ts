@@ -44,3 +44,5 @@ export { LogoLoader } from './LogoLoader';
 export { MultiUserSelect } from './MultiUserSelect';
 
 export { EmojiReactionPicker } from './EmojiReactionPicker';
+
+export { LinkifyText } from './LinkifyText';
