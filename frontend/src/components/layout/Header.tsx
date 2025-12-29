@@ -14,9 +14,11 @@ import { UserRole } from '@/types/user';
 
 interface HeaderProps {
   onMenuToggle?: () => void;
+  onTodoToggle?: () => void;
+  todoCount?: number;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
+export const Header: React.FC<HeaderProps> = ({ onMenuToggle, onTodoToggle, todoCount = 0 }) => {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { onlineCount, connected } = useWebSocket();
@@ -146,6 +148,22 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
               <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
+            )}
+          </button>
+
+          {/* Todo Queue */}
+          <button
+            onClick={onTodoToggle}
+            className="relative p-2 rounded-md hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors"
+            title="My Queue"
+          >
+            <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+            {todoCount > 0 && (
+              <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-primary-500 rounded-full">
+                {todoCount > 9 ? '9+' : todoCount}
+              </span>
             )}
           </button>
 

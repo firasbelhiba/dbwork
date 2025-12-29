@@ -4,6 +4,7 @@ import React, { ReactNode, useState, useCallback } from 'react';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { WorkloadWarningBanner } from './WorkloadWarningBanner';
+import { TodoQueueSidebar } from '@/components/sidebar/TodoQueueSidebar';
 import { useKeyboardShortcuts } from '@/hooks';
 
 interface DashboardLayoutProps {
@@ -17,6 +18,10 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
   // Mobile menu state
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Todo queue sidebar state
+  const [todoSidebarOpen, setTodoSidebarOpen] = useState(false);
+  const [todoCount, setTodoCount] = useState(0);
+
   const toggleMobileMenu = useCallback(() => {
     setMobileMenuOpen(prev => !prev);
   }, []);
@@ -25,10 +30,18 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     setMobileMenuOpen(false);
   }, []);
 
+  const toggleTodoSidebar = useCallback(() => {
+    setTodoSidebarOpen(prev => !prev);
+  }, []);
+
+  const closeTodoSidebar = useCallback(() => {
+    setTodoSidebarOpen(false);
+  }, []);
+
   return (
     <div className="h-screen flex flex-col bg-gray-50 dark:bg-dark-600">
       <WorkloadWarningBanner />
-      <Header onMenuToggle={toggleMobileMenu} />
+      <Header onMenuToggle={toggleMobileMenu} onTodoToggle={toggleTodoSidebar} todoCount={todoCount} />
       <div className="flex-1 flex overflow-hidden">
         {/* Desktop Sidebar - hidden on mobile */}
         <div className="hidden md:flex">
@@ -54,6 +67,13 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
           {children}
         </main>
       </div>
+
+      {/* Todo Queue Right Sidebar */}
+      <TodoQueueSidebar
+        isOpen={todoSidebarOpen}
+        onClose={closeTodoSidebar}
+        onCountChange={setTodoCount}
+      />
     </div>
   );
 };
