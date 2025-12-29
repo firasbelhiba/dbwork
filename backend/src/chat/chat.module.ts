@@ -14,7 +14,7 @@ import { UsersModule } from '../users/users.module';
       { name: Conversation.name, schema: ConversationSchema },
       { name: Message.name, schema: MessageSchema },
     ]),
-    UsersModule, // Import UsersModule to enable population of User references
+    forwardRef(() => UsersModule), // Use forwardRef to avoid circular dependency
     forwardRef(() => WebSocketModule),
     forwardRef(() => NotificationsModule),
   ],
