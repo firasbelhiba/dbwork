@@ -901,6 +901,12 @@ export class IssuesService {
 
   async getUserWorkload(userId: string): Promise<{
     totalInProgress: number;
+    overtimeTickets: Array<{
+      _id: string;
+      key: string;
+      title: string;
+      loggedHours: number;
+    }>;
     byProject: Array<{
       projectId: string;
       projectName: string;
@@ -912,6 +918,7 @@ export class IssuesService {
         status: string;
         priority: string;
         type: string;
+        loggedHours: number;
       }>;
     }>;
   }> {
@@ -924,9 +931,17 @@ export class IssuesService {
         isArchived: { $ne: true },
       })
       .populate('projectId', 'name key')
-      .select('key title status priority type projectId')
+      .select('key title status priority type projectId timeTracking')
       .sort({ updatedAt: -1 })
       .exec();
+
+    // Track tickets exceeding 10 hours
+    const overtimeTickets: Array<{
+      _id: string;
+      key: string;
+      title: string;
+      loggedHours: number;
+    }> = [];
 
     // Group by project
     const projectMap = new Map<string, {
@@ -940,12 +955,24 @@ export class IssuesService {
         status: string;
         priority: string;
         type: string;
+        loggedHours: number;
       }>;
     }>();
 
     for (const issue of issues) {
       const project = issue.projectId as any;
       const projectId = project._id.toString();
+      const loggedHours = issue.timeTracking?.loggedHours || 0;
+
+      // Check for overtime tickets (>10 hours)
+      if (loggedHours > 10) {
+        overtimeTickets.push({
+          _id: issue._id.toString(),
+          key: issue.key,
+          title: issue.title,
+          loggedHours,
+        });
+      }
 
       if (!projectMap.has(projectId)) {
         projectMap.set(projectId, {
@@ -963,11 +990,13 @@ export class IssuesService {
         status: issue.status,
         priority: issue.priority,
         type: issue.type,
+        loggedHours,
       });
     }
 
     return {
       totalInProgress: issues.length,
+      overtimeTickets,
       byProject: Array.from(projectMap.values()),
     };
   }
