@@ -345,9 +345,29 @@ export const MyCreatedTasksStats: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-base md:text-lg font-semibold text-gray-900 dark:text-gray-100">
-            My Created Tasks
-          </h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-base md:text-lg font-semibold text-gray-900 dark:text-gray-100">
+              My Created Tasks
+            </h2>
+            <div className="relative group">
+              <svg
+                className="w-4 h-4 text-gray-400 dark:text-gray-500 cursor-help"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <div className="absolute left-0 top-6 w-56 p-2 bg-gray-800 dark:bg-gray-700 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                Tasks where you are the reporter (creator). This is different from tasks assigned to you.
+              </div>
+            </div>
+          </div>
           <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">{formatDateRange()}</p>
         </div>
         <Select
