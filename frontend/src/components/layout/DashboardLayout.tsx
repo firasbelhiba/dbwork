@@ -3,6 +3,7 @@
 import React, { ReactNode, useState, useCallback } from 'react';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
+import { WorkloadWarningBanner } from './WorkloadWarningBanner';
 import { useKeyboardShortcuts } from '@/hooks';
 
 interface DashboardLayoutProps {
@@ -26,6 +27,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
 
   return (
     <div className="h-screen flex flex-col bg-gray-50 dark:bg-dark-600">
+      <WorkloadWarningBanner />
       <Header onMenuToggle={toggleMobileMenu} />
       <div className="flex-1 flex overflow-hidden">
         {/* Desktop Sidebar - hidden on mobile */}
