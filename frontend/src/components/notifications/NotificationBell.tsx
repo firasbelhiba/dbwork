@@ -5,9 +5,11 @@ import { notificationsAPI } from '@/lib/api';
 import { Notification } from '@/types/notification';
 import { NotificationDropdown } from './NotificationDropdown';
 import { useAuth } from '@/contexts/AuthContext';
+import { useWebSocket } from '@/contexts/WebSocketContext';
 
 export const NotificationBell: React.FC = () => {
   const { user } = useAuth();
+  const { socket } = useWebSocket();
   const [isOpen, setIsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -61,6 +63,24 @@ export const NotificationBell: React.FC = () => {
       }
     };
   }, [user?._id]);
+
+  // Listen for real-time notifications via WebSocket
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNewNotification = (notification: Notification) => {
+      // Increment unread count
+      setUnreadCount(prev => prev + 1);
+      // Add to notifications list if dropdown is open
+      setNotifications(prev => [notification, ...prev]);
+    };
+
+    socket.on('notification:new', handleNewNotification);
+
+    return () => {
+      socket.off('notification:new', handleNewNotification);
+    };
+  }, [socket]);
 
   // Fetch full notifications when dropdown opens and auto-mark as read
   useEffect(() => {
