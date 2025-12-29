@@ -88,6 +88,12 @@ export function TimeTracker({ issueId, timeTracking, onUpdate, hasSubIssues }: T
   const [manualMinutes, setManualMinutes] = useState('');
   const [manualDescription, setManualDescription] = useState('');
   const [submittingManual, setSubmittingManual] = useState(false);
+  const [minutesError, setMinutesError] = useState('');
+  const [editingEntry, setEditingEntry] = useState<string | null>(null);
+  const [editHours, setEditHours] = useState('');
+  const [editMinutes, setEditMinutes] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editMinutesError, setEditMinutesError] = useState('');
   const [aggregatedTime, setAggregatedTime] = useState<{
     ownTime: number;
     subIssuesTime: number;
@@ -191,10 +197,36 @@ export function TimeTracker({ issueId, timeTracking, onUpdate, hasSubIssues }: T
     }
   };
 
+  const handleMinutesChange = (value: string, isEdit = false) => {
+    const numValue = parseInt(value) || 0;
+    if (isEdit) {
+      setEditMinutes(value);
+      if (numValue > 59) {
+        setEditMinutesError('Minutes must be between 0 and 59');
+      } else {
+        setEditMinutesError('');
+      }
+    } else {
+      setManualMinutes(value);
+      if (numValue > 59) {
+        setMinutesError('Minutes must be between 0 and 59');
+      } else {
+        setMinutesError('');
+      }
+    }
+  };
+
   const handleAddManualEntry = async (e: React.FormEvent) => {
     e.preventDefault();
     const hours = parseInt(manualHours) || 0;
     const minutes = parseInt(manualMinutes) || 0;
+
+    // Validate minutes
+    if (minutes > 59) {
+      setMinutesError('Minutes must be between 0 and 59');
+      return;
+    }
+
     const totalSeconds = hours * 3600 + minutes * 60;
 
     if (totalSeconds <= 0) {
@@ -209,6 +241,7 @@ export function TimeTracker({ issueId, timeTracking, onUpdate, hasSubIssues }: T
       setManualHours('');
       setManualMinutes('');
       setManualDescription('');
+      setMinutesError('');
       setShowManualEntry(false);
       onUpdate?.();
     } catch (error: any) {
@@ -216,6 +249,67 @@ export function TimeTracker({ issueId, timeTracking, onUpdate, hasSubIssues }: T
       toast.error(error.response?.data?.message || 'Failed to add time entry');
     } finally {
       setSubmittingManual(false);
+    }
+  };
+
+  const handleStartEdit = (entry: TimeEntry) => {
+    const hours = Math.floor(entry.duration / 3600);
+    const minutes = Math.floor((entry.duration % 3600) / 60);
+    setEditingEntry(entry.id);
+    setEditHours(hours.toString());
+    setEditMinutes(minutes.toString());
+    setEditDescription(entry.description || '');
+    setEditMinutesError('');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingEntry(null);
+    setEditHours('');
+    setEditMinutes('');
+    setEditDescription('');
+    setEditMinutesError('');
+  };
+
+  const handleSaveEdit = async (entryId: string) => {
+    const hours = parseInt(editHours) || 0;
+    const minutes = parseInt(editMinutes) || 0;
+
+    // Validate minutes
+    if (minutes > 59) {
+      setEditMinutesError('Minutes must be between 0 and 59');
+      return;
+    }
+
+    const totalSeconds = hours * 3600 + minutes * 60;
+
+    if (totalSeconds <= 0) {
+      toast.error('Please enter a valid duration');
+      return;
+    }
+
+    try {
+      await issuesAPI.updateTimeEntry(issueId, entryId, totalSeconds, editDescription || undefined);
+      toast.success('Time entry updated');
+      handleCancelEdit();
+      onUpdate?.();
+    } catch (error: any) {
+      console.error('Error updating time entry:', error);
+      toast.error(error.response?.data?.message || 'Failed to update time entry');
+    }
+  };
+
+  const handleDeleteEntry = async (entryId: string) => {
+    if (!confirm('Are you sure you want to delete this time entry?')) {
+      return;
+    }
+
+    try {
+      await issuesAPI.deleteTimeEntry(issueId, entryId);
+      toast.success('Time entry deleted');
+      onUpdate?.();
+    } catch (error: any) {
+      console.error('Error deleting time entry:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete time entry');
     }
   };
 
@@ -410,12 +504,17 @@ export function TimeTracker({ issueId, timeTracking, onUpdate, hasSubIssues }: T
                   min="0"
                   max="59"
                   value={manualMinutes}
-                  onChange={(e) => setManualMinutes(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-dark-400 rounded-lg bg-white dark:bg-dark-500 text-gray-900 dark:text-white text-sm"
+                  onChange={(e) => handleMinutesChange(e.target.value)}
+                  className={`w-full px-3 py-2 border rounded-lg bg-white dark:bg-dark-500 text-gray-900 dark:text-white text-sm ${
+                    minutesError ? 'border-red-500' : 'border-gray-300 dark:border-dark-400'
+                  }`}
                   placeholder="0"
                 />
               </div>
             </div>
+            {minutesError && (
+              <p className="text-xs text-red-500 -mt-2">{minutesError}</p>
+            )}
             <div>
               <label className="text-xs text-gray-500 dark:text-gray-400">Description (optional)</label>
               <input
@@ -442,18 +541,99 @@ export function TimeTracker({ issueId, timeTracking, onUpdate, hasSubIssues }: T
       {timeTracking?.timeEntries && timeTracking.timeEntries.length > 0 && (
         <div className="mt-4 pt-4 border-t border-gray-200 dark:border-dark-400">
           <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Recent Entries</h4>
-          <div className="space-y-2 max-h-40 overflow-y-auto">
+          <div className="space-y-2 max-h-60 overflow-y-auto">
             {timeTracking.timeEntries.slice(-5).reverse().map((entry) => (
-              <div key={entry.id} className="flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2">
-                  <span className={`w-1.5 h-1.5 rounded-full ${entry.source === 'automatic' ? 'bg-green-500' : 'bg-blue-500'}`}></span>
-                  <span className="text-gray-600 dark:text-gray-400">
-                    {entry.description || (entry.source === 'automatic' ? 'Auto-tracked' : 'Manual entry')}
-                  </span>
-                </div>
-                <span className="font-medium text-gray-900 dark:text-white">
-                  {formatDurationShort(entry.duration)}
-                </span>
+              <div key={entry.id} className="group">
+                {editingEntry === entry.id ? (
+                  /* Edit Mode */
+                  <div className="p-2 bg-gray-50 dark:bg-dark-400 rounded-lg space-y-2">
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <label className="text-xs text-gray-500 dark:text-gray-400">Hours</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={editHours}
+                          onChange={(e) => setEditHours(e.target.value)}
+                          className="w-full px-2 py-1 border border-gray-300 dark:border-dark-400 rounded bg-white dark:bg-dark-500 text-gray-900 dark:text-white text-xs"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <label className="text-xs text-gray-500 dark:text-gray-400">Minutes</label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="59"
+                          value={editMinutes}
+                          onChange={(e) => handleMinutesChange(e.target.value, true)}
+                          className={`w-full px-2 py-1 border rounded bg-white dark:bg-dark-500 text-gray-900 dark:text-white text-xs ${
+                            editMinutesError ? 'border-red-500' : 'border-gray-300 dark:border-dark-400'
+                          }`}
+                        />
+                      </div>
+                    </div>
+                    {editMinutesError && (
+                      <p className="text-xs text-red-500">{editMinutesError}</p>
+                    )}
+                    <input
+                      type="text"
+                      value={editDescription}
+                      onChange={(e) => setEditDescription(e.target.value)}
+                      placeholder="Description (optional)"
+                      className="w-full px-2 py-1 border border-gray-300 dark:border-dark-400 rounded bg-white dark:bg-dark-500 text-gray-900 dark:text-white text-xs"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleSaveEdit(entry.id)}
+                        className="flex-1 px-2 py-1 bg-primary-500 hover:bg-primary-600 text-white text-xs rounded transition-colors"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={handleCancelEdit}
+                        className="flex-1 px-2 py-1 bg-gray-300 dark:bg-dark-300 hover:bg-gray-400 dark:hover:bg-dark-200 text-gray-700 dark:text-gray-200 text-xs rounded transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  /* View Mode */
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${entry.source === 'automatic' ? 'bg-green-500' : 'bg-blue-500'}`}></span>
+                      <span className="text-gray-600 dark:text-gray-400 truncate">
+                        {entry.description || (entry.source === 'automatic' ? 'Auto-tracked' : 'Manual entry')}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        {formatDurationShort(entry.duration)}
+                      </span>
+                      {/* Edit/Delete buttons - visible on hover */}
+                      <div className="hidden group-hover:flex items-center gap-1">
+                        <button
+                          onClick={() => handleStartEdit(entry)}
+                          className="p-1 text-gray-400 hover:text-primary-500 transition-colors"
+                          title="Edit entry"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteEntry(entry.id)}
+                          className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                          title="Delete entry"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>

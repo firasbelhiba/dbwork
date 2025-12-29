@@ -17,7 +17,7 @@ import {
 } from '@nestjs/swagger';
 import { IssuesService } from './issues.service';
 import { TimeTrackingService } from './time-tracking.service';
-import { CreateIssueDto, UpdateIssueDto, FilterIssuesDto, AddTimeLogDto, StopTimerDto, AddManualTimeDto } from './dto';
+import { CreateIssueDto, UpdateIssueDto, FilterIssuesDto, AddTimeLogDto, StopTimerDto, AddManualTimeDto, UpdateTimeEntryDto } from './dto';
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@auth/guards/roles.guard';
 import { Roles, CurrentUser } from '@common/decorators';
@@ -294,6 +294,27 @@ export class IssuesController {
       user._id,
       addManualTimeDto.duration,
       addManualTimeDto.description,
+    );
+  }
+
+  @Patch(':id/time-entries/:entryId')
+  @ApiOperation({ summary: 'Update a time entry' })
+  @ApiResponse({ status: 200, description: 'Time entry updated successfully' })
+  @ApiResponse({ status: 403, description: 'Not authorized to update this entry' })
+  updateTimeEntry(
+    @Param('id') id: string,
+    @Param('entryId') entryId: string,
+    @Body() updateTimeEntryDto: UpdateTimeEntryDto,
+    @CurrentUser() user,
+  ) {
+    const isAdmin = user.role === UserRole.ADMIN;
+    return this.timeTrackingService.updateTimeEntry(
+      id,
+      entryId,
+      user._id,
+      isAdmin,
+      updateTimeEntryDto.duration,
+      updateTimeEntryDto.description,
     );
   }
 

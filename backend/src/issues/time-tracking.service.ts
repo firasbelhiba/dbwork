@@ -429,6 +429,68 @@ export class TimeTrackingService {
   }
 
   /**
+   * Update a time entry (admin/owner only)
+   */
+  async updateTimeEntry(
+    issueId: string,
+    entryId: string,
+    userId: string,
+    isAdmin: boolean,
+    duration?: number,
+    description?: string,
+  ): Promise<IssueDocument> {
+    const issue = await this.issueModel.findById(issueId).exec();
+    if (!issue) {
+      throw new NotFoundException('Issue not found');
+    }
+
+    const timeEntries = issue.timeTracking?.timeEntries || [];
+    const entryIndex = timeEntries.findIndex(e => e.id === entryId);
+
+    if (entryIndex === -1) {
+      throw new NotFoundException('Time entry not found');
+    }
+
+    const entry = timeEntries[entryIndex];
+
+    // Only admin or entry owner can update
+    if (!isAdmin && entry.userId !== userId) {
+      throw new BadRequestException('You can only update your own time entries');
+    }
+
+    // Calculate duration difference for totalTimeSpent
+    const oldDuration = entry.duration;
+    const newDuration = duration !== undefined ? duration : oldDuration;
+    const durationDiff = newDuration - oldDuration;
+
+    // Update the entry
+    const updatedEntry = {
+      ...entry,
+      duration: newDuration,
+      description: description !== undefined ? description : entry.description,
+    };
+
+    const newTimeEntries = [...timeEntries];
+    newTimeEntries[entryIndex] = updatedEntry;
+
+    const currentTotalTime = issue.timeTracking?.totalTimeSpent || 0;
+    const newTotalTime = Math.max(0, currentTotalTime + durationDiff);
+
+    const updatedIssue = await this.issueModel.findByIdAndUpdate(
+      issueId,
+      {
+        $set: {
+          'timeTracking.timeEntries': newTimeEntries,
+          'timeTracking.totalTimeSpent': newTotalTime,
+        },
+      },
+      { new: true }
+    ).exec();
+
+    return updatedIssue;
+  }
+
+  /**
    * Delete a time entry (admin/owner only)
    */
   async deleteTimeEntry(

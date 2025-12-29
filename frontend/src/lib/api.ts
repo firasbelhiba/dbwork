@@ -188,6 +188,8 @@ export const issuesAPI = {
   getTimerStatus: (id: string) => api.get(`/issues/${id}/timer/status`),
   addManualTimeEntry: (id: string, duration: number, description?: string) =>
     api.post(`/issues/${id}/time-entries`, { duration, description }),
+  updateTimeEntry: (id: string, entryId: string, duration: number, description?: string) =>
+    api.patch(`/issues/${id}/time-entries/${entryId}`, { duration, description }),
   deleteTimeEntry: (id: string, entryId: string) => api.delete(`/issues/${id}/time-entries/${entryId}`),
   getAggregatedTime: (id: string) => api.get(`/issues/${id}/time/aggregated`),
   updateActivity: (id: string) => api.post(`/issues/${id}/timer/activity`),
