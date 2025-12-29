@@ -12,6 +12,20 @@ interface OvertimeTicket {
   loggedHours: number;
 }
 
+// Format hours into readable format (e.g., "10h 30m" or "2d 5h")
+const formatHours = (hours: number): string => {
+  if (hours < 24) {
+    const h = Math.floor(hours);
+    const m = Math.round((hours - h) * 60);
+    if (m === 0) return `${h}h`;
+    return `${h}h ${m}m`;
+  }
+  const days = Math.floor(hours / 24);
+  const remainingHours = Math.round(hours % 24);
+  if (remainingHours === 0) return `${days}d`;
+  return `${days}d ${remainingHours}h`;
+};
+
 export const WorkloadWarningBanner: React.FC = () => {
   const { user } = useAuth();
   const [hasNoTickets, setHasNoTickets] = useState(false);
@@ -132,7 +146,7 @@ export const WorkloadWarningBanner: React.FC = () => {
                     >
                       {visibleOvertimeTickets[0].key}
                     </Link>{' '}
-                    has exceeded 10 hours ({visibleOvertimeTickets[0].loggedHours.toFixed(1)}h logged).
+                    has exceeded 10 hours ({formatHours(visibleOvertimeTickets[0].loggedHours)} logged).
                     Consider breaking it into smaller tasks or reviewing the scope.
                   </>
                 ) : (
@@ -146,7 +160,7 @@ export const WorkloadWarningBanner: React.FC = () => {
                         >
                           {t.key}
                         </Link>
-                        {' '}({t.loggedHours.toFixed(1)}h)
+                        {' '}({formatHours(t.loggedHours)})
                         {i < Math.min(visibleOvertimeTickets.length - 1, 2) ? ', ' : ''}
                       </span>
                     ))}
