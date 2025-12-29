@@ -23,6 +23,9 @@ export class FeedbackComment {
   @Prop({ type: [{ url: String, cloudinaryId: String, fileName: String }], default: [] })
   images: FeedbackCommentImage[];
 
+  @Prop({ type: [{ userId: { type: Types.ObjectId, ref: 'User' }, reaction: String }], default: [] })
+  reactions: Array<{ userId: Types.ObjectId; reaction: string }>;
+
   @Prop({ default: false })
   isEdited: boolean;
 

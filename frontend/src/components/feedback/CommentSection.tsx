@@ -5,9 +5,15 @@ import { feedbackAPI } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { getInitials } from '@/lib/utils';
 import { UserAvatar } from '@/components/common/UserAvatar';
+import { EmojiReactionPicker } from '@/components/common/EmojiReactionPicker';
 import { toast } from 'react-hot-toast';
 import { UserRole } from '@/types/user';
 import { MentionTextarea } from '@/components/common/MentionTextarea';
+
+interface Reaction {
+  userId: string | { _id: string };
+  reaction: string;
+}
 
 interface Comment {
   _id: string;
@@ -20,6 +26,7 @@ interface Comment {
     avatar?: string;
   };
   content: string;
+  reactions?: Reaction[];
   isEdited: boolean;
   editedAt?: string;
   createdAt: string;
@@ -109,6 +116,26 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ feedbackId }) =>
   const cancelEdit = () => {
     setEditingId(null);
     setEditContent('');
+  };
+
+  const handleAddReaction = async (commentId: string, emoji: string) => {
+    try {
+      const response = await feedbackAPI.addCommentReaction(commentId, emoji);
+      setComments(comments.map(c => c._id === commentId ? response.data : c));
+    } catch (error) {
+      console.error('Failed to add reaction:', error);
+      toast.error('Failed to add reaction');
+    }
+  };
+
+  const handleRemoveReaction = async (commentId: string) => {
+    try {
+      const response = await feedbackAPI.removeCommentReaction(commentId);
+      setComments(comments.map(c => c._id === commentId ? response.data : c));
+    } catch (error) {
+      console.error('Failed to remove reaction:', error);
+      toast.error('Failed to remove reaction');
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -254,9 +281,20 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ feedbackId }) =>
                     </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">
-                    {comment.content}
-                  </p>
+                  <>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">
+                      {comment.content}
+                    </p>
+                    {/* Reactions */}
+                    <div className="mt-2">
+                      <EmojiReactionPicker
+                        reactions={comment.reactions || []}
+                        currentUserId={user?._id}
+                        onAddReaction={(emoji) => handleAddReaction(comment._id, emoji)}
+                        onRemoveReaction={() => handleRemoveReaction(comment._id)}
+                      />
+                    </div>
+                  </>
                 )}
               </div>
             </div>

@@ -560,6 +560,24 @@ export class NotificationsService {
     });
   }
 
+  async notifyFeedbackCommentReaction(
+    userId: string,
+    feedbackId: string,
+    commentId: string,
+    feedbackTitle: string,
+    reactedBy: string,
+    reaction: string,
+  ): Promise<NotificationDocument> {
+    return this.create({
+      userId,
+      type: 'reaction' as any,
+      title: 'Reaction to your comment',
+      message: `Someone reacted ${reaction} to your comment on feedback: "${feedbackTitle}"`,
+      link: `/feedback/${feedbackId}`,
+      metadata: { feedbackId, commentId, reactedBy, reaction },
+    });
+  }
+
   // Changelog notification methods
   async notifyNewChangelog(
     userId: string,

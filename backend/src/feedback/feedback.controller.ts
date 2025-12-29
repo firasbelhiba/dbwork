@@ -200,4 +200,24 @@ export class FeedbackController {
     const isAdmin = user.role === UserRole.ADMIN;
     return this.feedbackService.deleteComment(commentId, user._id, isAdmin);
   }
+
+  @Post('comments/:commentId/reactions')
+  @ApiOperation({ summary: 'Add reaction to feedback comment' })
+  @ApiResponse({ status: 200, description: 'Reaction added' })
+  @ApiResponse({ status: 404, description: 'Comment not found' })
+  addCommentReaction(
+    @Param('commentId') commentId: string,
+    @Body('reaction') reaction: string,
+    @CurrentUser() user,
+  ) {
+    return this.feedbackService.addCommentReaction(commentId, user._id, reaction);
+  }
+
+  @Delete('comments/:commentId/reactions')
+  @ApiOperation({ summary: 'Remove reaction from feedback comment' })
+  @ApiResponse({ status: 200, description: 'Reaction removed' })
+  @ApiResponse({ status: 404, description: 'Comment not found' })
+  removeCommentReaction(@Param('commentId') commentId: string, @CurrentUser() user) {
+    return this.feedbackService.removeCommentReaction(commentId, user._id);
+  }
 }

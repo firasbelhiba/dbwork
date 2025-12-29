@@ -344,6 +344,9 @@ export const feedbackAPI = {
   createComment: (feedbackId: string, data: { content: string }) => api.post(`/feedback/${feedbackId}/comments`, data),
   updateComment: (commentId: string, data: { content: string }) => api.patch(`/feedback/comments/${commentId}`, data),
   deleteComment: (commentId: string) => api.delete(`/feedback/comments/${commentId}`),
+  // Comment reactions
+  addCommentReaction: (commentId: string, reaction: string) => api.post(`/feedback/comments/${commentId}/reactions`, { reaction }),
+  removeCommentReaction: (commentId: string) => api.delete(`/feedback/comments/${commentId}/reactions`),
 };
 
 // Changelogs API

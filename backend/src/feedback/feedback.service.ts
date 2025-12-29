@@ -635,4 +635,88 @@ export class FeedbackService {
       fileName: file.originalname,
     };
   }
+
+  // Reaction methods for feedback comments
+  async addCommentReaction(
+    commentId: string,
+    userId: string,
+    reaction: string,
+  ): Promise<FeedbackCommentDocument> {
+    const comment = await this.feedbackCommentModel.findById(commentId).exec();
+
+    if (!comment) {
+      throw new NotFoundException('Comment not found');
+    }
+
+    // Check if user already reacted
+    const existingReaction = comment.reactions?.find(
+      (r) => r.userId.toString() === userId.toString(),
+    );
+
+    if (existingReaction) {
+      // Update existing reaction
+      existingReaction.reaction = reaction;
+    } else {
+      // Add new reaction
+      if (!comment.reactions) {
+        comment.reactions = [];
+      }
+      comment.reactions.push({
+        userId: new Types.ObjectId(userId),
+        reaction,
+      });
+    }
+
+    await comment.save();
+
+    // Notify comment author about the reaction (if not self-reacting)
+    try {
+      const commentAuthorId = comment.userId.toString();
+      if (commentAuthorId !== userId) {
+        // Get feedback title for the notification
+        const feedback = await this.feedbackModel.findById(comment.feedbackId).exec();
+        if (feedback) {
+          await this.notificationsService.notifyFeedbackCommentReaction(
+            commentAuthorId,
+            comment.feedbackId.toString(),
+            commentId,
+            feedback.title,
+            userId,
+            reaction,
+          );
+        }
+      }
+    } catch (error) {
+      console.error('[NOTIFICATION] Error notifying feedback comment reaction:', error);
+    }
+
+    return this.feedbackCommentModel
+      .findById(commentId)
+      .populate({ path: 'userId', select: 'firstName lastName email avatar', model: 'User' })
+      .exec();
+  }
+
+  async removeCommentReaction(
+    commentId: string,
+    userId: string,
+  ): Promise<FeedbackCommentDocument> {
+    const comment = await this.feedbackCommentModel.findById(commentId).exec();
+
+    if (!comment) {
+      throw new NotFoundException('Comment not found');
+    }
+
+    if (comment.reactions) {
+      comment.reactions = comment.reactions.filter(
+        (r) => r.userId.toString() !== userId.toString(),
+      );
+    }
+
+    await comment.save();
+
+    return this.feedbackCommentModel
+      .findById(commentId)
+      .populate({ path: 'userId', select: 'firstName lastName email avatar', model: 'User' })
+      .exec();
+  }
 }
