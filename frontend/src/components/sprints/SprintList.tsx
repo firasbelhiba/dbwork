@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Sprint, SprintStatus } from '@/types/sprint';
 import { Badge } from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
+import { EditSprintModal } from './EditSprintModal';
 import { sprintsAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
@@ -15,6 +16,7 @@ interface SprintListProps {
 
 export const SprintList: React.FC<SprintListProps> = ({ sprints, onSprintUpdated }) => {
   const [loadingSprintId, setLoadingSprintId] = useState<string | null>(null);
+  const [editingSprint, setEditingSprint] = useState<Sprint | null>(null);
 
   const getStatusVariant = (status: SprintStatus) => {
     switch (status) {
@@ -158,6 +160,20 @@ export const SprintList: React.FC<SprintListProps> = ({ sprints, onSprintUpdated
                 </Button>
               )}
 
+              {/* Edit button - available for all statuses except completed */}
+              {sprint.status !== SprintStatus.COMPLETED && (
+                <button
+                  onClick={() => setEditingSprint(sprint)}
+                  disabled={loadingSprintId === sprint._id}
+                  className="p-2 text-gray-400 hover:text-primary transition-colors disabled:opacity-50"
+                  title="Edit sprint"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+              )}
+
               {sprint.status !== SprintStatus.ACTIVE && (
                 <button
                   onClick={() => handleDeleteSprint(sprint._id)}
@@ -174,6 +190,14 @@ export const SprintList: React.FC<SprintListProps> = ({ sprints, onSprintUpdated
           </div>
         </div>
       ))}
+
+      {/* Edit Sprint Modal */}
+      <EditSprintModal
+        isOpen={editingSprint !== null}
+        onClose={() => setEditingSprint(null)}
+        sprint={editingSprint}
+        onSprintUpdated={onSprintUpdated}
+      />
     </div>
   );
 };

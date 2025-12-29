@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Achievement, UserAchievement } from '@/types';
 import { achievementsAPI } from '@/lib/api';
 import { AchievementUnlockModal } from './AchievementUnlockModal';
@@ -10,42 +10,49 @@ export const AchievementNotifier: React.FC = () => {
   const { user } = useAuth();
   const [newAchievements, setNewAchievements] = useState<Achievement[]>([]);
   const [currentAchievement, setCurrentAchievement] = useState<Achievement | null>(null);
+  const isShowingModalRef = useRef(false);
+
+  // Track modal state in ref to avoid re-creating interval
+  useEffect(() => {
+    isShowingModalRef.current = currentAchievement !== null;
+  }, [currentAchievement]);
+
+  const checkNewAchievements = useCallback(async () => {
+    // Don't poll while modal is showing
+    if (isShowingModalRef.current) return;
+
+    try {
+      const response = await achievementsAPI.getNewlyUnlocked();
+      const userAchievements: UserAchievement[] = response.data;
+
+      // Extract achievements that are unlocked but not viewed
+      const achievements = userAchievements
+        .filter((ua) => ua.unlocked && !ua.viewed)
+        .map((ua) => ua.achievementId as Achievement)
+        .filter(Boolean);
+
+      if (achievements.length > 0) {
+        setNewAchievements(achievements);
+        // Show first achievement
+        setCurrentAchievement(achievements[0]);
+      }
+    } catch (error) {
+      console.error('Error checking new achievements:', error);
+    }
+  }, []);
 
   // Poll for newly unlocked achievements
   useEffect(() => {
     if (!user) return;
 
-    const checkNewAchievements = async () => {
-      try {
-        const response = await achievementsAPI.getNewlyUnlocked();
-        const userAchievements: UserAchievement[] = response.data;
-
-        // Extract achievements that are unlocked but not viewed
-        const achievements = userAchievements
-          .filter((ua) => ua.unlocked && !ua.viewed)
-          .map((ua) => ua.achievementId as Achievement)
-          .filter(Boolean);
-
-        if (achievements.length > 0) {
-          setNewAchievements(achievements);
-          // Show first achievement
-          if (!currentAchievement) {
-            setCurrentAchievement(achievements[0]);
-          }
-        }
-      } catch (error) {
-        console.error('Error checking new achievements:', error);
-      }
-    };
-
-    // Check immediately
+    // Check immediately on mount
     checkNewAchievements();
 
-    // Poll every 10 seconds
-    const interval = setInterval(checkNewAchievements, 10000);
+    // Poll every 30 seconds (achievements are rare events)
+    const interval = setInterval(checkNewAchievements, 30000);
 
     return () => clearInterval(interval);
-  }, [user, currentAchievement]);
+  }, [user, checkNewAchievements]);
 
   const handleClose = () => {
     // Remove current achievement from queue
