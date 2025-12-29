@@ -206,8 +206,8 @@ export const TicketCalendar: React.FC<TicketCalendarProps> = ({ userId }) => {
                 onClick={() => handleDayClick(day)}
                 disabled={!hasTickets}
                 className={`
-                  relative ${expanded ? 'h-24 p-2' : 'h-10'} w-full rounded ${expanded ? 'rounded-lg' : ''}
-                  ${expanded ? 'text-base' : 'text-sm'} font-medium transition-colors
+                  relative ${expanded ? 'h-28' : 'h-10'} w-full rounded ${expanded ? 'rounded-lg' : ''}
+                  ${expanded ? 'text-sm' : 'text-sm'} font-medium transition-colors
                   ${todayClass}
                   ${hasTickets
                     ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 hover:bg-primary-200 dark:hover:bg-primary-900/50 cursor-pointer'
@@ -221,25 +221,25 @@ export const TicketCalendar: React.FC<TicketCalendarProps> = ({ userId }) => {
                 {hasTickets && !expanded && (
                   <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-0.5 pb-0.5">
                     {/* Show unique project logos (max 3) */}
-                    {Array.from(new Map(tickets.map(t => [t.projectKey, t])).values())
+                    {Array.from(new Map(tickets.filter(t => t.projectKey).map(t => [t.projectKey, t])).values())
                       .slice(0, 3)
                       .map((ticket) => (
                         ticket.projectLogo ? (
                           <img
                             key={ticket.projectKey}
                             src={ticket.projectLogo}
-                            alt={ticket.projectKey}
+                            alt={ticket.projectKey || ''}
                             className="w-3 h-3 rounded-sm object-cover"
-                            title={ticket.projectKey}
+                            title={ticket.projectKey || ''}
                           />
                         ) : (
                           <div
                             key={ticket.projectKey}
                             className="w-3 h-3 rounded-sm bg-primary-500 flex items-center justify-center"
-                            title={ticket.projectKey}
+                            title={ticket.projectKey || ''}
                           >
                             <span className="text-[6px] font-bold text-white">
-                              {ticket.projectKey.charAt(0)}
+                              {ticket.projectKey?.charAt(0) || '?'}
                             </span>
                           </div>
                         )
@@ -252,11 +252,11 @@ export const TicketCalendar: React.FC<TicketCalendarProps> = ({ userId }) => {
 
                 {/* Expanded view - show ticket previews */}
                 {expanded && hasTickets && (
-                  <div className="absolute bottom-1 left-1 right-1 space-y-0.5">
-                    {tickets.slice(0, 3).map((ticket) => (
+                  <div className="absolute top-7 bottom-1 left-1 right-1 flex flex-col gap-0.5 overflow-hidden">
+                    {tickets.slice(0, 2).map((ticket) => (
                       <div
                         key={ticket._id}
-                        className={`flex items-center gap-1 text-[10px] px-1 py-0.5 rounded truncate ${
+                        className={`flex items-center gap-1 text-[9px] px-1 py-0.5 rounded truncate ${
                           ticket.isDueDate ? 'bg-danger-100 dark:bg-danger-900/30 text-danger-700 dark:text-danger-300' :
                           'bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-300'
                         }`}
@@ -266,15 +266,15 @@ export const TicketCalendar: React.FC<TicketCalendarProps> = ({ userId }) => {
                           <img src={ticket.projectLogo} alt="" className="w-3 h-3 rounded-sm object-cover flex-shrink-0" />
                         ) : (
                           <span className="w-3 h-3 rounded-sm bg-primary-500 text-white text-[6px] flex items-center justify-center flex-shrink-0">
-                            {ticket.projectKey.charAt(0)}
+                            {ticket.projectKey?.charAt(0) || '?'}
                           </span>
                         )}
                         <span className="truncate">{ticket.key}</span>
                       </div>
                     ))}
-                    {tickets.length > 3 && (
-                      <div className="text-[10px] text-gray-500 dark:text-gray-400 text-center">
-                        +{tickets.length - 3} more
+                    {tickets.length > 2 && (
+                      <div className="text-[9px] text-gray-500 dark:text-gray-400 text-center">
+                        +{tickets.length - 2} more
                       </div>
                     )}
                   </div>
@@ -397,7 +397,7 @@ export const TicketCalendar: React.FC<TicketCalendarProps> = ({ userId }) => {
                       ) : (
                         <div className="w-8 h-8 rounded bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
                           <span className="text-xs font-bold text-primary-600 dark:text-primary-400">
-                            {ticket.projectKey.charAt(0)}
+                            {ticket.projectKey?.charAt(0) || '?'}
                           </span>
                         </div>
                       )}
