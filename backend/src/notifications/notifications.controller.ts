@@ -90,4 +90,18 @@ export class NotificationsController {
   clearAll(@CurrentUser() user) {
     return this.notificationsService.clearAll(user._id);
   }
+
+  @Post('test')
+  @ApiOperation({ summary: 'Send a test notification to yourself (for testing real-time notifications)' })
+  @ApiResponse({ status: 201, description: 'Test notification sent' })
+  async sendTestNotification(@CurrentUser() user) {
+    return this.notificationsService.create({
+      userId: user._id.toString(),
+      type: 'comment_mention' as any,
+      title: 'Test Notification',
+      message: `🔔 This is a test notification sent at ${new Date().toLocaleTimeString()}`,
+      link: '/notifications',
+      metadata: { test: true },
+    });
+  }
 }
