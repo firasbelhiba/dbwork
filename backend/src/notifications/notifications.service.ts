@@ -5,6 +5,7 @@ import { Notification, NotificationDocument } from './schemas/notification.schem
 import { CreateNotificationDto } from './dto';
 import { User, UserDocument } from '../users/schemas/user.schema';
 import { AppWebSocketGateway } from '../websocket/websocket.gateway';
+import { NotificationType } from '@common/enums';
 
 @Injectable()
 export class NotificationsService {
@@ -570,7 +571,7 @@ export class NotificationsService {
   ): Promise<NotificationDocument> {
     return this.create({
       userId,
-      type: 'reaction' as any,
+      type: NotificationType.FEEDBACK_COMMENT_REACTION,
       title: 'Reaction to your comment',
       message: `Someone reacted ${reaction} to your comment on feedback: "${feedbackTitle}"`,
       link: `/feedback/${feedbackId}`,
@@ -587,7 +588,7 @@ export class NotificationsService {
   ): Promise<NotificationDocument> {
     return this.create({
       userId,
-      type: 'new_changelog' as any,
+      type: NotificationType.NEW_CHANGELOG,
       title: 'New Version Released',
       message: `Version ${version} has been released: ${title}`,
       link: `/changelog/${changelogId}`,
@@ -604,7 +605,7 @@ export class NotificationsService {
   ): Promise<NotificationDocument> {
     return this.create({
       userId,
-      type: 'achievement_unlocked' as any,
+      type: NotificationType.ACHIEVEMENT_UNLOCKED,
       title: 'Achievement Unlocked!',
       message: `You've unlocked "${achievementName}"! +${points} points`,
       link: `/achievements`,

@@ -23,5 +23,8 @@ export enum NotificationType {
   FEEDBACK_UPVOTED = 'feedback_upvoted',
   FEEDBACK_STATUS_CHANGED = 'feedback_status_changed',
   FEEDBACK_COMMENTED = 'feedback_commented',
+  FEEDBACK_COMMENT_REACTION = 'reaction',
   NEW_CHANGELOG = 'new_changelog',
+  ACHIEVEMENT_UNLOCKED = 'achievement_unlocked',
+  CHAT_MESSAGE = 'chat_message',
 }
