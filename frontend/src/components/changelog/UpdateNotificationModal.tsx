@@ -233,13 +233,6 @@ export const UpdateNotificationModal: React.FC<UpdateNotificationModalProps> = (
             </div>
           </div>
 
-          {/* Close Button */}
-          <button
-            onClick={handleClose}
-            className="w-full bg-gradient-to-r from-primary-600 to-blue-600 hover:from-primary-700 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-[1.02] shadow-lg"
-          >
-            Got it, thanks!
-          </button>
         </div>
       </div>
     </div>
