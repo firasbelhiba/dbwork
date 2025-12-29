@@ -963,28 +963,16 @@ export class IssuesService {
       const project = issue.projectId as any;
       const projectId = project._id.toString();
 
-      // Calculate total hours including active timer
-      let totalHours = issue.timeTracking?.loggedHours || 0;
-
-      // Add time from active timer if exists
-      if (issue.timeTracking?.activeTimeEntry?.startTime) {
-        const activeEntry = issue.timeTracking.activeTimeEntry;
-        const startTime = new Date(activeEntry.startTime).getTime();
-        const now = activeEntry.isPaused && activeEntry.pausedAt
-          ? new Date(activeEntry.pausedAt).getTime()
-          : Date.now();
-        const elapsedMs = now - startTime - (activeEntry.accumulatedPausedTime || 0);
-        const activeHours = elapsedMs / (1000 * 60 * 60);
-        totalHours += Math.max(0, activeHours);
-      }
+      // Use logged hours (same as displayed on kanban)
+      const loggedHours = issue.timeTracking?.loggedHours || 0;
 
       // Check for overtime tickets (>10 hours)
-      if (totalHours > 10) {
+      if (loggedHours > 10) {
         overtimeTickets.push({
           _id: issue._id.toString(),
           key: issue.key,
           title: issue.title,
-          loggedHours: totalHours,
+          loggedHours,
         });
       }
 
@@ -1004,7 +992,7 @@ export class IssuesService {
         status: issue.status,
         priority: issue.priority,
         type: issue.type,
-        loggedHours: totalHours,
+        loggedHours,
       });
     }
 
