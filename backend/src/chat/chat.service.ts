@@ -42,10 +42,10 @@ export class ChatService {
         type: ConversationType.DIRECT,
         participants: { $all: participants, $size: 2 },
       })
-      .populate('participants', 'firstName lastName email avatar')
+      .populate({ path: 'participants', model: 'User', select: 'firstName lastName email avatar' })
       .populate({
         path: 'lastMessage',
-        populate: { path: 'senderId', select: 'firstName lastName avatar' },
+        populate: { path: 'senderId', model: 'User', select: 'firstName lastName avatar' },
       })
       .exec();
 
@@ -68,7 +68,7 @@ export class ChatService {
 
     return this.conversationModel
       .findById(saved._id)
-      .populate('participants', 'firstName lastName email avatar')
+      .populate({ path: 'participants', model: 'User', select: 'firstName lastName email avatar' })
       .exec();
   }
 
@@ -113,18 +113,25 @@ export class ChatService {
    * Get all conversations for a user
    */
   async getConversationsForUser(userId: string): Promise<ConversationDocument[]> {
-    return this.conversationModel
+    const conversations = await this.conversationModel
       .find({
         participants: new Types.ObjectId(userId),
         isArchived: false,
       })
-      .populate('participants', 'firstName lastName email avatar')
+      .populate({ path: 'participants', model: 'User', select: 'firstName lastName email avatar' })
       .populate({
         path: 'lastMessage',
-        populate: { path: 'senderId', select: 'firstName lastName avatar' },
+        populate: { path: 'senderId', model: 'User', select: 'firstName lastName avatar' },
       })
       .sort({ lastMessageAt: -1 })
       .exec();
+
+    // Debug: log participants to verify population
+    if (conversations.length > 0) {
+      console.log('[ChatService] First conversation participants:', JSON.stringify(conversations[0].participants, null, 2));
+    }
+
+    return conversations;
   }
 
   /**
@@ -133,10 +140,10 @@ export class ChatService {
   async getConversationById(conversationId: string, userId: string): Promise<ConversationDocument> {
     const conversation = await this.conversationModel
       .findById(conversationId)
-      .populate('participants', 'firstName lastName email avatar')
+      .populate({ path: 'participants', model: 'User', select: 'firstName lastName email avatar' })
       .populate({
         path: 'lastMessage',
-        populate: { path: 'senderId', select: 'firstName lastName avatar' },
+        populate: { path: 'senderId', model: 'User', select: 'firstName lastName avatar' },
       })
       .exec();
 
@@ -162,10 +169,10 @@ export class ChatService {
   async getProjectConversation(projectId: string, userId: string): Promise<ConversationDocument> {
     const conversation = await this.conversationModel
       .findOne({ projectId: new Types.ObjectId(projectId) })
-      .populate('participants', 'firstName lastName email avatar')
+      .populate({ path: 'participants', model: 'User', select: 'firstName lastName email avatar' })
       .populate({
         path: 'lastMessage',
-        populate: { path: 'senderId', select: 'firstName lastName avatar' },
+        populate: { path: 'senderId', model: 'User', select: 'firstName lastName avatar' },
       })
       .exec();
 
