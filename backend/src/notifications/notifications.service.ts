@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Notification, NotificationDocument } from './schemas/notification.schema';
 import { CreateNotificationDto } from './dto';
 import { User, UserDocument } from '../users/schemas/user.schema';
+import { AppWebSocketGateway } from '../websocket/websocket.gateway';
 
 @Injectable()
 export class NotificationsService {
@@ -12,6 +13,8 @@ export class NotificationsService {
     private notificationModel: Model<NotificationDocument>,
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
+    @Inject(forwardRef(() => AppWebSocketGateway))
+    private webSocketGateway: AppWebSocketGateway,
   ) {}
 
   private async shouldNotify(userId: string, notificationType: string): Promise<boolean> {
@@ -44,7 +47,20 @@ export class NotificationsService {
     }
 
     const notification = new this.notificationModel(createNotificationDto);
-    return notification.save();
+    const savedNotification = await notification.save();
+
+    // Emit real-time notification via WebSocket
+    try {
+      this.webSocketGateway.emitNotification(
+        createNotificationDto.userId,
+        savedNotification.toObject(),
+      );
+      console.log(`[NotificationsService] Emitted real-time notification to user ${createNotificationDto.userId}`);
+    } catch (error) {
+      console.error('[NotificationsService] Failed to emit WebSocket notification:', error);
+    }
+
+    return savedNotification;
   }
 
   async findByUser(userId: string | Types.ObjectId, unreadOnly: boolean = false): Promise<NotificationDocument[]> {
