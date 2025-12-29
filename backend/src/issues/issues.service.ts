@@ -915,11 +915,12 @@ export class IssuesService {
       }>;
     }>;
   }> {
-    // Find all in-progress issues assigned to this user
+    // Find all active issues assigned to this user (in_progress OR in_review)
+    // Both statuses represent work that's currently being handled
     const issues = await this.issueModel
       .find({
         assignees: new Types.ObjectId(userId),
-        status: 'in_progress',
+        status: { $in: ['in_progress', 'in_review'] },
         isArchived: { $ne: true },
       })
       .populate('projectId', 'name key')

@@ -415,7 +415,7 @@ export const UserProfileSidebar: React.FC<UserProfileSidebarProps> = ({
           <div className="px-6 py-6 border-b border-gray-200 dark:border-dark-300">
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
-                In Progress Tasks
+                Active Tasks
               </h4>
               {workload && (
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-400">
@@ -454,7 +454,7 @@ export const UserProfileSidebar: React.FC<UserProfileSidebarProps> = ({
                 <svg className="w-8 h-8 text-gray-400 dark:text-gray-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <p className="text-sm text-gray-500 dark:text-gray-400">No tasks in progress</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">No active tasks</p>
               </div>
             )}
           </div>
