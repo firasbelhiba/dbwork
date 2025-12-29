@@ -30,7 +30,7 @@ export class SprintsController {
   constructor(private readonly sprintsService: SprintsService) {}
 
   @Post()
-  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
+  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER, UserRole.DEVELOPER)
   @ApiOperation({ summary: 'Create a new sprint' })
   @ApiResponse({ status: 201, description: 'Sprint successfully created' })
   create(@Body() createSprintDto: CreateSprintDto, @CurrentUser() user) {
@@ -84,7 +84,7 @@ export class SprintsController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
+  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER, UserRole.DEVELOPER)
   @ApiOperation({ summary: 'Update sprint' })
   @ApiResponse({ status: 200, description: 'Sprint successfully updated' })
   update(@Param('id') id: string, @Body() updateSprintDto: UpdateSprintDto) {
@@ -92,7 +92,7 @@ export class SprintsController {
   }
 
   @Post(':id/start')
-  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
+  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER, UserRole.DEVELOPER)
   @ApiOperation({ summary: 'Start a sprint' })
   @ApiResponse({ status: 200, description: 'Sprint successfully started' })
   start(@Param('id') id: string, @CurrentUser() user) {
@@ -100,7 +100,7 @@ export class SprintsController {
   }
 
   @Post(':id/complete')
-  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
+  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER, UserRole.DEVELOPER)
   @ApiOperation({ summary: 'Complete a sprint' })
   @ApiResponse({ status: 200, description: 'Sprint successfully completed' })
   complete(@Param('id') id: string, @CurrentUser() user) {
@@ -108,7 +108,7 @@ export class SprintsController {
   }
 
   @Delete(':id')
-  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
+  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER, UserRole.DEVELOPER)
   @ApiOperation({ summary: 'Delete sprint' })
   @ApiResponse({ status: 200, description: 'Sprint successfully deleted' })
   remove(@Param('id') id: string) {
