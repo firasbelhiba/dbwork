@@ -5,11 +5,12 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { User, UserDocument } from './schemas/user.schema';
 import { CreateUserDto, UpdateUserDto } from './dto';
 import { getCloudinary } from '../attachments/cloudinary.config';
+import { Issue, IssueDocument } from '@issues/schemas/issue.schema';
 
 const MAX_LIMIT = 100;
 const DEFAULT_LIMIT = 20;
@@ -18,6 +19,7 @@ const DEFAULT_LIMIT = 20;
 export class UsersService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(Issue.name) private issueModel: Model<IssueDocument>,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<UserDocument> {
@@ -239,5 +241,209 @@ export class UsersService {
     }
 
     return user.preferences?.notificationPreferences || {};
+  }
+
+  // ==================== TODO QUEUE METHODS ====================
+
+  /**
+   * Get user's todo queue with populated issue details
+   * Filters out completed/archived issues and issues no longer assigned to user
+   */
+  async getTodoQueue(userId: string): Promise<{
+    currentInProgress: IssueDocument | null;
+    queue: IssueDocument[];
+  }> {
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const userObjectId = new Types.ObjectId(userId);
+
+    // Get all issues in user's queue that are still valid
+    const queueIssueIds = user.todoQueue || [];
+
+    // Find valid issues (not archived, not done, still assigned to user)
+    const validIssues = await this.issueModel
+      .find({
+        _id: { $in: queueIssueIds },
+        isArchived: { $ne: true },
+        status: { $nin: ['done'] },
+        assignees: userObjectId,
+      })
+      .populate('projectId', 'name key logo')
+      .exec();
+
+    // Create a map for ordering
+    const issueMap = new Map<string, IssueDocument>();
+    validIssues.forEach(issue => {
+      issueMap.set(issue._id.toString(), issue);
+    });
+
+    // Order issues according to queue order, filtering out invalid ones
+    const orderedQueue: IssueDocument[] = [];
+    const validIds: Types.ObjectId[] = [];
+
+    for (const issueId of queueIssueIds) {
+      const issue = issueMap.get(issueId.toString());
+      if (issue) {
+        orderedQueue.push(issue);
+        validIds.push(issueId);
+      }
+    }
+
+    // Update queue if some issues were removed (cleanup)
+    if (validIds.length !== queueIssueIds.length) {
+      await this.userModel.findByIdAndUpdate(userId, {
+        todoQueue: validIds,
+      });
+    }
+
+    // Get current in_progress ticket (may or may not be in queue)
+    const currentInProgress = await this.issueModel
+      .findOne({
+        assignees: userObjectId,
+        status: 'in_progress',
+        isArchived: { $ne: true },
+      })
+      .populate('projectId', 'name key logo')
+      .exec();
+
+    // Remove current in_progress from queue display (it's shown separately)
+    const queueWithoutCurrent = orderedQueue.filter(
+      issue => issue.status !== 'in_progress'
+    );
+
+    return {
+      currentInProgress,
+      queue: queueWithoutCurrent,
+    };
+  }
+
+  /**
+   * Update the entire todo queue order
+   */
+  async updateTodoQueue(userId: string, issueIds: string[]): Promise<void> {
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const userObjectId = new Types.ObjectId(userId);
+
+    // Validate all issues exist and are assigned to user
+    const issues = await this.issueModel
+      .find({
+        _id: { $in: issueIds.map(id => new Types.ObjectId(id)) },
+        assignees: userObjectId,
+        isArchived: { $ne: true },
+      })
+      .exec();
+
+    const validIds = new Set(issues.map(i => i._id.toString()));
+    const filteredIds = issueIds
+      .filter(id => validIds.has(id))
+      .map(id => new Types.ObjectId(id));
+
+    await this.userModel.findByIdAndUpdate(userId, {
+      todoQueue: filteredIds,
+    });
+  }
+
+  /**
+   * Add an issue to the todo queue
+   */
+  async addToQueue(
+    userId: string,
+    issueId: string,
+    position?: number,
+  ): Promise<void> {
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const userObjectId = new Types.ObjectId(userId);
+    const issueObjectId = new Types.ObjectId(issueId);
+
+    // Validate issue exists and is assigned to user
+    const issue = await this.issueModel.findOne({
+      _id: issueObjectId,
+      assignees: userObjectId,
+      isArchived: { $ne: true },
+    }).exec();
+
+    if (!issue) {
+      throw new BadRequestException('Issue not found or not assigned to you');
+    }
+
+    // Check if already in queue
+    const currentQueue = user.todoQueue || [];
+    const alreadyInQueue = currentQueue.some(
+      id => id.toString() === issueId
+    );
+
+    if (alreadyInQueue) {
+      return; // Already in queue, no action needed
+    }
+
+    // Add to queue at specified position or end
+    const newQueue = [...currentQueue];
+    if (position !== undefined && position >= 0 && position <= newQueue.length) {
+      newQueue.splice(position, 0, issueObjectId);
+    } else {
+      newQueue.push(issueObjectId);
+    }
+
+    await this.userModel.findByIdAndUpdate(userId, {
+      todoQueue: newQueue,
+    });
+  }
+
+  /**
+   * Remove an issue from the todo queue
+   */
+  async removeFromQueue(userId: string, issueId: string): Promise<void> {
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const newQueue = (user.todoQueue || []).filter(
+      id => id.toString() !== issueId
+    );
+
+    await this.userModel.findByIdAndUpdate(userId, {
+      todoQueue: newQueue,
+    });
+  }
+
+  /**
+   * Get available issues to add to queue (assigned but not in queue)
+   */
+  async getAvailableForQueue(userId: string): Promise<IssueDocument[]> {
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const userObjectId = new Types.ObjectId(userId);
+    const queueIds = (user.todoQueue || []).map(id => id.toString());
+
+    // Find issues assigned to user that are not done, not archived, and not in queue
+    const availableIssues = await this.issueModel
+      .find({
+        assignees: userObjectId,
+        isArchived: { $ne: true },
+        status: { $nin: ['done'] },
+      })
+      .populate('projectId', 'name key logo')
+      .sort({ updatedAt: -1 })
+      .exec();
+
+    // Filter out issues already in queue
+    return availableIssues.filter(
+      issue => !queueIds.includes(issue._id.toString())
+    );
   }
 }

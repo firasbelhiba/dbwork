@@ -99,6 +99,15 @@ export const usersAPI = {
   getNotificationPreferences: (id: string) => api.get(`/users/${id}/notification-preferences`),
   updateNotificationPreferences: (id: string, preferences: any) =>
     api.patch(`/users/${id}/notification-preferences`, preferences),
+  // Todo Queue
+  getTodoQueue: (id: string) => api.get(`/users/${id}/todo-queue`),
+  getAvailableForQueue: (id: string) => api.get(`/users/${id}/todo-queue/available`),
+  updateTodoQueue: (id: string, issueIds: string[]) =>
+    api.patch(`/users/${id}/todo-queue`, { issueIds }),
+  addToQueue: (id: string, issueId: string, position?: number) =>
+    api.post(`/users/${id}/todo-queue/add/${issueId}`, { position }),
+  removeFromQueue: (id: string, issueId: string) =>
+    api.delete(`/users/${id}/todo-queue/remove/${issueId}`),
 };
 
 // Projects API

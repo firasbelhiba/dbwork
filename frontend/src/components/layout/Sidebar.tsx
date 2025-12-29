@@ -9,6 +9,7 @@ import { Project } from '@/types/project';
 import { UserRole } from '@/types/user';
 import { useAuth } from '@/contexts/AuthContext';
 import { ChangelogModal } from '@/components/changelog';
+import { TodoQueueWidget } from '@/components/sidebar/TodoQueueWidget';
 
 interface NavItem {
   name: string;
@@ -246,6 +247,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) =
           )}
 
         </div>
+
+        {/* Todo Queue Widget */}
+        {!isCollapsed && <TodoQueueWidget />}
 
         {/* Projects section */}
         {!isCollapsed && (

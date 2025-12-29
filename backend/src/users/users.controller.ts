@@ -22,7 +22,7 @@ import {
   ApiConsumes,
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { CreateUserDto, UpdateUserDto, UpdateNotificationPreferencesDto } from './dto';
+import { CreateUserDto, UpdateUserDto, UpdateNotificationPreferencesDto, UpdateTodoQueueDto, AddToQueueDto } from './dto';
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@auth/guards/roles.guard';
 import { Roles, CurrentUser } from '@common/decorators';
@@ -135,5 +135,58 @@ export class UsersController {
     @Body() updatePreferencesDto: UpdateNotificationPreferencesDto,
   ) {
     return this.usersService.updateNotificationPreferences(id, updatePreferencesDto as any);
+  }
+
+  // ==================== TODO QUEUE ENDPOINTS ====================
+
+  @Get(':id/todo-queue')
+  @ApiOperation({ summary: 'Get user todo queue' })
+  @ApiResponse({ status: 200, description: 'Todo queue retrieved' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  getTodoQueue(@Param('id') id: string) {
+    return this.usersService.getTodoQueue(id);
+  }
+
+  @Get(':id/todo-queue/available')
+  @ApiOperation({ summary: 'Get issues available to add to queue' })
+  @ApiResponse({ status: 200, description: 'Available issues retrieved' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  getAvailableForQueue(@Param('id') id: string) {
+    return this.usersService.getAvailableForQueue(id);
+  }
+
+  @Patch(':id/todo-queue')
+  @ApiOperation({ summary: 'Update todo queue order' })
+  @ApiResponse({ status: 200, description: 'Queue order updated' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  updateTodoQueue(
+    @Param('id') id: string,
+    @Body() updateDto: UpdateTodoQueueDto,
+  ) {
+    return this.usersService.updateTodoQueue(id, updateDto.issueIds);
+  }
+
+  @Post(':id/todo-queue/add/:issueId')
+  @ApiOperation({ summary: 'Add issue to todo queue' })
+  @ApiResponse({ status: 201, description: 'Issue added to queue' })
+  @ApiResponse({ status: 400, description: 'Issue not found or not assigned' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  addToQueue(
+    @Param('id') id: string,
+    @Param('issueId') issueId: string,
+    @Body() addDto: AddToQueueDto,
+  ) {
+    return this.usersService.addToQueue(id, issueId, addDto.position);
+  }
+
+  @Delete(':id/todo-queue/remove/:issueId')
+  @ApiOperation({ summary: 'Remove issue from todo queue' })
+  @ApiResponse({ status: 200, description: 'Issue removed from queue' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  removeFromQueue(
+    @Param('id') id: string,
+    @Param('issueId') issueId: string,
+  ) {
+    return this.usersService.removeFromQueue(id, issueId);
   }
 }

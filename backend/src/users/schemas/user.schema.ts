@@ -137,6 +137,10 @@ export class User {
   @Prop({ default: null })
   gmailEmail: string;
 
+  // Personal todo queue - ordered list of issue IDs for auto-progression
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Issue' }], default: [] })
+  todoQueue: Types.ObjectId[];
+
   // Google Calendar integration
   @Prop({ type: Object, default: {
     isConnected: false,

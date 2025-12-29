@@ -427,6 +427,23 @@ export class IssuesService {
           }
         }
 
+        // Auto-progress to next queued ticket when moving to done or in_review
+        if (changes.status.to === 'done' || changes.status.to === 'in_review') {
+          if (issue.assignees && Array.isArray(issue.assignees)) {
+            for (const assignee of issue.assignees) {
+              const assigneeId = typeof assignee === 'object' && assignee !== null
+                ? (assignee as any)._id.toString()
+                : String(assignee);
+
+              try {
+                await this.progressToNextQueuedTicket(assigneeId, id);
+              } catch (error) {
+                console.error(`[TODO_QUEUE] Error progressing to next ticket for user ${assigneeId}:`, error);
+              }
+            }
+          }
+        }
+
         // Auto-trigger time tracking based on status change
         let timeTrackingModified = false;
 
@@ -1386,5 +1403,85 @@ export class IssuesService {
       tickets,
       byDate,
     };
+  }
+
+  /**
+   * Auto-progress to next queued ticket when a ticket is completed
+   * Called when status changes to 'done' or 'in_review'
+   */
+  private async progressToNextQueuedTicket(userId: string, completedIssueId: string): Promise<void> {
+    const user = await this.userModel.findById(userId).exec();
+    if (!user || !user.todoQueue || user.todoQueue.length === 0) {
+      return;
+    }
+
+    // Remove the completed issue from the queue
+    const updatedQueue = user.todoQueue.filter(
+      id => id.toString() !== completedIssueId
+    );
+
+    // Find the next issue in queue that is in 'todo' status
+    for (const issueId of updatedQueue) {
+      const issue = await this.issueModel.findById(issueId).exec();
+
+      if (!issue) continue;
+      if (issue.isArchived) continue;
+      if (issue.status !== 'todo') continue;
+
+      // Check if this user is still assigned to the issue
+      const isAssigned = issue.assignees.some(
+        a => a.toString() === userId
+      );
+      if (!isAssigned) continue;
+
+      // Found the next ticket - move it to in_progress
+      console.log(`[TODO_QUEUE] Auto-progressing user ${userId} to issue ${issue.key}`);
+
+      // Update the issue status to in_progress
+      await this.issueModel.findByIdAndUpdate(issueId, {
+        status: 'in_progress',
+      });
+
+      // Start the timer for this user
+      try {
+        await this.timeTrackingService.startTimer(issueId.toString(), userId);
+        console.log(`[TODO_QUEUE] Auto-started timer for issue ${issue.key}`);
+      } catch (error) {
+        console.log(`[TODO_QUEUE] Could not auto-start timer: ${error.message}`);
+      }
+
+      // Log the activity
+      await this.activitiesService.logActivity(
+        userId,
+        ActionType.STATUS_CHANGED,
+        EntityType.ISSUE,
+        issueId.toString(),
+        issue.title,
+        issue.projectId?.toString(),
+        {
+          issueKey: issue.key,
+          from: 'todo',
+          to: 'in_progress',
+          autoProgressed: true,
+        },
+      );
+
+      // Send notification to the user
+      await this.notificationsService.create({
+        userId,
+        type: 'issue_status_changed' as any,
+        title: 'Next ticket started automatically',
+        message: `Your next queued ticket ${issue.key} has been moved to In Progress`,
+        link: `/issues/${issue.key}`,
+        metadata: { issueKey: issue.key, autoProgressed: true },
+      });
+
+      break; // Only progress to one ticket
+    }
+
+    // Update the user's queue (remove completed issue)
+    await this.userModel.findByIdAndUpdate(userId, {
+      todoQueue: updatedQueue,
+    });
   }
 }
