@@ -22,40 +22,14 @@ interface NotificationData {
   createdAt: string;
 }
 
-// Notification sound utility - WhatsApp style double beep
+// Notification sound utility - plays MP3 file
 const playNotificationSound = () => {
   try {
-    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContext) return;
-
-    const audioContext = new AudioContext();
-    const now = audioContext.currentTime;
-
-    // First beep
-    const osc1 = audioContext.createOscillator();
-    const gain1 = audioContext.createGain();
-    osc1.connect(gain1);
-    gain1.connect(audioContext.destination);
-    osc1.frequency.setValueAtTime(1200, now);
-    osc1.type = 'sine';
-    gain1.gain.setValueAtTime(0, now);
-    gain1.gain.linearRampToValueAtTime(0.25, now + 0.01);
-    gain1.gain.linearRampToValueAtTime(0, now + 0.08);
-    osc1.start(now);
-    osc1.stop(now + 0.1);
-
-    // Second beep (slightly higher pitch)
-    const osc2 = audioContext.createOscillator();
-    const gain2 = audioContext.createGain();
-    osc2.connect(gain2);
-    gain2.connect(audioContext.destination);
-    osc2.frequency.setValueAtTime(1400, now + 0.12);
-    osc2.type = 'sine';
-    gain2.gain.setValueAtTime(0, now + 0.12);
-    gain2.gain.linearRampToValueAtTime(0.25, now + 0.13);
-    gain2.gain.linearRampToValueAtTime(0, now + 0.2);
-    osc2.start(now + 0.12);
-    osc2.stop(now + 0.22);
+    const audio = new Audio('/sounds/notification.mp3');
+    audio.volume = 0.5;
+    audio.play().catch(error => {
+      console.warn('Could not play notification sound:', error);
+    });
   } catch (error) {
     console.warn('Could not play notification sound:', error);
   }
