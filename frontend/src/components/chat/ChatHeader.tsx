@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Conversation, ConversationType } from '@/types/chat';
+import { Conversation } from '@/types/chat';
 import { User } from '@/types/user';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -18,24 +18,36 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 }) => {
   const { user: currentUser } = useAuth();
 
+  // Helper to check conversation type (handles both enum and string from API)
+  const isDirectConversation = conversation.type === 'direct';
+  const isProjectConversation = conversation.type === 'project';
+
   // Get the other user in a DM conversation
   const getOtherUser = (): User | null => {
-    if (conversation.type !== ConversationType.DIRECT) return null;
-    return conversation.participants.find(p => p._id !== currentUser?._id) || null;
+    if (!isDirectConversation) return null;
+    const other = conversation.participants.find(p => p._id !== currentUser?._id);
+    // Ensure we have a populated user object, not just an ID
+    if (other && typeof other === 'object' && other.firstName) {
+      return other;
+    }
+    return null;
   };
 
   // Get conversation display name
   const getDisplayName = (): string => {
-    if (conversation.type === ConversationType.PROJECT) {
+    if (isProjectConversation) {
       return conversation.name || 'Project Chat';
     }
     const otherUser = getOtherUser();
-    return otherUser ? `${otherUser.firstName} ${otherUser.lastName}` : 'Unknown User';
+    if (otherUser && otherUser.firstName) {
+      return `${otherUser.firstName} ${otherUser.lastName || ''}`.trim();
+    }
+    return 'Unknown User';
   };
 
   // Get avatar
   const getAvatar = () => {
-    if (conversation.type === ConversationType.PROJECT) {
+    if (isProjectConversation) {
       return (
         <div className="w-10 h-10 rounded-full bg-primary-500 text-white flex items-center justify-center font-medium">
           {(conversation.name || 'P').charAt(0).toUpperCase()}
@@ -61,7 +73,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 
   // Get subtitle
   const getSubtitle = (): string => {
-    if (conversation.type === ConversationType.PROJECT) {
+    if (isProjectConversation) {
       return `${conversation.participants.length} members`;
     }
     const otherUser = getOtherUser();

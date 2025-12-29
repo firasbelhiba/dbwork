@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { format } from 'date-fns';
-import { ChatMessage, MessageType, MessageAttachment } from '@/types/chat';
+import { ChatMessage, MessageAttachment } from '@/types/chat';
 import { User } from '@/types/user';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -26,8 +26,10 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   const [showReactionPicker, setShowReactionPicker] = useState(false);
 
   const sender = message.senderId as User;
-  const isOwnMessage = sender._id === currentUser?._id;
-  const isSystemMessage = message.type === MessageType.SYSTEM;
+  const isOwnMessage = sender?._id === currentUser?._id;
+  const isSystemMessage = message.type === 'system';
+  const senderName = sender?.firstName || 'Unknown';
+  const senderLastName = sender?.lastName || '';
 
   // Reaction emojis
   const reactions = ['', '', '', '', '', ''];
@@ -115,15 +117,15 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       {/* Avatar */}
       {!isOwnMessage && (
         <div className="flex-shrink-0">
-          {sender.avatar ? (
+          {sender?.avatar ? (
             <img
               src={sender.avatar}
-              alt={sender.firstName}
+              alt={senderName}
               className="w-8 h-8 rounded-full object-cover"
             />
           ) : (
             <div className="w-8 h-8 rounded-full bg-gray-400 text-white flex items-center justify-center text-sm font-medium">
-              {sender.firstName?.charAt(0).toUpperCase()}
+              {senderName.charAt(0).toUpperCase()}
             </div>
           )}
         </div>
@@ -134,7 +136,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         {/* Sender name for non-own messages */}
         {!isOwnMessage && (
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-            {sender.firstName} {sender.lastName}
+            {senderName} {senderLastName}
           </p>
         )}
 
@@ -142,7 +144,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         {message.replyTo && typeof message.replyTo !== 'string' && (
           <div className="mb-1 p-2 rounded-lg bg-gray-100 dark:bg-dark-400 border-l-2 border-primary-500">
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Reply to {(message.replyTo.senderId as User).firstName}
+              Reply to {(message.replyTo.senderId as User)?.firstName || 'Unknown'}
             </p>
             <p className="text-xs text-gray-600 dark:text-gray-300 truncate">
               {message.replyTo.content}

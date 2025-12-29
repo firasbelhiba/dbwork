@@ -5,12 +5,18 @@ export enum ConversationType {
   PROJECT = 'project',
 }
 
+// Type alias that accepts both enum values and string literals from API
+export type ConversationTypeValue = ConversationType | 'direct' | 'project';
+
 export enum MessageType {
   TEXT = 'text',
   FILE = 'file',
   IMAGE = 'image',
   SYSTEM = 'system',
 }
+
+// Type alias that accepts both enum values and string literals from API
+export type MessageTypeValue = MessageType | 'text' | 'file' | 'image' | 'system';
 
 export interface MessageAttachment {
   url: string;
@@ -36,7 +42,7 @@ export interface ChatMessage {
   _id: string;
   conversationId: string;
   senderId: User | string;
-  type: MessageType;
+  type: MessageTypeValue;  // Accept both enum and string from API
   content: string;
   attachments: MessageAttachment[];
   mentions: User[] | string[];
@@ -52,7 +58,7 @@ export interface ChatMessage {
 
 export interface Conversation {
   _id: string;
-  type: ConversationType;
+  type: ConversationTypeValue;  // Accept both enum and string from API
   name?: string;
   projectId?: string;
   participants: User[];
