@@ -212,24 +212,50 @@ export class IssuesService {
   }
 
   async findOne(id: string): Promise<any> {
-    const issue = await this.issueModel
-      .findById(id)
-      .populate({ path: 'assignees', select: 'firstName lastName email avatar role', model: 'User' })
-      .populate({ path: 'reporter', select: 'firstName lastName email avatar role', model: 'User' })
-      .populate({
-        path: 'projectId',
-        select: 'name key description members',
-        populate: {
-          path: 'members.userId',
-          select: 'firstName lastName email avatar'
-        }
-      })
-      .populate('sprintId', 'name status startDate endDate')
-      .populate({ path: 'watchers', select: 'firstName lastName email avatar', model: 'User' })
-      .populate('blockedBy', 'key title status')
-      .populate('blocks', 'key title status')
-      .populate('parentIssue', 'key title status')
-      .exec();
+    // Check if id is a valid MongoDB ObjectId or an issue key (e.g., "MKT-4")
+    const isObjectId = Types.ObjectId.isValid(id) && new Types.ObjectId(id).toString() === id;
+
+    let issue;
+    if (isObjectId) {
+      issue = await this.issueModel
+        .findById(id)
+        .populate({ path: 'assignees', select: 'firstName lastName email avatar role', model: 'User' })
+        .populate({ path: 'reporter', select: 'firstName lastName email avatar role', model: 'User' })
+        .populate({
+          path: 'projectId',
+          select: 'name key description members',
+          populate: {
+            path: 'members.userId',
+            select: 'firstName lastName email avatar'
+          }
+        })
+        .populate('sprintId', 'name status startDate endDate')
+        .populate({ path: 'watchers', select: 'firstName lastName email avatar', model: 'User' })
+        .populate('blockedBy', 'key title status')
+        .populate('blocks', 'key title status')
+        .populate('parentIssue', 'key title status')
+        .exec();
+    } else {
+      // Assume it's an issue key like "MKT-4"
+      issue = await this.issueModel
+        .findOne({ key: id.toUpperCase() })
+        .populate({ path: 'assignees', select: 'firstName lastName email avatar role', model: 'User' })
+        .populate({ path: 'reporter', select: 'firstName lastName email avatar role', model: 'User' })
+        .populate({
+          path: 'projectId',
+          select: 'name key description members',
+          populate: {
+            path: 'members.userId',
+            select: 'firstName lastName email avatar'
+          }
+        })
+        .populate('sprintId', 'name status startDate endDate')
+        .populate({ path: 'watchers', select: 'firstName lastName email avatar', model: 'User' })
+        .populate('blockedBy', 'key title status')
+        .populate('blocks', 'key title status')
+        .populate('parentIssue', 'key title status')
+        .exec();
+    }
 
     if (!issue) {
       throw new NotFoundException('Issue not found');
