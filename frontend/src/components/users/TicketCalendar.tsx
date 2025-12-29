@@ -342,7 +342,7 @@ export const TicketCalendar: React.FC<TicketCalendarProps> = ({ userId }) => {
       )}
 
       {/* Day Detail Modal */}
-      {selectedDayTickets && selectedDayDate && (
+      {selectedDayTickets && selectedDayDate && typeof document !== 'undefined' && createPortal(
         <>
           <div
             className="fixed inset-0 bg-black/50 z-[102]"
@@ -434,7 +434,8 @@ export const TicketCalendar: React.FC<TicketCalendarProps> = ({ userId }) => {
               </div>
             </div>
           </div>
-        </>
+        </>,
+        document.body
       )}
     </div>
   );
