@@ -16,7 +16,7 @@ import { AdminModule } from '../admin/admin.module';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Issue.name, schema: IssueSchema }]),
-    UsersModule, // UsersModule exports MongooseModule with User model
+    forwardRef(() => UsersModule), // Use forwardRef to avoid circular dependency
     ActivitiesModule,
     NotificationsModule,
     AchievementsModule,
