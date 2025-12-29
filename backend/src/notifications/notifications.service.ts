@@ -78,7 +78,7 @@ export class NotificationsService {
     const notifications = await this.notificationModel
       .find(query)
       .sort({ createdAt: -1 })
-      .limit(50)
+      .limit(200)
       .exec();
 
     console.log(`[NotificationsService] Found ${notifications.length} notifications`);
