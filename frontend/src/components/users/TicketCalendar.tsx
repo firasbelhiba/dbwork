@@ -14,6 +14,8 @@ interface CalendarTicket {
   type: string;
   isStartDate: boolean;
   isDueDate: boolean;
+  projectKey: string;
+  projectLogo: string | null;
 }
 
 interface TicketCalendarProps {
@@ -215,11 +217,37 @@ export const TicketCalendar: React.FC<TicketCalendarProps> = ({ userId }) => {
               >
                 <span className={expanded ? 'absolute top-2 left-2' : ''}>{day}</span>
 
-                {/* Ticket count indicator */}
+                {/* Compact view - show project logos */}
                 {hasTickets && !expanded && (
-                  <span className="absolute bottom-0.5 right-0.5 flex items-center justify-center w-4 h-4 text-[10px] bg-primary-500 text-white rounded-full">
-                    {tickets.length}
-                  </span>
+                  <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-0.5 pb-0.5">
+                    {/* Show unique project logos (max 3) */}
+                    {Array.from(new Map(tickets.map(t => [t.projectKey, t])).values())
+                      .slice(0, 3)
+                      .map((ticket) => (
+                        ticket.projectLogo ? (
+                          <img
+                            key={ticket.projectKey}
+                            src={ticket.projectLogo}
+                            alt={ticket.projectKey}
+                            className="w-3 h-3 rounded-sm object-cover"
+                            title={ticket.projectKey}
+                          />
+                        ) : (
+                          <div
+                            key={ticket.projectKey}
+                            className="w-3 h-3 rounded-sm bg-primary-500 flex items-center justify-center"
+                            title={ticket.projectKey}
+                          >
+                            <span className="text-[6px] font-bold text-white">
+                              {ticket.projectKey.charAt(0)}
+                            </span>
+                          </div>
+                        )
+                      ))}
+                    {tickets.length > 3 && (
+                      <span className="text-[8px] text-gray-500">+</span>
+                    )}
+                  </div>
                 )}
 
                 {/* Expanded view - show ticket previews */}
@@ -228,13 +256,20 @@ export const TicketCalendar: React.FC<TicketCalendarProps> = ({ userId }) => {
                     {tickets.slice(0, 3).map((ticket) => (
                       <div
                         key={ticket._id}
-                        className={`text-[10px] px-1 py-0.5 rounded truncate ${
+                        className={`flex items-center gap-1 text-[10px] px-1 py-0.5 rounded truncate ${
                           ticket.isDueDate ? 'bg-danger-100 dark:bg-danger-900/30 text-danger-700 dark:text-danger-300' :
                           'bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-300'
                         }`}
                         title={`${ticket.key}: ${ticket.title}`}
                       >
-                        {ticket.key}
+                        {ticket.projectLogo ? (
+                          <img src={ticket.projectLogo} alt="" className="w-3 h-3 rounded-sm object-cover flex-shrink-0" />
+                        ) : (
+                          <span className="w-3 h-3 rounded-sm bg-primary-500 text-white text-[6px] flex items-center justify-center flex-shrink-0">
+                            {ticket.projectKey.charAt(0)}
+                          </span>
+                        )}
+                        <span className="truncate">{ticket.key}</span>
                       </div>
                     ))}
                     {tickets.length > 3 && (
@@ -245,9 +280,9 @@ export const TicketCalendar: React.FC<TicketCalendarProps> = ({ userId }) => {
                   </div>
                 )}
 
-                {/* Compact view - colored dots for due/start */}
+                {/* Compact view - colored dots for due/start (top right corner) */}
                 {!expanded && hasTickets && (
-                  <div className="absolute bottom-0.5 left-0.5 flex gap-0.5">
+                  <div className="absolute top-0 right-0 flex gap-0.5 p-0.5">
                     {hasStart && <div className="w-1.5 h-1.5 rounded-full bg-success-500" title="Start date" />}
                     {hasDue && <div className="w-1.5 h-1.5 rounded-full bg-danger-500" title="Due date" />}
                   </div>
@@ -351,9 +386,21 @@ export const TicketCalendar: React.FC<TicketCalendarProps> = ({ userId }) => {
                     }}
                     className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-300 transition-colors border border-gray-200 dark:border-dark-200"
                   >
-                    {/* Type icon */}
+                    {/* Project logo */}
                     <div className="flex-shrink-0">
-                      {typeIcons[ticket.type] || typeIcons.task}
+                      {ticket.projectLogo ? (
+                        <img
+                          src={ticket.projectLogo}
+                          alt={ticket.projectKey}
+                          className="w-8 h-8 rounded object-cover"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                          <span className="text-xs font-bold text-primary-600 dark:text-primary-400">
+                            {ticket.projectKey.charAt(0)}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Ticket info */}

@@ -1219,6 +1219,7 @@ export class IssuesService {
       dueDate: string | null;
       projectKey: string;
       projectName: string;
+      projectLogo: string | null;
     }>;
     byDate: Record<string, Array<{
       _id: string;
@@ -1229,6 +1230,8 @@ export class IssuesService {
       type: string;
       isStartDate: boolean;
       isDueDate: boolean;
+      projectKey: string;
+      projectLogo: string | null;
     }>>;
   }> {
     // Calculate date range for the month (with some buffer for spanning tickets)
@@ -1252,7 +1255,7 @@ export class IssuesService {
           },
         ],
       })
-      .populate('projectId', 'name key')
+      .populate('projectId', 'name key logo')
       .select('key title status priority type startDate dueDate projectId')
       .sort({ startDate: 1, dueDate: 1 })
       .exec();
@@ -1271,6 +1274,7 @@ export class IssuesService {
         dueDate: issue.dueDate ? issue.dueDate.toISOString() : null,
         projectKey: project?.key || 'UNK',
         projectName: project?.name || 'Unknown Project',
+        projectLogo: project?.logo || null,
       };
     });
 
@@ -1284,6 +1288,8 @@ export class IssuesService {
       type: string;
       isStartDate: boolean;
       isDueDate: boolean;
+      projectKey: string;
+      projectLogo: string | null;
     }>> = {};
 
     for (const issue of issues) {
@@ -1297,6 +1303,8 @@ export class IssuesService {
         type: issue.type,
         isStartDate: false,
         isDueDate: false,
+        projectKey: project?.key || 'UNK',
+        projectLogo: project?.logo || null,
       };
 
       // Add to startDate
