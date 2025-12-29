@@ -12,11 +12,14 @@ interface OvertimeTicket {
   loggedHours: number;
 }
 
-// Format hours like kanban display (e.g., "48:19" for 48 hours 19 minutes)
+// Format hours in a human-readable way (e.g., "48 hours and 19 minutes")
 const formatHours = (hours: number): string => {
   const h = Math.floor(hours);
   const m = Math.floor((hours - h) * 60);
-  return `${h}:${m.toString().padStart(2, '0')}`;
+  if (m === 0) {
+    return `${h} hour${h !== 1 ? 's' : ''}`;
+  }
+  return `${h} hour${h !== 1 ? 's' : ''} and ${m} minute${m !== 1 ? 's' : ''}`;
 };
 
 export const WorkloadWarningBanner: React.FC = () => {
