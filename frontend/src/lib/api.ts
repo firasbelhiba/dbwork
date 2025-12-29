@@ -158,6 +158,8 @@ export const issuesAPI = {
   },
   getUserWorkload: (userId: string) => api.get(`/issues/user/${userId}/workload`),
   getUserBandwidth: (userId: string) => api.get(`/issues/user/${userId}/bandwidth`),
+  getUserCalendar: (userId: string, year: number, month: number) =>
+    api.get(`/issues/user/${userId}/calendar?year=${year}&month=${month}`),
   create: (data: any) => api.post('/issues', data),
   update: (id: string, data: any) => api.patch(`/issues/${id}`, data),
   delete: (id: string) => api.delete(`/issues/${id}`),

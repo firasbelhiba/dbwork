@@ -1202,4 +1202,137 @@ export class IssuesService {
       activeTimer: activeTimerInfo,
     };
   }
+
+  /**
+   * Get user's tickets for calendar display
+   * Returns tickets grouped by date based on startDate and dueDate
+   */
+  async getUserCalendarTickets(userId: string, year: number, month: number): Promise<{
+    tickets: Array<{
+      _id: string;
+      key: string;
+      title: string;
+      status: string;
+      priority: string;
+      type: string;
+      startDate: string | null;
+      dueDate: string | null;
+      projectKey: string;
+      projectName: string;
+    }>;
+    byDate: Record<string, Array<{
+      _id: string;
+      key: string;
+      title: string;
+      status: string;
+      priority: string;
+      type: string;
+      isStartDate: boolean;
+      isDueDate: boolean;
+    }>>;
+  }> {
+    // Calculate date range for the month (with some buffer for spanning tickets)
+    const startOfMonth = new Date(year, month - 1, 1);
+    const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999);
+
+    // Find all tickets assigned to this user that have dates within or spanning this month
+    const issues = await this.issueModel
+      .find({
+        assignees: new Types.ObjectId(userId),
+        isArchived: { $ne: true },
+        $or: [
+          // Tickets with startDate in this month
+          { startDate: { $gte: startOfMonth, $lte: endOfMonth } },
+          // Tickets with dueDate in this month
+          { dueDate: { $gte: startOfMonth, $lte: endOfMonth } },
+          // Tickets that span across this month (start before, due after)
+          {
+            startDate: { $lt: startOfMonth },
+            dueDate: { $gt: endOfMonth },
+          },
+        ],
+      })
+      .populate('projectId', 'name key')
+      .select('key title status priority type startDate dueDate projectId')
+      .sort({ startDate: 1, dueDate: 1 })
+      .exec();
+
+    // Format tickets array
+    const tickets = issues.map(issue => {
+      const project = issue.projectId as any;
+      return {
+        _id: issue._id.toString(),
+        key: issue.key,
+        title: issue.title,
+        status: issue.status,
+        priority: issue.priority,
+        type: issue.type,
+        startDate: issue.startDate ? issue.startDate.toISOString() : null,
+        dueDate: issue.dueDate ? issue.dueDate.toISOString() : null,
+        projectKey: project?.key || 'UNK',
+        projectName: project?.name || 'Unknown Project',
+      };
+    });
+
+    // Group by date
+    const byDate: Record<string, Array<{
+      _id: string;
+      key: string;
+      title: string;
+      status: string;
+      priority: string;
+      type: string;
+      isStartDate: boolean;
+      isDueDate: boolean;
+    }>> = {};
+
+    for (const issue of issues) {
+      const project = issue.projectId as any;
+      const ticketInfo = {
+        _id: issue._id.toString(),
+        key: issue.key,
+        title: issue.title,
+        status: issue.status,
+        priority: issue.priority,
+        type: issue.type,
+        isStartDate: false,
+        isDueDate: false,
+      };
+
+      // Add to startDate
+      if (issue.startDate) {
+        const startDateStr = issue.startDate.toISOString().split('T')[0];
+        if (!byDate[startDateStr]) {
+          byDate[startDateStr] = [];
+        }
+        // Check if ticket already exists for this date
+        const existing = byDate[startDateStr].find(t => t._id === ticketInfo._id);
+        if (existing) {
+          existing.isStartDate = true;
+        } else {
+          byDate[startDateStr].push({ ...ticketInfo, isStartDate: true });
+        }
+      }
+
+      // Add to dueDate
+      if (issue.dueDate) {
+        const dueDateStr = issue.dueDate.toISOString().split('T')[0];
+        if (!byDate[dueDateStr]) {
+          byDate[dueDateStr] = [];
+        }
+        // Check if ticket already exists for this date (might be same as startDate)
+        const existing = byDate[dueDateStr].find(t => t._id === ticketInfo._id);
+        if (existing) {
+          existing.isDueDate = true;
+        } else {
+          byDate[dueDateStr].push({ ...ticketInfo, isDueDate: true });
+        }
+      }
+    }
+
+    return {
+      tickets,
+      byDate,
+    };
+  }
 }

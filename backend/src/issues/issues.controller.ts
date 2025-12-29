@@ -68,6 +68,21 @@ export class IssuesController {
     return this.issuesService.getUserBandwidth(userId);
   }
 
+  @Get('user/:userId/calendar')
+  @ApiOperation({ summary: 'Get user tickets for calendar view (by start/due date)' })
+  @ApiResponse({ status: 200, description: 'User tickets grouped by date for calendar display' })
+  getUserCalendar(
+    @Param('userId') userId: string,
+    @Query('year') year: string,
+    @Query('month') month: string,
+  ) {
+    return this.issuesService.getUserCalendarTickets(
+      userId,
+      parseInt(year),
+      parseInt(month),
+    );
+  }
+
   @Get('project/:projectId')
   @ApiOperation({ summary: 'Get issues by project' })
   @ApiResponse({ status: 200, description: 'Project issues' })
