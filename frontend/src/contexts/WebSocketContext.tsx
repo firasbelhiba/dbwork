@@ -22,36 +22,40 @@ interface NotificationData {
   createdAt: string;
 }
 
-// Notification sound utility
+// Notification sound utility - WhatsApp style double beep
 const playNotificationSound = () => {
   try {
-    // Create audio context for notification sound
     const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioContext) return;
 
     const audioContext = new AudioContext();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
+    const now = audioContext.currentTime;
 
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+    // First beep
+    const osc1 = audioContext.createOscillator();
+    const gain1 = audioContext.createGain();
+    osc1.connect(gain1);
+    gain1.connect(audioContext.destination);
+    osc1.frequency.setValueAtTime(1200, now);
+    osc1.type = 'sine';
+    gain1.gain.setValueAtTime(0, now);
+    gain1.gain.linearRampToValueAtTime(0.25, now + 0.01);
+    gain1.gain.linearRampToValueAtTime(0, now + 0.08);
+    osc1.start(now);
+    osc1.stop(now + 0.1);
 
-    // Pleasant notification tone (similar to social media)
-    oscillator.frequency.setValueAtTime(880, audioContext.currentTime); // A5 note
-    oscillator.frequency.setValueAtTime(1100, audioContext.currentTime + 0.1); // C#6 note
-    oscillator.frequency.setValueAtTime(880, audioContext.currentTime + 0.2); // Back to A5
-
-    oscillator.type = 'sine';
-
-    // Volume envelope
-    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.02);
-    gainNode.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.1);
-    gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.12);
-    gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3);
-
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.3);
+    // Second beep (slightly higher pitch)
+    const osc2 = audioContext.createOscillator();
+    const gain2 = audioContext.createGain();
+    osc2.connect(gain2);
+    gain2.connect(audioContext.destination);
+    osc2.frequency.setValueAtTime(1400, now + 0.12);
+    osc2.type = 'sine';
+    gain2.gain.setValueAtTime(0, now + 0.12);
+    gain2.gain.linearRampToValueAtTime(0.25, now + 0.13);
+    gain2.gain.linearRampToValueAtTime(0, now + 0.2);
+    osc2.start(now + 0.12);
+    osc2.stop(now + 0.22);
   } catch (error) {
     console.warn('Could not play notification sound:', error);
   }
