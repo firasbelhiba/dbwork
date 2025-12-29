@@ -467,8 +467,8 @@ export class IssuesService {
           }
         }
 
-        // Pause timer when moving AWAY from in_progress (but not to done)
-        if (changes.status.from === 'in_progress' && changes.status.to !== 'in_progress' && changes.status.to !== 'done') {
+        // Pause timer when moving AWAY from in_progress (but not to done or in_review)
+        if (changes.status.from === 'in_progress' && changes.status.to !== 'in_progress' && changes.status.to !== 'done' && changes.status.to !== 'in_review') {
           try {
             await this.timeTrackingService.pauseTimer(id, userId);
             console.log(`[TIME_TRACKING] Auto-paused timer for issue ${id}`);
@@ -479,15 +479,15 @@ export class IssuesService {
           }
         }
 
-        // Pause timer when moving to done (instead of stopping, so it can be resumed if moved back)
-        if (changes.status.to === 'done') {
+        // Stop timer when moving to done or in_review (commits time to totalTimeSpent)
+        if (changes.status.to === 'done' || changes.status.to === 'in_review') {
           try {
-            await this.timeTrackingService.pauseTimer(id, userId);
-            console.log(`[TIME_TRACKING] Auto-paused timer for completed issue ${id}`);
+            await this.timeTrackingService.stopTimer(id, userId);
+            console.log(`[TIME_TRACKING] Auto-stopped timer for completed issue ${id}`);
             timeTrackingModified = true;
           } catch (error) {
-            // Timer might not be running or already paused, that's okay
-            console.log(`[TIME_TRACKING] Could not auto-pause timer: ${error.message}`);
+            // Timer might not be running or already stopped, that's okay
+            console.log(`[TIME_TRACKING] Could not auto-stop timer: ${error.message}`);
           }
         }
 
