@@ -366,7 +366,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) =
         {/* Version Display */}
         {!isCollapsed && (
           <div className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400 text-center">
-            Version 1.3.2
+            Version 1.4.0
           </div>
         )}
       </div>
