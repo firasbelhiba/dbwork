@@ -444,4 +444,51 @@ export const auditsAPI = {
   },
 };
 
+// Chat API
+export const chatAPI = {
+  // Conversations
+  getConversations: () => api.get('/chat/conversations'),
+  getConversation: (id: string) => api.get(`/chat/conversations/${id}`),
+  createOrGetDM: (userId: string) => api.post(`/chat/conversations/dm/${userId}`),
+  getProjectConversation: (projectId: string) => api.get(`/chat/conversations/project/${projectId}`),
+
+  // Messages
+  getMessages: (conversationId: string, params?: { limit?: number; before?: string; after?: string }) =>
+    api.get(`/chat/conversations/${conversationId}/messages`, { params }),
+  sendMessage: (conversationId: string, data: { content: string; replyTo?: string; mentions?: string[] }) =>
+    api.post(`/chat/conversations/${conversationId}/messages`, data),
+  sendMessageWithAttachments: (conversationId: string, data: { content?: string; files: File[]; replyTo?: string; mentions?: string[] }) => {
+    const formData = new FormData();
+    if (data.content) formData.append('content', data.content);
+    if (data.replyTo) formData.append('replyTo', data.replyTo);
+    if (data.mentions) formData.append('mentions', JSON.stringify(data.mentions));
+    data.files.forEach(file => formData.append('files', file));
+    return api.post(`/chat/conversations/${conversationId}/messages/with-attachments`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  updateMessage: (messageId: string, content: string) => api.patch(`/chat/messages/${messageId}`, { content }),
+  deleteMessage: (messageId: string) => api.delete(`/chat/messages/${messageId}`),
+
+  // Read receipts
+  markAsRead: (conversationId: string) => api.post(`/chat/conversations/${conversationId}/read`),
+  getUnreadCount: () => api.get('/chat/unread-count'),
+
+  // File uploads
+  uploadFile: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/chat/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+
+  // Reactions
+  addReaction: (messageId: string, reaction: string) => api.post(`/chat/messages/${messageId}/reactions`, { reaction }),
+  removeReaction: (messageId: string) => api.delete(`/chat/messages/${messageId}/reactions`),
+
+  // Search
+  searchMessages: (query: string) => api.get('/chat/search', { params: { q: query } }),
+};
+
 export default api;

@@ -211,6 +211,53 @@ export class AppWebSocketGateway
     return { event: 'left:issue', data: { issueId } };
   }
 
+  // ==================== CHAT ROOM HANDLERS ====================
+
+  @SubscribeMessage('chat:join')
+  handleJoinChat(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() conversationId: string,
+  ) {
+    const room = `chat:${conversationId}`;
+    if (this.isInRoom(client.id, room)) {
+      return { event: 'joined:chat', data: { conversationId } };
+    }
+    client.join(room);
+    this.addToRoom(client.id, room);
+    console.log(`User ${client.userId} joined chat:${conversationId}`);
+    return { event: 'joined:chat', data: { conversationId } };
+  }
+
+  @SubscribeMessage('chat:leave')
+  handleLeaveChat(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() conversationId: string,
+  ) {
+    const room = `chat:${conversationId}`;
+    if (!this.isInRoom(client.id, room)) {
+      return { event: 'left:chat', data: { conversationId } };
+    }
+    client.leave(room);
+    this.removeFromRoom(client.id, room);
+    console.log(`User ${client.userId} left chat:${conversationId}`);
+    return { event: 'left:chat', data: { conversationId } };
+  }
+
+  @SubscribeMessage('chat:typing')
+  handleChatTyping(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() data: { conversationId: string; isTyping: boolean },
+  ) {
+    const room = `chat:${data.conversationId}`;
+    // Broadcast to others in the room (not to sender)
+    client.to(room).emit('chat:typing', {
+      conversationId: data.conversationId,
+      userId: client.userId,
+      isTyping: data.isTyping,
+    });
+    return { event: 'chat:typing:ack', data: { success: true } };
+  }
+
   // Emit methods to be called from services
 
   emitIssueCreated(projectId: string, issue: any) {
@@ -367,5 +414,29 @@ export class AppWebSocketGateway
   // Get online user IDs (for REST API)
   getOnlineUserIds(): string[] {
     return Array.from(this.connectedUsers.keys());
+  }
+
+  // ==================== CHAT EMIT METHODS ====================
+
+  emitChatMessage(conversationId: string, message: any) {
+    this.server.to(`chat:${conversationId}`).emit('chat:message', message);
+    // Also emit to user rooms for participants who may not be in the conversation room
+    // This ensures they get notified even if they're not actively viewing the conversation
+  }
+
+  emitChatMessageUpdated(conversationId: string, message: any) {
+    this.server.to(`chat:${conversationId}`).emit('chat:message:updated', message);
+  }
+
+  emitChatMessageDeleted(conversationId: string, messageId: string) {
+    this.server.to(`chat:${conversationId}`).emit('chat:message:deleted', { messageId });
+  }
+
+  emitChatRead(conversationId: string, userId: string, readAt: Date) {
+    this.server.to(`chat:${conversationId}`).emit('chat:read', { conversationId, userId, readAt });
+  }
+
+  emitChatConversationUpdated(conversationId: string, conversation: any) {
+    this.server.to(`chat:${conversationId}`).emit('chat:conversation:updated', conversation);
   }
 }

@@ -17,6 +17,7 @@ import { ActionType, EntityType } from '../activities/schemas/activity.schema';
 import { NotificationsService } from '../notifications/notifications.service';
 import { AchievementsService } from '../achievements/achievements.service';
 import { GoogleCalendarService } from '../google-calendar/google-calendar.service';
+import { ChatService } from '../chat/chat.service';
 import { getCloudinary } from '../attachments/cloudinary.config';
 
 @Injectable()
@@ -29,6 +30,8 @@ export class ProjectsService {
     private achievementsService: AchievementsService,
     @Inject(forwardRef(() => GoogleCalendarService))
     private googleCalendarService: GoogleCalendarService,
+    @Inject(forwardRef(() => ChatService))
+    private chatService: ChatService,
   ) {}
 
   async create(createProjectDto: CreateProjectDto, userId: string): Promise<ProjectDocument> {
@@ -64,6 +67,18 @@ export class ProjectsService {
       savedProject.name,
       savedProject._id.toString(),
     );
+
+    // Create project group chat conversation
+    try {
+      const memberIds = savedProject.members.map(m => m.userId.toString());
+      await this.chatService.createProjectConversation(
+        savedProject._id.toString(),
+        savedProject.name,
+        memberIds,
+      );
+    } catch (error) {
+      console.error('[ProjectsService] Error creating project chat:', error);
+    }
 
     return savedProject;
   }
@@ -464,6 +479,13 @@ export class ProjectsService {
       console.error('[ACHIEVEMENTS] Error checking project assignment achievements:', error);
     }
 
+    // Add user to project chat conversation
+    try {
+      await this.chatService.addParticipantToProjectChat(projectId, addMemberDto.userId);
+    } catch (error) {
+      console.error('[CHAT] Error adding user to project chat:', error);
+    }
+
     return savedProject;
   }
 
@@ -506,6 +528,13 @@ export class ProjectsService {
       }
     } catch (error) {
       console.error('[NOTIFICATION] Error notifying project member removed:', error);
+    }
+
+    // Remove user from project chat conversation
+    try {
+      await this.chatService.removeParticipantFromProjectChat(projectId, userId);
+    } catch (error) {
+      console.error('[CHAT] Error removing user from project chat:', error);
     }
 
     return savedProject;

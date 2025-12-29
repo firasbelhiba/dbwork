@@ -40,6 +40,28 @@ interface OnlineUsersData {
   userIds: string[];
 }
 
+interface ChatMessageData {
+  _id: string;
+  conversationId: string;
+  senderId: any;
+  content: string;
+  type: string;
+  attachments: any[];
+  createdAt: string;
+}
+
+interface ChatTypingData {
+  conversationId: string;
+  userId: string;
+  isTyping: boolean;
+}
+
+interface ChatReadData {
+  conversationId: string;
+  userId: string;
+  readAt: string;
+}
+
 interface WebSocketContextType {
   socket: Socket | null;
   connected: boolean;
@@ -52,6 +74,15 @@ interface WebSocketContextType {
   joinIssue: (issueId: string) => void;
   leaveIssue: (issueId: string) => void;
   onTimerAutoStopped: (callback: (data: TimerAutoStoppedData) => void) => () => void;
+  // Chat methods
+  joinChat: (conversationId: string) => void;
+  leaveChat: (conversationId: string) => void;
+  sendTypingIndicator: (conversationId: string, isTyping: boolean) => void;
+  onChatMessage: (callback: (data: ChatMessageData) => void) => () => void;
+  onChatMessageUpdated: (callback: (data: ChatMessageData) => void) => () => void;
+  onChatMessageDeleted: (callback: (data: { messageId: string }) => void) => () => void;
+  onChatTyping: (callback: (data: ChatTypingData) => void) => () => void;
+  onChatRead: (callback: (data: ChatReadData) => void) => () => void;
 }
 
 const WebSocketContext = createContext<WebSocketContextType | undefined>(undefined);
@@ -67,6 +98,13 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
   const socketRef = useRef<Socket | null>(null);
   const connectedRef = useRef(false);
   const timerAutoStoppedCallbacksRef = useRef<Set<(data: TimerAutoStoppedData) => void>>(new Set());
+
+  // Chat callback refs
+  const chatMessageCallbacksRef = useRef<Set<(data: ChatMessageData) => void>>(new Set());
+  const chatMessageUpdatedCallbacksRef = useRef<Set<(data: ChatMessageData) => void>>(new Set());
+  const chatMessageDeletedCallbacksRef = useRef<Set<(data: { messageId: string }) => void>>(new Set());
+  const chatTypingCallbacksRef = useRef<Set<(data: ChatTypingData) => void>>(new Set());
+  const chatReadCallbacksRef = useRef<Set<(data: ChatReadData) => void>>(new Set());
 
   // Keep refs in sync with state
   useEffect(() => {
@@ -155,6 +193,30 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
       newSocket.emit('get:online-count');
     });
 
+    // Chat event listeners
+    newSocket.on('chat:message', (data: ChatMessageData) => {
+      console.log('[WebSocket] New chat message:', data);
+      chatMessageCallbacksRef.current.forEach(callback => callback(data));
+    });
+
+    newSocket.on('chat:message:updated', (data: ChatMessageData) => {
+      console.log('[WebSocket] Chat message updated:', data);
+      chatMessageUpdatedCallbacksRef.current.forEach(callback => callback(data));
+    });
+
+    newSocket.on('chat:message:deleted', (data: { messageId: string }) => {
+      console.log('[WebSocket] Chat message deleted:', data);
+      chatMessageDeletedCallbacksRef.current.forEach(callback => callback(data));
+    });
+
+    newSocket.on('chat:typing', (data: ChatTypingData) => {
+      chatTypingCallbacksRef.current.forEach(callback => callback(data));
+    });
+
+    newSocket.on('chat:read', (data: ChatReadData) => {
+      chatReadCallbacksRef.current.forEach(callback => callback(data));
+    });
+
     setSocket(newSocket);
 
     // Cleanup on unmount
@@ -209,6 +271,60 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // Chat methods
+  const joinChat = useCallback((conversationId: string) => {
+    if (socketRef.current && connectedRef.current) {
+      socketRef.current.emit('chat:join', conversationId);
+    }
+  }, []);
+
+  const leaveChat = useCallback((conversationId: string) => {
+    if (socketRef.current && connectedRef.current) {
+      socketRef.current.emit('chat:leave', conversationId);
+    }
+  }, []);
+
+  const sendTypingIndicator = useCallback((conversationId: string, isTyping: boolean) => {
+    if (socketRef.current && connectedRef.current) {
+      socketRef.current.emit('chat:typing', { conversationId, isTyping });
+    }
+  }, []);
+
+  const onChatMessage = useCallback((callback: (data: ChatMessageData) => void) => {
+    chatMessageCallbacksRef.current.add(callback);
+    return () => {
+      chatMessageCallbacksRef.current.delete(callback);
+    };
+  }, []);
+
+  const onChatMessageUpdated = useCallback((callback: (data: ChatMessageData) => void) => {
+    chatMessageUpdatedCallbacksRef.current.add(callback);
+    return () => {
+      chatMessageUpdatedCallbacksRef.current.delete(callback);
+    };
+  }, []);
+
+  const onChatMessageDeleted = useCallback((callback: (data: { messageId: string }) => void) => {
+    chatMessageDeletedCallbacksRef.current.add(callback);
+    return () => {
+      chatMessageDeletedCallbacksRef.current.delete(callback);
+    };
+  }, []);
+
+  const onChatTyping = useCallback((callback: (data: ChatTypingData) => void) => {
+    chatTypingCallbacksRef.current.add(callback);
+    return () => {
+      chatTypingCallbacksRef.current.delete(callback);
+    };
+  }, []);
+
+  const onChatRead = useCallback((callback: (data: ChatReadData) => void) => {
+    chatReadCallbacksRef.current.add(callback);
+    return () => {
+      chatReadCallbacksRef.current.delete(callback);
+    };
+  }, []);
+
   return (
     <WebSocketContext.Provider
       value={{
@@ -223,6 +339,15 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
         joinIssue,
         leaveIssue,
         onTimerAutoStopped,
+        // Chat methods
+        joinChat,
+        leaveChat,
+        sendTypingIndicator,
+        onChatMessage,
+        onChatMessageUpdated,
+        onChatMessageDeleted,
+        onChatTyping,
+        onChatRead,
       }}
     >
       {children}

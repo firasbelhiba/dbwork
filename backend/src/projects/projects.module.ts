@@ -8,6 +8,7 @@ import { ActivitiesModule } from '../activities/activities.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { AchievementsModule } from '../achievements/achievements.module';
 import { GoogleCalendarModule } from '../google-calendar/google-calendar.module';
+import { ChatModule } from '../chat/chat.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { GoogleCalendarModule } from '../google-calendar/google-calendar.module'
     NotificationsModule,
     forwardRef(() => AchievementsModule),
     forwardRef(() => GoogleCalendarModule),
+    forwardRef(() => ChatModule),
   ],
   controllers: [ProjectsController],
   providers: [ProjectsService],
