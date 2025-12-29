@@ -234,9 +234,15 @@ export function TimeTracker({ issueId, timeTracking, onUpdate, hasSubIssues }: T
       return;
     }
 
+    // Validate description is required
+    if (!manualDescription.trim()) {
+      toast.error('Please enter a description');
+      return;
+    }
+
     setSubmittingManual(true);
     try {
-      await issuesAPI.addManualTimeEntry(issueId, totalSeconds, manualDescription || undefined);
+      await issuesAPI.addManualTimeEntry(issueId, totalSeconds, manualDescription.trim());
       toast.success('Time entry added');
       setManualHours('');
       setManualMinutes('');
@@ -516,13 +522,16 @@ export function TimeTracker({ issueId, timeTracking, onUpdate, hasSubIssues }: T
               <p className="text-xs text-red-500 -mt-2">{minutesError}</p>
             )}
             <div>
-              <label className="text-xs text-gray-500 dark:text-gray-400">Description (optional)</label>
+              <label className="text-xs text-gray-500 dark:text-gray-400">
+                Description <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 value={manualDescription}
                 onChange={(e) => setManualDescription(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-dark-400 rounded-lg bg-white dark:bg-dark-500 text-gray-900 dark:text-white text-sm"
                 placeholder="What did you work on?"
+                required
               />
             </div>
             <Button

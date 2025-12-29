@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsOptional, Min } from 'class-validator';
+import { IsString, IsNumber, IsOptional, Min, IsNotEmpty } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class StartTimerDto {
@@ -18,10 +18,10 @@ export class AddManualTimeDto {
   @Min(1)
   duration: number;
 
-  @ApiProperty({ required: false })
-  @IsOptional()
+  @ApiProperty({ description: 'Description of the work done' })
   @IsString()
-  description?: string;
+  @IsNotEmpty({ message: 'Description is required' })
+  description: string;
 }
 
 export class UpdateTimeEntryDto {
