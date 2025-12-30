@@ -169,6 +169,9 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle, onTodoToggle, onCh
             )}
           </button>
 
+          {/* Notifications */}
+          <NotificationBell />
+
           {/* Todo Queue */}
           <button
             onClick={onTodoToggle}
@@ -184,9 +187,6 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle, onTodoToggle, onCh
               </span>
             )}
           </button>
-
-          {/* Notifications */}
-          <NotificationBell />
 
           {/* User menu */}
           <div className="relative">
