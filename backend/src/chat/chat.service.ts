@@ -161,7 +161,17 @@ export class ChatService {
       .sort({ lastMessageAt: -1 })
       .exec();
 
-    return conversations;
+    // Decrypt lastMessage content for each conversation
+    return conversations.map(conv => {
+      const convObj = conv.toObject();
+      const lastMsg = convObj.lastMessage as any;
+      if (lastMsg && lastMsg.content && !lastMsg.isDeleted) {
+        if (EncryptionUtil.isEncrypted(lastMsg.content)) {
+          lastMsg.content = EncryptionUtil.decrypt(lastMsg.content);
+        }
+      }
+      return convObj as ConversationDocument;
+    });
   }
 
   /**
@@ -193,7 +203,15 @@ export class ChatService {
       throw new ForbiddenException('You are not a participant of this conversation');
     }
 
-    return conversation;
+    // Decrypt lastMessage content if present
+    const convObj = conversation.toObject();
+    const lastMsg = convObj.lastMessage as any;
+    if (lastMsg && lastMsg.content && !lastMsg.isDeleted) {
+      if (EncryptionUtil.isEncrypted(lastMsg.content)) {
+        lastMsg.content = EncryptionUtil.decrypt(lastMsg.content);
+      }
+    }
+    return convObj as ConversationDocument;
   }
 
   /**
@@ -265,7 +283,15 @@ export class ChatService {
       throw new ForbiddenException('You are not a member of this project');
     }
 
-    return conversation;
+    // Decrypt lastMessage content if present
+    const convObj = conversation.toObject();
+    const lastMsg = convObj.lastMessage as any;
+    if (lastMsg && lastMsg.content && !lastMsg.isDeleted) {
+      if (EncryptionUtil.isEncrypted(lastMsg.content)) {
+        lastMsg.content = EncryptionUtil.decrypt(lastMsg.content);
+      }
+    }
+    return convObj as ConversationDocument;
   }
 
   /**
