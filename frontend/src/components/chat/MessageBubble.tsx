@@ -132,7 +132,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       )}
 
       {/* Message Content */}
-      <div className={`max-w-[70%] ${isOwnMessage ? 'items-end' : 'items-start'}`}>
+      <div className={`max-w-[70%] flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'}`}>
         {/* Sender name for non-own messages */}
         {!isOwnMessage && (
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
@@ -170,7 +170,78 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           )}
         </div>
 
-        {/* Reactions - displayed below the bubble */}
+        {/* Actions - displayed below the bubble */}
+        {showActions && !message.isDeleted && (
+          <div className={`flex items-center gap-1 mt-1 ${isOwnMessage ? 'justify-end' : ''}`}>
+            {/* Reaction */}
+            <div className="relative">
+              <button
+                onClick={() => setShowReactionPicker(!showReactionPicker)}
+                className="p-1.5 rounded-full bg-gray-100 dark:bg-dark-400 hover:bg-gray-200 dark:hover:bg-dark-300 transition-colors"
+                title="React"
+              >
+                <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </button>
+              {showReactionPicker && (
+                <div className={`absolute bottom-full mb-1 ${isOwnMessage ? 'right-0' : 'left-0'} flex gap-1 p-1.5 bg-white dark:bg-dark-500 rounded-lg shadow-lg border border-gray-200 dark:border-dark-400 z-10`}>
+                  {reactions.map((emoji) => (
+                    <button
+                      key={emoji}
+                      onClick={() => {
+                        onReact?.(message, emoji);
+                        setShowReactionPicker(false);
+                      }}
+                      className="p-1 hover:bg-gray-100 dark:hover:bg-dark-400 rounded transition-colors text-lg"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Reply */}
+            <button
+              onClick={() => onReply?.(message)}
+              className="p-1.5 rounded-full bg-gray-100 dark:bg-dark-400 hover:bg-gray-200 dark:hover:bg-dark-300 transition-colors"
+              title="Reply"
+            >
+              <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+              </svg>
+            </button>
+
+            {/* Edit (own messages only) */}
+            {isOwnMessage && (
+              <button
+                onClick={() => onEdit?.(message)}
+                className="p-1.5 rounded-full bg-gray-100 dark:bg-dark-400 hover:bg-gray-200 dark:hover:bg-dark-300 transition-colors"
+                title="Edit"
+              >
+                <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+            )}
+
+            {/* Delete */}
+            {isOwnMessage && (
+              <button
+                onClick={() => onDelete?.(message)}
+                className="p-1.5 rounded-full bg-gray-100 dark:bg-dark-400 hover:bg-gray-200 dark:hover:bg-dark-300 transition-colors"
+                title="Delete"
+              >
+                <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Reactions - displayed below actions */}
         {message.reactions && message.reactions.length > 0 && (
           <div className={`flex flex-wrap gap-1 mt-1 ${isOwnMessage ? 'justify-end' : ''}`}>
             {message.reactions.map((reaction, idx) => (
@@ -196,77 +267,6 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           )}
         </div>
       </div>
-
-      {/* Actions */}
-      {showActions && !message.isDeleted && (
-        <div className={`flex items-center gap-1 self-center ${isOwnMessage ? 'order-first' : ''}`}>
-          {/* Reaction */}
-          <div className="relative">
-            <button
-              onClick={() => setShowReactionPicker(!showReactionPicker)}
-              className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors"
-              title="React"
-            >
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </button>
-            {showReactionPicker && (
-              <div className="absolute bottom-full mb-1 left-0 flex gap-1 p-1 bg-white dark:bg-dark-500 rounded-lg shadow-lg border border-gray-200 dark:border-dark-400">
-                {reactions.map((emoji) => (
-                  <button
-                    key={emoji}
-                    onClick={() => {
-                      onReact?.(message, emoji);
-                      setShowReactionPicker(false);
-                    }}
-                    className="p-1 hover:bg-gray-100 dark:hover:bg-dark-400 rounded transition-colors"
-                  >
-                    {emoji}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Reply */}
-          <button
-            onClick={() => onReply?.(message)}
-            className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors"
-            title="Reply"
-          >
-            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-            </svg>
-          </button>
-
-          {/* Edit (own messages only) */}
-          {isOwnMessage && (
-            <button
-              onClick={() => onEdit?.(message)}
-              className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors"
-              title="Edit"
-            >
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-            </button>
-          )}
-
-          {/* Delete */}
-          {isOwnMessage && (
-            <button
-              onClick={() => onDelete?.(message)}
-              className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors"
-              title="Delete"
-            >
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
-          )}
-        </div>
-      )}
     </div>
   );
 };
