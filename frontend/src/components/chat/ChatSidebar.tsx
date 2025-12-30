@@ -63,23 +63,34 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   // Listen for new messages via WebSocket to update unread count in real-time
   useEffect(() => {
     const unsubscribe = onChatMessage((data) => {
-      // If the message is from someone else, increment unread count immediately
+      // If the message is from someone else, increment unread count
       const senderId = typeof data.senderId === 'object' ? data.senderId._id : data.senderId;
       if (senderId !== user?._id) {
-        // Increment unread count immediately (real-time)
-        setUnreadCount(prev => {
-          const newCount = prev + 1;
-          onUnreadCountChange?.(newCount);
-          return newCount;
-        });
-        // Also refresh conversations list if sidebar is open
+        // Get the conversation ID from the message
+        const messageConversationId = typeof data.conversationId === 'object'
+          ? (data.conversationId as any)._id
+          : data.conversationId;
+
+        // Only increment unread if user is NOT currently viewing this conversation
+        const isViewingThisConversation = activeConversation?._id === messageConversationId;
+
+        if (!isViewingThisConversation) {
+          // Increment unread count immediately (real-time)
+          setUnreadCount(prev => {
+            const newCount = prev + 1;
+            onUnreadCountChange?.(newCount);
+            return newCount;
+          });
+        }
+
+        // Refresh conversations list if sidebar is open (to update last message preview)
         if (isOpen) {
           fetchConversations();
         }
       }
     });
     return unsubscribe;
-  }, [onChatMessage, user?._id, onUnreadCountChange, isOpen, fetchConversations]);
+  }, [onChatMessage, user?._id, onUnreadCountChange, isOpen, fetchConversations, activeConversation?._id]);
 
   // Fetch conversations when sidebar opens
   useEffect(() => {
