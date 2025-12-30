@@ -152,9 +152,19 @@ export class ChatService {
     }
 
     // Check if user is a participant
-    const isParticipant = conversation.participants.some(
-      (p: any) => p._id.toString() === userId,
-    );
+    // After population, participants are User objects with _id
+    // Before population or if population fails, they are ObjectIds
+    const isParticipant = conversation.participants.some((p: any) => {
+      const participantId = p._id ? p._id.toString() : p.toString();
+      return participantId === userId;
+    });
+
+    console.log('[ChatService] Checking participant:', {
+      conversationId,
+      userId,
+      participants: conversation.participants.map((p: any) => p._id ? p._id.toString() : p.toString()),
+      isParticipant,
+    });
 
     if (!isParticipant) {
       throw new ForbiddenException('You are not a participant of this conversation');
