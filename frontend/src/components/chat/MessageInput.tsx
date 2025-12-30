@@ -1,8 +1,25 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import dynamic from 'next/dynamic';
+import data from '@emoji-mart/data';
 import { ChatMessage, MessageAttachment } from '@/types/chat';
 import { User } from '@/types/user';
+
+// Dynamically import emoji picker to avoid SSR issues
+const Picker = dynamic(
+  () => import('@emoji-mart/react').then(mod => {
+    const PickerComponent = mod.default;
+    // Return a wrapper that includes the data prop
+    return function PickerWithData(props: any) {
+      return <PickerComponent data={data} {...props} />;
+    };
+  }),
+  {
+    ssr: false,
+    loading: () => <div className="w-[352px] h-[435px] bg-white dark:bg-dark-500 rounded-lg flex items-center justify-center">Loading...</div>,
+  }
+);
 
 interface MessageInputProps {
   onSend: (content: string, replyTo?: string, mentions?: string[]) => Promise<void>;
@@ -26,8 +43,11 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   const [content, setContent] = useState('');
   const [files, setFiles] = useState<File[]>([]);
   const [sending, setSending] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const emojiButtonRef = useRef<HTMLButtonElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Create object URLs for file previews and clean them up
@@ -56,6 +76,43 @@ export const MessageInput: React.FC<MessageInputProps> = ({
       textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 150) + 'px';
     }
   }, [content]);
+
+  // Close emoji picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        showEmojiPicker &&
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(event.target as Node) &&
+        emojiButtonRef.current &&
+        !emojiButtonRef.current.contains(event.target as Node)
+      ) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showEmojiPicker]);
+
+  // Handle emoji selection
+  const handleEmojiSelect = (emoji: any) => {
+    const emojiChar = emoji.native;
+    const textarea = textareaRef.current;
+    if (textarea) {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const newContent = content.substring(0, start) + emojiChar + content.substring(end);
+      setContent(newContent);
+      // Set cursor position after emoji
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = start + emojiChar.length;
+        textarea.focus();
+      }, 0);
+    } else {
+      setContent(content + emojiChar);
+    }
+  };
 
   // Handle typing indicator
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -255,6 +312,37 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           className="hidden"
           onChange={handleFileSelect}
         />
+
+        {/* Emoji Button */}
+        <div className="relative">
+          <button
+            ref={emojiButtonRef}
+            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+            disabled={disabled}
+            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors disabled:opacity-50"
+            title="Add emoji"
+          >
+            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </button>
+
+          {/* Emoji Picker Dropdown */}
+          {showEmojiPicker && (
+            <div
+              ref={emojiPickerRef}
+              className="absolute bottom-12 left-0 z-50 shadow-xl rounded-lg"
+            >
+              <Picker
+                onEmojiSelect={handleEmojiSelect}
+                theme="auto"
+                previewPosition="none"
+                skinTonePosition="search"
+                maxFrequentRows={2}
+              />
+            </div>
+          )}
+        </div>
 
         {/* Text Input */}
         <textarea
