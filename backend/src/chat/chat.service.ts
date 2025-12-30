@@ -113,6 +113,8 @@ export class ChatService {
    * Get all conversations for a user
    */
   async getConversationsForUser(userId: string): Promise<ConversationDocument[]> {
+    console.log('[ChatService] getConversationsForUser called with userId:', userId);
+
     const conversations = await this.conversationModel
       .find({
         participants: new Types.ObjectId(userId),
@@ -126,10 +128,7 @@ export class ChatService {
       .sort({ lastMessageAt: -1 })
       .exec();
 
-    // Debug: log participants to verify population
-    if (conversations.length > 0) {
-      console.log('[ChatService] First conversation participants:', JSON.stringify(conversations[0].participants, null, 2));
-    }
+    console.log('[ChatService] Found', conversations.length, 'conversations for user', userId);
 
     return conversations;
   }
