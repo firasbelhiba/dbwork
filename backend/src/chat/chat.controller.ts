@@ -43,7 +43,7 @@ export class ChatController {
   @ApiOperation({ summary: 'Get all conversations for current user' })
   @ApiResponse({ status: 200, description: 'List of conversations' })
   getConversations(@CurrentUser() user) {
-    return this.chatService.getConversationsForUser(user._id);
+    return this.chatService.getConversationsForUser(user._id.toString());
   }
 
   @Get('conversations/:id')
@@ -52,7 +52,7 @@ export class ChatController {
   @ApiResponse({ status: 404, description: 'Conversation not found' })
   @ApiResponse({ status: 403, description: 'Not a participant' })
   getConversation(@Param('id') id: string, @CurrentUser() user) {
-    return this.chatService.getConversationById(id, user._id);
+    return this.chatService.getConversationById(id, user._id.toString());
   }
 
   @Post('conversations/dm/:userId')
@@ -60,7 +60,7 @@ export class ChatController {
   @ApiResponse({ status: 200, description: 'DM conversation' })
   @ApiResponse({ status: 201, description: 'DM conversation created' })
   createOrGetDM(@Param('userId') userId: string, @CurrentUser() user) {
-    return this.chatService.findOrCreateDM(user._id, userId);
+    return this.chatService.findOrCreateDM(user._id.toString(), userId);
   }
 
   @Get('conversations/project/:projectId')
@@ -68,7 +68,7 @@ export class ChatController {
   @ApiResponse({ status: 200, description: 'Project conversation' })
   @ApiResponse({ status: 404, description: 'Project conversation not found' })
   getProjectConversation(@Param('projectId') projectId: string, @CurrentUser() user) {
-    return this.chatService.getProjectConversation(projectId, user._id);
+    return this.chatService.getProjectConversation(projectId, user._id.toString());
   }
 
   // ==================== MESSAGES ====================
@@ -81,7 +81,7 @@ export class ChatController {
     @Query() query: QueryMessagesDto,
     @CurrentUser() user,
   ) {
-    return this.chatService.getMessages(conversationId, user._id, query);
+    return this.chatService.getMessages(conversationId, user._id.toString(), query);
   }
 
   @Post('conversations/:conversationId/messages')
@@ -93,7 +93,7 @@ export class ChatController {
     @Body() dto: CreateMessageDto,
     @CurrentUser() user,
   ) {
-    return this.chatService.createMessage(conversationId, user._id, dto);
+    return this.chatService.createMessage(conversationId, user._id.toString(), dto);
   }
 
   @Post('conversations/:conversationId/messages/with-attachments')
@@ -153,7 +153,7 @@ export class ChatController {
       mentions: body.mentions ? JSON.parse(body.mentions) : [],
     };
 
-    return this.chatService.createMessage(conversationId, user._id, dto, attachments);
+    return this.chatService.createMessage(conversationId, user._id.toString(), dto, attachments);
   }
 
   @Patch('messages/:messageId')
@@ -166,7 +166,7 @@ export class ChatController {
     @Body() dto: UpdateMessageDto,
     @CurrentUser() user,
   ) {
-    return this.chatService.updateMessage(messageId, user._id, dto);
+    return this.chatService.updateMessage(messageId, user._id.toString(), dto);
   }
 
   @Delete('messages/:messageId')
@@ -176,7 +176,7 @@ export class ChatController {
   @ApiResponse({ status: 404, description: 'Message not found' })
   deleteMessage(@Param('messageId') messageId: string, @CurrentUser() user) {
     const isAdmin = user.role === UserRole.ADMIN;
-    return this.chatService.deleteMessage(messageId, user._id, isAdmin);
+    return this.chatService.deleteMessage(messageId, user._id.toString(), isAdmin);
   }
 
   // ==================== READ RECEIPTS ====================
@@ -185,14 +185,14 @@ export class ChatController {
   @ApiOperation({ summary: 'Mark conversation as read' })
   @ApiResponse({ status: 200, description: 'Conversation marked as read' })
   markAsRead(@Param('conversationId') conversationId: string, @CurrentUser() user) {
-    return this.chatService.markConversationAsRead(conversationId, user._id);
+    return this.chatService.markConversationAsRead(conversationId, user._id.toString());
   }
 
   @Get('unread-count')
   @ApiOperation({ summary: 'Get total unread message count' })
   @ApiResponse({ status: 200, description: 'Unread count' })
   async getUnreadCount(@CurrentUser() user) {
-    const count = await this.chatService.getUnreadCount(user._id);
+    const count = await this.chatService.getUnreadCount(user._id.toString());
     return { count };
   }
 
@@ -252,7 +252,7 @@ export class ChatController {
     @Body('reaction') reaction: string,
     @CurrentUser() user,
   ) {
-    return this.chatService.addReaction(messageId, user._id, reaction);
+    return this.chatService.addReaction(messageId, user._id.toString(), reaction);
   }
 
   @Delete('messages/:messageId/reactions')
@@ -260,7 +260,7 @@ export class ChatController {
   @ApiResponse({ status: 200, description: 'Reaction removed' })
   @ApiResponse({ status: 404, description: 'Message not found' })
   removeReaction(@Param('messageId') messageId: string, @CurrentUser() user) {
-    return this.chatService.removeReaction(messageId, user._id);
+    return this.chatService.removeReaction(messageId, user._id.toString());
   }
 
   // ==================== SEARCH ====================
@@ -272,6 +272,6 @@ export class ChatController {
     if (!query || query.trim().length < 2) {
       throw new BadRequestException('Search query must be at least 2 characters');
     }
-    return this.chatService.searchMessages(user._id, query.trim());
+    return this.chatService.searchMessages(user._id.toString(), query.trim());
   }
 }
