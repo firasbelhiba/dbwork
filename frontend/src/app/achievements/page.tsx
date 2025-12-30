@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { AdminAchievementsOverview } from '@/components/achievements/AdminAchievementsOverview';
 import { DeveloperLeaderboard } from '@/components/achievements/DeveloperLeaderboard';
+import { LogoLoader } from '@/components/common/LogoLoader';
 import { toast } from 'react-hot-toast';
 
 const rarityColors: Record<AchievementRarity, { bg: string; border: string; text: string }> = {
@@ -142,10 +143,7 @@ export default function AchievementsPage() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400">Loading achievements...</p>
-          </div>
+          <LogoLoader size="lg" text="Loading achievements" />
         </div>
       </DashboardLayout>
     );

@@ -21,6 +21,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usersAPI } from '@/lib/api';
 import { SortableQueueItem } from './SortableQueueItem';
 import { AddToQueueModal } from './AddToQueueModal';
+import { LogoLoader } from '@/components/common/LogoLoader';
 
 interface QueueIssue {
   _id: string;
@@ -208,7 +209,7 @@ export const TodoQueueSidebar: React.FC<TodoQueueSidebarProps> = ({
         <div className="flex-1 overflow-y-auto p-4" style={{ height: 'calc(100vh - 140px)' }}>
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+              <LogoLoader size="sm" text="Loading queue" />
             </div>
           ) : (
             <>

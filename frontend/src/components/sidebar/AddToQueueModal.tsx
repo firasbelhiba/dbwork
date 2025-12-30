@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { usersAPI } from '@/lib/api';
+import { LogoLoader } from '@/components/common/LogoLoader';
 
 interface QueueIssue {
   _id: string;
@@ -158,7 +159,7 @@ export const AddToQueueModal: React.FC<AddToQueueModalProps> = ({
         <div className="flex-1 overflow-y-auto p-2">
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+              <LogoLoader size="sm" text="Loading tickets" />
             </div>
           ) : filteredIssues.length === 0 ? (
             <div className="text-center py-8">

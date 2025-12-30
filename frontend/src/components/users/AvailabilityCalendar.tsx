@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { availabilityAPI } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
+import { LogoLoader } from '@/components/common/LogoLoader';
 
 export enum AvailabilityStatus {
   AVAILABLE = 'available',
@@ -248,7 +249,7 @@ export const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
       {/* Calendar Grid */}
       {loading ? (
         <div className={`flex items-center justify-center ${expanded ? 'py-16' : 'py-8'}`}>
-          <div className={`animate-spin rounded-full ${expanded ? 'h-8 w-8' : 'h-6 w-6'} border-b-2 border-primary-600`}></div>
+          <LogoLoader size="sm" text="Loading" />
         </div>
       ) : (
         <div className={`grid grid-cols-7 ${expanded ? 'gap-2' : 'gap-1'}`}>

@@ -1,24 +1,36 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Conversation } from '@/types/chat';
+import { Conversation, ChatMessage } from '@/types/chat';
+import { User } from '@/types/user';
 import { chatAPI } from '@/lib/api';
 import { ConversationList } from '@/components/chat/ConversationList';
 import { ChatHeader } from '@/components/chat/ChatHeader';
 import { MessageThread } from '@/components/chat/MessageThread';
 import { NewConversationModal } from '@/components/chat/NewConversationModal';
+import { LogoLoader } from '@/components/common/LogoLoader';
+import { useAuth } from '@/contexts/AuthContext';
+import { format } from 'date-fns';
 
 function ChatPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { user } = useAuth();
   const conversationIdParam = searchParams.get('conversation');
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   const [showNewChatModal, setShowNewChatModal] = useState(false);
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<ChatMessage[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch conversations
   const fetchConversations = useCallback(async () => {
@@ -62,6 +74,85 @@ function ChatPageContent() {
     setShowNewChatModal(false);
   };
 
+  // Handle search with debounce
+  const handleSearch = useCallback((query: string) => {
+    setSearchQuery(query);
+
+    // Clear previous timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // If query is empty, hide results
+    if (!query.trim()) {
+      setShowSearchResults(false);
+      setSearchResults([]);
+      return;
+    }
+
+    // Debounce search by 300ms
+    searchTimeoutRef.current = setTimeout(async () => {
+      if (query.trim().length < 2) {
+        setSearchResults([]);
+        setShowSearchResults(false);
+        return;
+      }
+
+      setIsSearching(true);
+      setShowSearchResults(true);
+
+      try {
+        const response = await chatAPI.searchMessages(query.trim());
+        setSearchResults(response.data || []);
+      } catch (error) {
+        console.error('Error searching messages:', error);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300);
+  }, []);
+
+  // Clear search and navigate to conversation
+  const handleSearchResultClick = async (message: ChatMessage) => {
+    const conversationId = typeof message.conversationId === 'object'
+      ? (message.conversationId as any)._id
+      : message.conversationId;
+
+    // Find the conversation in the list
+    let conversation = conversations.find(c => c._id === conversationId);
+
+    // If not found, fetch it
+    if (!conversation) {
+      try {
+        const response = await chatAPI.getConversation(conversationId);
+        conversation = response.data;
+        setConversations(prev => [conversation!, ...prev]);
+      } catch (error) {
+        console.error('Error fetching conversation:', error);
+        return;
+      }
+    }
+
+    // Clear search and select conversation
+    setSearchQuery('');
+    setSearchResults([]);
+    setShowSearchResults(false);
+    if (conversation) {
+      setActiveConversation(conversation);
+      router.push(`/chat?conversation=${conversationId}`, { scroll: false });
+    }
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
+
   return (
     <DashboardLayout>
       <div className="h-full flex">
@@ -94,20 +185,109 @@ function ChatPageContent() {
               </svg>
               <input
                 type="text"
-                placeholder="Search conversations..."
-                className="w-full pl-9 pr-4 py-2 text-sm rounded-lg bg-gray-100 dark:bg-dark-400 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+                placeholder="Search messages..."
+                className="w-full pl-9 pr-8 py-2 text-sm rounded-lg bg-gray-100 dark:bg-dark-400 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
+              {searchQuery && (
+                <button
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSearchResults([]);
+                    setShowSearchResults(false);
+                  }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-200 dark:hover:bg-dark-300 rounded-full transition-colors"
+                >
+                  <svg className="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Conversation List */}
+          {/* Search Results or Conversation List */}
           <div className="flex-1 overflow-y-auto px-2">
-            <ConversationList
-              conversations={conversations}
-              activeConversationId={activeConversation?._id}
-              onSelectConversation={handleSelectConversation}
-              loading={loading}
-            />
+            {showSearchResults ? (
+              <div className="space-y-1">
+                {isSearching ? (
+                  <div className="flex items-center justify-center py-8">
+                    <LogoLoader size="sm" text="Searching" />
+                  </div>
+                ) : searchResults.length === 0 ? (
+                  <div className="text-center py-8 px-4">
+                    <svg
+                      className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-3"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">No messages found</p>
+                    <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">
+                      Try a different search term
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="px-2 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                      {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}
+                    </div>
+                    {searchResults.map((message) => {
+                      const sender = message.senderId as User;
+                      const senderName = sender?.firstName && sender?.lastName
+                        ? `${sender.firstName} ${sender.lastName}`
+                        : sender?.firstName || 'Unknown';
+
+                      return (
+                        <button
+                          key={message._id}
+                          onClick={() => handleSearchResultClick(message)}
+                          className="w-full text-left p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors"
+                        >
+                          <div className="flex items-start gap-3">
+                            {/* Avatar */}
+                            {sender?.avatar ? (
+                              <img
+                                src={sender.avatar}
+                                alt={senderName}
+                                className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                              />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-primary-500 text-white flex items-center justify-center text-sm font-medium flex-shrink-0">
+                                {senderName.charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                  {senderName}
+                                </span>
+                                <span className="text-xs text-gray-400 flex-shrink-0">
+                                  {format(new Date(message.createdAt), 'MMM d')}
+                                </span>
+                              </div>
+                              <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mt-0.5">
+                                {message.content}
+                              </p>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </>
+                )}
+              </div>
+            ) : (
+              <ConversationList
+                conversations={conversations}
+                activeConversationId={activeConversation?._id}
+                onSelectConversation={handleSelectConversation}
+                loading={loading}
+              />
+            )}
           </div>
         </div>
 
@@ -172,7 +352,7 @@ export default function ChatPage() {
     <Suspense fallback={
       <DashboardLayout>
         <div className="flex items-center justify-center h-full">
-          <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+          <LogoLoader size="lg" text="Loading chat" />
         </div>
       </DashboardLayout>
     }>

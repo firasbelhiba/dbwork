@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button, Input, Breadcrumb } from '@/components/common';
+import { LogoLoader } from '@/components/common/LogoLoader';
 import { useAuth } from '@/contexts/AuthContext';
 import { usersAPI, authAPI, adminAPI, googleCalendarAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -369,10 +370,7 @@ export default function ProfilePage() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto"></div>
-            <p className="mt-4 text-gray-600 dark:text-gray-400">Loading profile...</p>
-          </div>
+          <LogoLoader size="md" text="Loading profile" />
         </div>
       </DashboardLayout>
     );
@@ -788,7 +786,7 @@ export default function ProfilePage() {
             </div>
           ) : (
             <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+              <LogoLoader size="sm" text="Loading preferences" />
             </div>
           )}
         </div>
@@ -943,7 +941,7 @@ export default function ProfilePage() {
               </h3>
               {loadingStats ? (
                 <div className="flex items-center justify-center py-4">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500"></div>
+                  <LogoLoader size="sm" text="Loading stats" />
                 </div>
               ) : dbStats ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
@@ -1020,7 +1018,7 @@ export default function ProfilePage() {
 
               {loadingTimerSettings ? (
                 <div className="flex items-center justify-center py-4">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500"></div>
+                  <LogoLoader size="sm" text="Loading settings" />
                 </div>
               ) : timerSettings ? (
                 <div className="space-y-4">

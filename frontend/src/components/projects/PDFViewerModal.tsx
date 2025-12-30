@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Modal } from '@/components/common';
+import { LogoLoader } from '@/components/common/LogoLoader';
 
 interface PDFViewerModalProps {
   isOpen: boolean;
@@ -72,10 +73,7 @@ export function PDFViewerModal({ isOpen, onClose, pdfUrl, title, originalName }:
         {/* Loading indicator */}
         {isLoading && !loadError && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-dark-500 z-10">
-            <div className="flex flex-col items-center">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-600 mb-3"></div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Loading PDF...</p>
-            </div>
+            <LogoLoader size="sm" text="Loading PDF" />
           </div>
         )}
 

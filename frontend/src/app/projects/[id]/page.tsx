@@ -866,10 +866,7 @@ function ProjectDetailPageContent() {
             </div>
           ) : loadingIssues ? (
             <div className="flex items-center justify-center py-12">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto"></div>
-                <p className="mt-4 text-gray-600 dark:text-gray-400">Loading issues...</p>
-              </div>
+              <LogoLoader size="md" text="Loading issues" />
             </div>
           ) : (
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">

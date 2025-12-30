@@ -6,6 +6,7 @@ import { attachmentsAPI } from '@/lib/api';
 import { Attachment, formatFileSize, getFileIcon, isImageFile } from '@/types/attachment';
 import { Button } from '@/components/common';
 import { getInitials, getRelativeTime } from '@/lib/utils';
+import { LogoLoader } from '@/components/common/LogoLoader';
 import toast from 'react-hot-toast';
 
 interface AttachmentSectionProps {
@@ -235,9 +236,8 @@ export function AttachmentSection({ issueId }: AttachmentSectionProps) {
 
       {/* Attachments Content */}
       {loading ? (
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto"></div>
-          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Loading attachments...</p>
+        <div className="flex items-center justify-center py-8">
+          <LogoLoader size="sm" text="Loading attachments" />
         </div>
       ) : attachments.length === 0 ? (
         <p className="text-center text-gray-500 dark:text-gray-400 py-4">No attachments yet</p>

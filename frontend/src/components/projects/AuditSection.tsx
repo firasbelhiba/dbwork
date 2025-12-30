@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { auditsAPI } from '@/lib/api';
 import { Audit, formatFileSize } from '@/types/audit';
 import { Button, Input, Select } from '@/components/common';
+import { LogoLoader } from '@/components/common/LogoLoader';
 import { PDFViewerModal } from './PDFViewerModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserRole } from '@/types/user';
@@ -169,7 +170,7 @@ export function AuditSection({ projectId }: AuditSectionProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
+        <LogoLoader size="sm" text="Loading audits" />
       </div>
     );
   }

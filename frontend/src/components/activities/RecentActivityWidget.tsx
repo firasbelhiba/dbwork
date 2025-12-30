@@ -6,6 +6,7 @@ import { Activity } from '@/types/activity';
 import { activitiesAPI } from '@/lib/api';
 import { ActivityCard } from './ActivityCard';
 import { Button } from '@/components/common/Button';
+import { LogoLoader } from '@/components/common/LogoLoader';
 
 export const RecentActivityWidget: React.FC = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -49,7 +50,7 @@ export const RecentActivityWidget: React.FC = () => {
       <div className="p-6">
         {loading && (
           <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-500"></div>
+            <LogoLoader size="sm" text="Loading activity" />
           </div>
         )}
 

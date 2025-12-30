@@ -5,6 +5,7 @@ import { Modal } from '@/components/common/Modal';
 import { IChangelog } from '@/types';
 import { changelogsAPI } from '@/lib/api';
 import { toast } from 'react-hot-toast';
+import { LogoLoader } from '@/components/common/LogoLoader';
 
 interface ChangelogModalProps {
   isOpen: boolean;
@@ -139,7 +140,7 @@ export const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose 
     <Modal isOpen={isOpen} onClose={onClose} title="What's New" size="lg">
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+          <LogoLoader size="sm" text="Loading changelogs" />
         </div>
       ) : changelogs.length > 0 ? (
         <div className="space-y-3">

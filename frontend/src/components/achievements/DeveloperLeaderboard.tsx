@@ -5,6 +5,7 @@ import { User, Achievement, UserAchievement, UserRole } from '@/types';
 import { usersAPI, achievementsAPI } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'react-hot-toast';
+import { LogoLoader } from '@/components/common/LogoLoader';
 
 interface UserWithStats extends User {
   achievementStats?: {
@@ -100,10 +101,7 @@ export const DeveloperLeaderboard: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading leaderboard...</p>
-        </div>
+        <LogoLoader size="lg" text="Loading leaderboard" />
       </div>
     );
   }

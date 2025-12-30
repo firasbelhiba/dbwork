@@ -5,6 +5,7 @@ import { User, Achievement, UserAchievement } from '@/types';
 import { usersAPI, achievementsAPI } from '@/lib/api';
 import { toast } from 'react-hot-toast';
 import { UserAchievementsModal } from './UserAchievementsModal';
+import { LogoLoader } from '@/components/common/LogoLoader';
 
 interface UserWithStats extends User {
   achievementStats?: {
@@ -98,10 +99,7 @@ export const AdminAchievementsOverview: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading achievements overview...</p>
-        </div>
+        <LogoLoader size="lg" text="Loading achievements overview" />
       </div>
     );
   }

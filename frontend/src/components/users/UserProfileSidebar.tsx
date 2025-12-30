@@ -8,6 +8,7 @@ import { UserAvatar } from '@/components/common/UserAvatar';
 import { formatDateTime, getRelativeTime } from '@/lib/utils';
 import { issuesAPI } from '@/lib/api';
 import { TicketCalendar } from './TicketCalendar';
+import { LogoLoader } from '@/components/common/LogoLoader';
 
 interface WorkloadData {
   totalInProgress: number;
@@ -259,7 +260,7 @@ export const UserProfileSidebar: React.FC<UserProfileSidebarProps> = ({
 
             {loadingBandwidth ? (
               <div className="flex items-center justify-center py-4">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
+                <LogoLoader size="sm" text="Loading" />
               </div>
             ) : bandwidth ? (
               <div className="space-y-4">
@@ -360,7 +361,7 @@ export const UserProfileSidebar: React.FC<UserProfileSidebarProps> = ({
 
             {loadingBandwidth ? (
               <div className="flex items-center justify-center py-4">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
+                <LogoLoader size="sm" text="Loading" />
               </div>
             ) : bandwidth && bandwidth.projects.length > 0 ? (
               <div className="space-y-2">
@@ -426,7 +427,7 @@ export const UserProfileSidebar: React.FC<UserProfileSidebarProps> = ({
 
             {loadingWorkload ? (
               <div className="flex items-center justify-center py-4">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
+                <LogoLoader size="sm" text="Loading" />
               </div>
             ) : workload && workload.byProject.length > 0 ? (
               <div className="space-y-2 max-h-48 overflow-y-auto">
