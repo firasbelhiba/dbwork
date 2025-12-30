@@ -9,6 +9,7 @@ import { Model, Types } from 'mongoose';
 import { v2 as cloudinary } from 'cloudinary';
 import { Conversation, ConversationDocument, ConversationType } from './schemas/conversation.schema';
 import { Message, MessageDocument, MessageType, MessageAttachment } from './schemas/message.schema';
+import { Project, ProjectDocument } from '../projects/schemas/project.schema';
 import { CreateMessageDto, UpdateMessageDto } from './dto/create-message.dto';
 import { QueryMessagesDto } from './dto/query-messages.dto';
 import { AppWebSocketGateway } from '../websocket/websocket.gateway';
@@ -20,6 +21,7 @@ export class ChatService {
   constructor(
     @InjectModel(Conversation.name) private conversationModel: Model<ConversationDocument>,
     @InjectModel(Message.name) private messageModel: Model<MessageDocument>,
+    @InjectModel(Project.name) private projectModel: Model<ProjectDocument>,
     private webSocketGateway: AppWebSocketGateway,
     private notificationsService: NotificationsService,
   ) {}
@@ -200,9 +202,10 @@ export class ChatService {
 
   /**
    * Get project conversation by project ID
+   * Auto-creates the conversation if it doesn't exist (for projects created before chat feature)
    */
   async getProjectConversation(projectId: string, userId: string): Promise<ConversationDocument> {
-    const conversation = await this.conversationModel
+    let conversation = await this.conversationModel
       .findOne({ projectId: new Types.ObjectId(projectId) })
       .populate({ path: 'participants', model: 'User', select: 'firstName lastName email avatar' })
       .populate({
@@ -211,8 +214,50 @@ export class ChatService {
       })
       .exec();
 
+    // If conversation doesn't exist, auto-create it from project data
     if (!conversation) {
-      throw new NotFoundException('Project conversation not found');
+      // Fetch the project to get name and members
+      const project = await this.projectModel
+        .findById(projectId)
+        .populate('members.userId', '_id')
+        .exec();
+
+      if (!project) {
+        throw new NotFoundException('Project not found');
+      }
+
+      // Check if user is a member of the project
+      const isMember = project.members.some(
+        (m: any) => m.userId?._id?.toString() === userId || m.userId?.toString() === userId,
+      ) || project.lead?.toString() === userId;
+
+      if (!isMember) {
+        throw new ForbiddenException('You are not a member of this project');
+      }
+
+      // Get all member IDs including the lead
+      const memberIds = project.members.map((m: any) =>
+        m.userId?._id?.toString() || m.userId?.toString()
+      ).filter(Boolean);
+
+      // Add lead if not already in members
+      const leadId = project.lead?.toString();
+      if (leadId && !memberIds.includes(leadId)) {
+        memberIds.push(leadId);
+      }
+
+      // Create the conversation
+      await this.createProjectConversation(projectId, project.name, memberIds);
+
+      // Fetch the newly created conversation with population
+      conversation = await this.conversationModel
+        .findOne({ projectId: new Types.ObjectId(projectId) })
+        .populate({ path: 'participants', model: 'User', select: 'firstName lastName email avatar' })
+        .populate({
+          path: 'lastMessage',
+          populate: { path: 'senderId', model: 'User', select: 'firstName lastName avatar' },
+        })
+        .exec();
     }
 
     // Check if user is a participant
