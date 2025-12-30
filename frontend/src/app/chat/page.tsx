@@ -25,12 +25,15 @@ function ChatPageContent() {
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   const [showNewChatModal, setShowNewChatModal] = useState(false);
 
-  // Search state
+  // Search state (left panel - global search)
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<ChatMessage[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // In-conversation search state (right panel header)
+  const [conversationSearchQuery, setConversationSearchQuery] = useState('');
 
   // Fetch conversations
   const fetchConversations = useCallback(async () => {
@@ -60,6 +63,7 @@ function ChatPageContent() {
   // Handle conversation selection
   const handleSelectConversation = (conversation: Conversation) => {
     setActiveConversation(conversation);
+    setConversationSearchQuery(''); // Clear in-conversation search when switching
     router.push(`/chat?conversation=${conversation._id}`, { scroll: false });
   };
 
@@ -295,9 +299,16 @@ function ChatPageContent() {
         <div className="flex-1 flex flex-col bg-gray-50 dark:bg-dark-600">
           {activeConversation ? (
             <>
-              <ChatHeader conversation={activeConversation} />
+              <ChatHeader
+                conversation={activeConversation}
+                onSearch={setConversationSearchQuery}
+                onClearSearch={() => setConversationSearchQuery('')}
+              />
               <div className="flex-1 overflow-hidden">
-                <MessageThread conversation={activeConversation} />
+                <MessageThread
+                  conversation={activeConversation}
+                  searchQuery={conversationSearchQuery}
+                />
               </div>
             </>
           ) : (

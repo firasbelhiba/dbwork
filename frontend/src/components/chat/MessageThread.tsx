@@ -14,12 +14,14 @@ interface MessageThreadProps {
   conversation: Conversation;
   onTyping?: (isTyping: boolean) => void;
   typingUsers?: string[];
+  searchQuery?: string;
 }
 
 export const MessageThread: React.FC<MessageThreadProps> = ({
   conversation,
   onTyping,
   typingUsers = [],
+  searchQuery = '',
 }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -285,6 +287,17 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
     };
   }, [addMessage, updateMessage, removeMessage, fetchMessages]);
 
+  // Filter messages based on search query
+  const filteredMessages = searchQuery.trim()
+    ? messages.filter(m =>
+        m.content?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : messages;
+
+  // Determine what to display
+  const isSearching = searchQuery.trim().length > 0;
+  const noSearchResults = isSearching && filteredMessages.length === 0 && messages.length > 0;
+
   return (
     <div className="flex flex-col h-full">
       {/* Messages */}
@@ -320,9 +333,33 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
           </div>
         )}
 
+        {/* Search results info */}
+        {isSearching && filteredMessages.length > 0 && (
+          <div className="text-center py-2 mb-2">
+            <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-dark-400 px-3 py-1 rounded-full">
+              {filteredMessages.length} message{filteredMessages.length !== 1 ? 's' : ''} found
+            </span>
+          </div>
+        )}
+
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <LogoLoader size="sm" text="Loading messages" />
+          </div>
+        ) : noSearchResults ? (
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <svg
+              className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">No messages match your search</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+              Try different keywords
+            </p>
           </div>
         ) : messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
@@ -346,7 +383,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
           </div>
         ) : (
           <div className="space-y-1">
-            {messages.map(message => (
+            {filteredMessages.map(message => (
               <MessageBubble
                 key={message._id}
                 message={message}
@@ -354,6 +391,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onReact={handleReact}
+                highlightText={searchQuery}
               />
             ))}
           </div>

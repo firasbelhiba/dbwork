@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Conversation } from '@/types/chat';
 import { User } from '@/types/user';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,14 +10,42 @@ interface ChatHeaderProps {
   conversation: Conversation;
   onBack?: () => void;
   showBackButton?: boolean;
+  onSearch?: (query: string) => void;
+  onClearSearch?: () => void;
 }
 
 export const ChatHeader: React.FC<ChatHeaderProps> = ({
   conversation,
   onBack,
   showBackButton = false,
+  onSearch,
+  onClearSearch,
 }) => {
   const { user: currentUser } = useAuth();
+  const [showSearchInput, setShowSearchInput] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Focus input when search opens
+  useEffect(() => {
+    if (showSearchInput && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [showSearchInput]);
+
+  // Handle search input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    onSearch?.(query);
+  };
+
+  // Handle close search
+  const handleCloseSearch = () => {
+    setShowSearchInput(false);
+    setSearchQuery('');
+    onClearSearch?.();
+  };
 
   // Helper to check conversation type (handles both enum and string from API)
   const isDirectConversation = conversation.type === 'direct';
@@ -85,54 +113,94 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
   };
 
   return (
-    <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 dark:border-dark-400">
-      {/* Back button */}
-      {showBackButton && onBack && (
-        <button
-          onClick={onBack}
-          className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors"
-        >
-          <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
+    <div className="border-b border-gray-200 dark:border-dark-400">
+      {/* Main header row */}
+      <div className="flex items-center gap-3 px-4 py-3">
+        {/* Back button */}
+        {showBackButton && onBack && (
+          <button
+            onClick={onBack}
+            className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors"
+          >
+            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+        )}
+
+        {/* Avatar */}
+        <div className="flex-shrink-0">{getAvatar()}</div>
+
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <h3 className="font-medium text-gray-900 dark:text-white truncate">
+            {getDisplayName()}
+          </h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+            {getSubtitle()}
+          </p>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-2">
+          {/* Search in conversation */}
+          <button
+            onClick={() => setShowSearchInput(!showSearchInput)}
+            className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors ${
+              showSearchInput ? 'bg-gray-100 dark:bg-dark-400' : ''
+            }`}
+            title="Search in conversation"
+          >
+            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
+
+          {/* More options */}
+          <button
+            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors"
+            title="More options"
+          >
+            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Search input row */}
+      {showSearchInput && (
+        <div className="px-4 pb-3">
+          <div className="relative">
+            <svg
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              placeholder="Search in this conversation..."
+              className="w-full pl-9 pr-8 py-2 text-sm rounded-lg bg-gray-100 dark:bg-dark-400 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+            {searchQuery && (
+              <button
+                onClick={handleCloseSearch}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-200 dark:hover:bg-dark-300 rounded-full transition-colors"
+              >
+                <svg className="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
+        </div>
       )}
-
-      {/* Avatar */}
-      <div className="flex-shrink-0">{getAvatar()}</div>
-
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <h3 className="font-medium text-gray-900 dark:text-white truncate">
-          {getDisplayName()}
-        </h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-          {getSubtitle()}
-        </p>
-      </div>
-
-      {/* Actions */}
-      <div className="flex items-center gap-2">
-        {/* Search in conversation */}
-        <button
-          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors"
-          title="Search in conversation"
-        >
-          <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </button>
-
-        {/* More options */}
-        <button
-          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors"
-          title="More options"
-        >
-          <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-          </svg>
-        </button>
-      </div>
     </div>
   );
 };

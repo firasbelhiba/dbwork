@@ -12,6 +12,7 @@ interface MessageBubbleProps {
   onEdit?: (message: ChatMessage) => void;
   onDelete?: (message: ChatMessage) => void;
   onReact?: (message: ChatMessage, reaction: string) => void;
+  highlightText?: string;
 }
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
@@ -20,6 +21,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   onEdit,
   onDelete,
   onReact,
+  highlightText = '',
 }) => {
   const { user: currentUser } = useAuth();
   const [showActions, setShowActions] = useState(false);
@@ -33,6 +35,24 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 
   // Reaction emojis
   const reactions = ['\u{1F44D}', '\u{2764}\u{FE0F}', '\u{1F602}', '\u{1F62E}', '\u{1F622}', '\u{1F64F}'];
+
+  // Highlight matching text
+  const renderHighlightedText = (text: string) => {
+    if (!highlightText.trim()) return text;
+
+    const regex = new RegExp(`(${highlightText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    const parts = text.split(regex);
+
+    return parts.map((part, i) =>
+      regex.test(part) ? (
+        <mark key={i} className="bg-yellow-300 dark:bg-yellow-500/50 rounded px-0.5">
+          {part}
+        </mark>
+      ) : (
+        part
+      )
+    );
+  };
 
   // Format file size
   const formatFileSize = (bytes: number): string => {
@@ -99,7 +119,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
     return (
       <div className="flex justify-center my-4">
         <div className="px-3 py-1 rounded-full bg-gray-100 dark:bg-dark-400 text-xs text-gray-500 dark:text-gray-400">
-          {message.content}
+          {renderHighlightedText(message.content)}
         </div>
       </div>
     );
@@ -160,7 +180,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
               : 'bg-gray-100 dark:bg-dark-400 text-gray-900 dark:text-white'
           } ${message.isDeleted ? 'opacity-50 italic' : ''}`}
         >
-          <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+          <p className="text-sm whitespace-pre-wrap break-words">{renderHighlightedText(message.content)}</p>
 
           {/* Attachments */}
           {message.attachments && message.attachments.length > 0 && (
