@@ -141,8 +141,6 @@ export class ChatService {
    * Get all conversations for a user
    */
   async getConversationsForUser(userId: string): Promise<ConversationDocument[]> {
-    console.log('[ChatService] getConversationsForUser called with userId:', userId);
-
     const conversations = await this.conversationModel
       .find({
         participants: new Types.ObjectId(userId),
@@ -155,8 +153,6 @@ export class ChatService {
       })
       .sort({ lastMessageAt: -1 })
       .exec();
-
-    console.log('[ChatService] Found', conversations.length, 'conversations for user', userId);
 
     return conversations;
   }
@@ -184,13 +180,6 @@ export class ChatService {
     const isParticipant = conversation.participants.some((p: any) => {
       const participantId = p._id ? p._id.toString() : p.toString();
       return participantId === userId;
-    });
-
-    console.log('[ChatService] Checking participant:', {
-      conversationId,
-      userId,
-      participants: conversation.participants.map((p: any) => p._id ? p._id.toString() : p.toString()),
-      isParticipant,
     });
 
     if (!isParticipant) {
@@ -514,13 +503,6 @@ export class ChatService {
 
     // Decrypt messages before returning
     const decryptedMessages = this.decryptMessages(result);
-
-    // Debug: log the order of messages being returned
-    console.log('[ChatService] Messages order:', decryptedMessages.map(m => ({
-      id: m._id.toString().slice(-4),
-      createdAt: m.createdAt,
-      content: m.content?.substring(0, 20),
-    })));
 
     return { messages: decryptedMessages, hasMore };
   }

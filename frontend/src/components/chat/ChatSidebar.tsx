@@ -32,6 +32,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   const { onChatMessage } = useWebSocket();
   const [unreadCount, setUnreadCount] = useState(0);
   const activeConversationRef = useRef<string | null>(null);
+  const fetchingProjectIdRef = useRef<string | null>(null);
   const {
     pendingConversation,
     pendingProjectId,
@@ -125,19 +126,27 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   // This effect runs when pendingProjectId changes, regardless of isOpen state
   // because the sidebar animation happens simultaneously
   useEffect(() => {
-    if (pendingProjectId) {
+    // Only fetch if we have a pending project ID and aren't already fetching it
+    if (pendingProjectId && fetchingProjectIdRef.current !== pendingProjectId) {
+      const projectIdToFetch = pendingProjectId;
+      fetchingProjectIdRef.current = projectIdToFetch;
+
       const fetchProjectConversation = async () => {
         setLoadingProjectChat(true);
         try {
-          const response = await chatAPI.getProjectConversation(pendingProjectId);
-          setActiveConversation(response.data);
+          const response = await chatAPI.getProjectConversation(projectIdToFetch);
+          if (response.data) {
+            setActiveConversation(response.data);
+          }
         } catch (error) {
           console.error('Error fetching project conversation:', error);
         } finally {
           setLoadingProjectChat(false);
+          fetchingProjectIdRef.current = null;
           clearPendingProjectId();
         }
       };
+
       fetchProjectConversation();
     }
   }, [pendingProjectId, clearPendingProjectId]);
