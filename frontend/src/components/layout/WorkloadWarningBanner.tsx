@@ -137,7 +137,7 @@ export const WorkloadWarningBanner: React.FC = () => {
                   <>
                     Ticket{' '}
                     <Link
-                      href={`/issues/${visibleOvertimeTickets[0].key}`}
+                      href={`/issues/${visibleOvertimeTickets[0]._id}`}
                       className="font-bold underline hover:no-underline"
                     >
                       {visibleOvertimeTickets[0].key}
@@ -151,7 +151,7 @@ export const WorkloadWarningBanner: React.FC = () => {
                     {visibleOvertimeTickets.slice(0, 3).map((t, i) => (
                       <span key={t._id}>
                         <Link
-                          href={`/issues/${t.key}`}
+                          href={`/issues/${t._id}`}
                           className="font-bold underline hover:no-underline"
                         >
                           {t.key}
