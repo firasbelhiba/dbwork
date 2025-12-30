@@ -85,14 +85,17 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
 
   // Send message
   const handleSend = async (content: string, replyToId?: string) => {
+    console.log('[MessageThread] Sending message:', { conversationId: conversation._id, content, replyToId });
     try {
       const response = await chatAPI.sendMessage(conversation._id, {
         content,
         replyTo: replyToId,
       });
+      console.log('[MessageThread] Message sent successfully:', response.data);
       setMessages(prev => [...prev, response.data]);
-    } catch (error) {
-      console.error('Error sending message:', error);
+    } catch (error: any) {
+      console.error('[MessageThread] Error sending message:', error);
+      console.error('[MessageThread] Error response:', error.response?.data);
       throw error;
     }
   };
