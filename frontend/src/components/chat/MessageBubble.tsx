@@ -32,7 +32,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   const senderLastName = sender?.lastName || '';
 
   // Reaction emojis
-  const reactions = ['', '', '', '', '', ''];
+  const reactions = ['\u{1F44D}', '\u{2764}\u{FE0F}', '\u{1F602}', '\u{1F62E}', '\u{1F622}', '\u{1F64F}'];
 
   // Format file size
   const formatFileSize = (bytes: number): string => {
