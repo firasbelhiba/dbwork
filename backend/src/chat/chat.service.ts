@@ -378,8 +378,25 @@ export class ChatService {
     dto: CreateMessageDto,
     attachments: MessageAttachment[] = [],
   ): Promise<MessageDocument> {
-    // Verify conversation exists and user is participant
-    const conversation = await this.getConversationById(conversationId, senderId);
+    // Fetch conversation directly (not using getConversationById which returns plain object)
+    const conversation = await this.conversationModel
+      .findById(conversationId)
+      .populate({ path: 'participants', model: 'User', select: 'firstName lastName email avatar' })
+      .exec();
+
+    if (!conversation) {
+      throw new NotFoundException('Conversation not found');
+    }
+
+    // Check if user is a participant
+    const isParticipant = conversation.participants.some((p: any) => {
+      const participantId = p._id ? p._id.toString() : p.toString();
+      return participantId === senderId;
+    });
+
+    if (!isParticipant) {
+      throw new ForbiddenException('You are not a participant of this conversation');
+    }
 
     // Determine message type based on attachments
     let messageType = dto.type || MessageType.TEXT;
