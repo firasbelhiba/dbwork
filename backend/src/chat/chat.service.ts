@@ -34,7 +34,14 @@ export class ChatService {
       try {
         // Create a plain object to modify
         const messageObj = message.toObject ? message.toObject() : { ...message };
-        messageObj.content = EncryptionUtil.decrypt(message.content);
+
+        // Only decrypt if the content appears to be encrypted
+        // Old messages before encryption was added will be plain text
+        if (EncryptionUtil.isEncrypted(message.content)) {
+          messageObj.content = EncryptionUtil.decrypt(message.content);
+        }
+        // Otherwise keep original content (unencrypted old message)
+
         return messageObj as MessageDocument;
       } catch {
         // If decryption fails, return original (might be unencrypted old message)
