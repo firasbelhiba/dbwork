@@ -5,6 +5,7 @@ import { User } from '@/types/user';
 import { Conversation } from '@/types/chat';
 import { usersAPI, chatAPI } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
+import { LogoLoader } from '@/components/common/LogoLoader';
 
 interface NewConversationModalProps {
   isOpen: boolean;
@@ -114,7 +115,7 @@ export const NewConversationModal: React.FC<NewConversationModalProps> = ({
         <div className="max-h-[300px] overflow-y-auto px-4 pb-4">
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+              <LogoLoader size="sm" text="Searching users" />
             </div>
           ) : users.length === 0 ? (
             <div className="text-center py-8">

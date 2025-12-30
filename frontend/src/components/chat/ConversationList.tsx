@@ -3,6 +3,7 @@
 import React from 'react';
 import { Conversation } from '@/types/chat';
 import { ConversationItem } from './ConversationItem';
+import { LogoLoader } from '@/components/common/LogoLoader';
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -20,7 +21,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+        <LogoLoader size="sm" text="Loading conversations" />
       </div>
     );
   }

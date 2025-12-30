@@ -6,6 +6,7 @@ import { chatAPI } from '@/lib/api';
 import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
 import { TypingIndicator } from './TypingIndicator';
+import { LogoLoader } from '@/components/common/LogoLoader';
 import { useWebSocket } from '@/contexts/WebSocketContext';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -315,13 +316,13 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
         {/* Load more */}
         {loadingMore && (
           <div className="flex justify-center py-4">
-            <div className="w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+            <LogoLoader size="sm" text="Loading more" />
           </div>
         )}
 
         {loading ? (
           <div className="flex items-center justify-center h-full">
-            <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+            <LogoLoader size="sm" text="Loading messages" />
           </div>
         ) : messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
