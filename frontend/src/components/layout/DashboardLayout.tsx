@@ -1,12 +1,13 @@
 'use client';
 
-import React, { ReactNode, useState, useCallback } from 'react';
+import React, { ReactNode, useState, useCallback, useEffect } from 'react';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { WorkloadWarningBanner } from './WorkloadWarningBanner';
 import { TodoQueueSidebar } from '@/components/sidebar/TodoQueueSidebar';
 import { ChatSidebar } from '@/components/chat/ChatSidebar';
 import { useKeyboardShortcuts } from '@/hooks';
+import { useChatContext } from '@/contexts/ChatContext';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -23,9 +24,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
   const [todoSidebarOpen, setTodoSidebarOpen] = useState(false);
   const [todoCount, setTodoCount] = useState(0);
 
-  // Chat sidebar state
-  const [chatSidebarOpen, setChatSidebarOpen] = useState(false);
-  const [chatUnreadCount, setChatUnreadCount] = useState(0);
+  // Chat sidebar state from context
+  const { isChatOpen, toggleChat, closeChat, unreadCount, setUnreadCount } = useChatContext();
 
   const toggleMobileMenu = useCallback(() => {
     setMobileMenuOpen(prev => !prev);
@@ -38,22 +38,22 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
   const toggleTodoSidebar = useCallback(() => {
     setTodoSidebarOpen(prev => !prev);
     // Close chat sidebar if opening todo
-    setChatSidebarOpen(false);
-  }, []);
+    closeChat();
+  }, [closeChat]);
 
   const closeTodoSidebar = useCallback(() => {
     setTodoSidebarOpen(false);
   }, []);
 
-  const toggleChatSidebar = useCallback(() => {
-    setChatSidebarOpen(prev => !prev);
+  const handleToggleChatSidebar = useCallback(() => {
+    toggleChat();
     // Close todo sidebar if opening chat
     setTodoSidebarOpen(false);
-  }, []);
+  }, [toggleChat]);
 
-  const closeChatSidebar = useCallback(() => {
-    setChatSidebarOpen(false);
-  }, []);
+  const handleCloseChatSidebar = useCallback(() => {
+    closeChat();
+  }, [closeChat]);
 
   return (
     <div className="h-screen flex flex-col bg-gray-50 dark:bg-dark-600">
@@ -61,9 +61,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
       <Header
         onMenuToggle={toggleMobileMenu}
         onTodoToggle={toggleTodoSidebar}
-        onChatToggle={toggleChatSidebar}
+        onChatToggle={handleToggleChatSidebar}
         todoCount={todoCount}
-        chatUnreadCount={chatUnreadCount}
+        chatUnreadCount={unreadCount}
       />
       <div className="flex-1 flex overflow-hidden">
         {/* Desktop Sidebar - hidden on mobile */}
@@ -100,9 +100,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
 
       {/* Chat Right Sidebar */}
       <ChatSidebar
-        isOpen={chatSidebarOpen}
-        onClose={closeChatSidebar}
-        onUnreadCountChange={setChatUnreadCount}
+        isOpen={isChatOpen}
+        onClose={handleCloseChatSidebar}
+        onUnreadCountChange={setUnreadCount}
       />
     </div>
   );

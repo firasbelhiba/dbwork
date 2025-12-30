@@ -4,6 +4,7 @@ import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { WebSocketProvider } from '@/contexts/WebSocketContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import { ChatProvider } from '@/contexts/ChatContext';
 import { RootLayoutClient } from '@/components/layout/RootLayout';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -35,7 +36,9 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <WebSocketProvider>
-              <RootLayoutClient>{children}</RootLayoutClient>
+              <ChatProvider>
+                <RootLayoutClient>{children}</RootLayoutClient>
+              </ChatProvider>
             </WebSocketProvider>
           </AuthProvider>
         </ThemeProvider>

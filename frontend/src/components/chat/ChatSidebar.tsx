@@ -9,6 +9,7 @@ import { MessageThread } from './MessageThread';
 import { NewConversationModal } from './NewConversationModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWebSocket } from '@/contexts/WebSocketContext';
+import { useChatContext } from '@/contexts/ChatContext';
 
 interface ChatSidebarProps {
   isOpen: boolean;
@@ -29,6 +30,12 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   const { onChatMessage } = useWebSocket();
   const [unreadCount, setUnreadCount] = useState(0);
   const activeConversationRef = useRef<string | null>(null);
+  const {
+    pendingConversation,
+    pendingProjectId,
+    clearPendingConversation,
+    clearPendingProjectId,
+  } = useChatContext();
 
   // Keep ref in sync with state
   useEffect(() => {
@@ -103,6 +110,31 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
       fetchConversations();
     }
   }, [isOpen, fetchConversations]);
+
+  // Handle pending conversation from context (e.g., when opening a specific DM)
+  useEffect(() => {
+    if (pendingConversation && isOpen) {
+      setActiveConversation(pendingConversation);
+      clearPendingConversation();
+    }
+  }, [pendingConversation, isOpen, clearPendingConversation]);
+
+  // Handle pending project ID from context (e.g., when opening project group chat)
+  useEffect(() => {
+    if (pendingProjectId && isOpen) {
+      const fetchProjectConversation = async () => {
+        try {
+          const response = await chatAPI.getProjectConversation(pendingProjectId);
+          setActiveConversation(response.data);
+        } catch (error) {
+          console.error('Error fetching project conversation:', error);
+        } finally {
+          clearPendingProjectId();
+        }
+      };
+      fetchProjectConversation();
+    }
+  }, [pendingProjectId, isOpen, clearPendingProjectId]);
 
   // Handle conversation selection
   const handleSelectConversation = (conversation: Conversation) => {
