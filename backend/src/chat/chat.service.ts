@@ -435,6 +435,13 @@ export class ChatService {
     // Reverse to show oldest first (chronological order for chat display)
     result.reverse();
 
+    // Debug: log the order of messages being returned
+    console.log('[ChatService] Messages order:', result.map(m => ({
+      id: m._id.toString().slice(-4),
+      createdAt: m.createdAt,
+      content: m.content?.substring(0, 20),
+    })));
+
     return { messages: result, hasMore };
   }
 
