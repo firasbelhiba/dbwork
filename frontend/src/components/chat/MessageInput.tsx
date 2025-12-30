@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { ChatMessage, MessageAttachment } from '@/types/chat';
 import { User } from '@/types/user';
 
@@ -29,6 +29,25 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Create object URLs for file previews and clean them up
+  const filePreviewUrls = useMemo(() => {
+    return files.map(file => {
+      if (file.type.startsWith('image/')) {
+        return URL.createObjectURL(file);
+      }
+      return null;
+    });
+  }, [files]);
+
+  // Clean up object URLs when files change
+  useEffect(() => {
+    return () => {
+      filePreviewUrls.forEach(url => {
+        if (url) URL.revokeObjectURL(url);
+      });
+    };
+  }, [filePreviewUrls]);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -179,9 +198,9 @@ export const MessageInput: React.FC<MessageInputProps> = ({
               key={index}
               className="relative group flex items-center gap-2 p-2 rounded-lg bg-gray-100 dark:bg-dark-400"
             >
-              {file.type.startsWith('image/') ? (
+              {file.type.startsWith('image/') && filePreviewUrls[index] ? (
                 <img
-                  src={URL.createObjectURL(file)}
+                  src={filePreviewUrls[index]!}
                   alt={file.name}
                   className="w-12 h-12 rounded object-cover"
                 />

@@ -13,6 +13,7 @@ import { CreateMessageDto, UpdateMessageDto } from './dto/create-message.dto';
 import { QueryMessagesDto } from './dto/query-messages.dto';
 import { AppWebSocketGateway } from '../websocket/websocket.gateway';
 import { NotificationsService } from '../notifications/notifications.service';
+import { EncryptionUtil } from '../common/utils/encryption.util';
 
 @Injectable()
 export class ChatService {
@@ -22,6 +23,31 @@ export class ChatService {
     private webSocketGateway: AppWebSocketGateway,
     private notificationsService: NotificationsService,
   ) {}
+
+  /**
+   * Decrypt message content for a single message
+   */
+  private decryptMessageContent(message: MessageDocument): MessageDocument {
+    if (message && message.content && !message.isDeleted) {
+      try {
+        // Create a plain object to modify
+        const messageObj = message.toObject ? message.toObject() : { ...message };
+        messageObj.content = EncryptionUtil.decrypt(message.content);
+        return messageObj as MessageDocument;
+      } catch {
+        // If decryption fails, return original (might be unencrypted old message)
+        return message;
+      }
+    }
+    return message;
+  }
+
+  /**
+   * Decrypt message content for multiple messages
+   */
+  private decryptMessages(messages: MessageDocument[]): MessageDocument[] {
+    return messages.map(msg => this.decryptMessageContent(msg));
+  }
 
   // ==================== CONVERSATION METHODS ====================
 
@@ -295,11 +321,14 @@ export class ChatService {
       messageType = hasImages ? MessageType.IMAGE : MessageType.FILE;
     }
 
+    // Encrypt message content for privacy
+    const encryptedContent = EncryptionUtil.encrypt(dto.content);
+
     const message = new this.messageModel({
       conversationId: new Types.ObjectId(conversationId),
       senderId: new Types.ObjectId(senderId),
       type: messageType,
-      content: dto.content,
+      content: encryptedContent,
       attachments,
       mentions: dto.mentions?.map(id => new Types.ObjectId(id)) || [],
       replyTo: dto.replyTo ? new Types.ObjectId(dto.replyTo) : null,
@@ -321,7 +350,7 @@ export class ChatService {
     await conversation.save();
 
     // Populate sender info
-    const populated = await this.messageModel
+    const populatedRaw = await this.messageModel
       .findById(saved._id)
       .populate('senderId', 'firstName lastName email avatar')
       .populate({
@@ -329,6 +358,9 @@ export class ChatService {
         populate: { path: 'senderId', select: 'firstName lastName avatar' },
       })
       .exec();
+
+    // Decrypt for response and real-time event
+    const populated = this.decryptMessageContent(populatedRaw);
 
     // Emit real-time event
     this.webSocketGateway.emitChatMessage(conversationId, populated);
@@ -435,14 +467,17 @@ export class ChatService {
     // Reverse to show oldest first (chronological order for chat display)
     result.reverse();
 
+    // Decrypt messages before returning
+    const decryptedMessages = this.decryptMessages(result);
+
     // Debug: log the order of messages being returned
-    console.log('[ChatService] Messages order:', result.map(m => ({
+    console.log('[ChatService] Messages order:', decryptedMessages.map(m => ({
       id: m._id.toString().slice(-4),
       createdAt: m.createdAt,
       content: m.content?.substring(0, 20),
     })));
 
-    return { messages: result, hasMore };
+    return { messages: decryptedMessages, hasMore };
   }
 
   /**
@@ -467,16 +502,20 @@ export class ChatService {
       throw new BadRequestException('Cannot edit a deleted message');
     }
 
-    message.content = dto.content;
+    // Encrypt the updated content
+    message.content = EncryptionUtil.encrypt(dto.content);
     message.isEdited = true;
     message.editedAt = new Date();
 
     await message.save();
 
-    const populated = await this.messageModel
+    const populatedRaw = await this.messageModel
       .findById(messageId)
       .populate('senderId', 'firstName lastName email avatar')
       .exec();
+
+    // Decrypt for response
+    const populated = this.decryptMessageContent(populatedRaw);
 
     // Emit real-time event
     this.webSocketGateway.emitChatMessageUpdated(
@@ -550,10 +589,13 @@ export class ChatService {
 
     await message.save();
 
-    const populated = await this.messageModel
+    const populatedRaw = await this.messageModel
       .findById(messageId)
       .populate('senderId', 'firstName lastName email avatar')
       .exec();
+
+    // Decrypt for response
+    const populated = this.decryptMessageContent(populatedRaw);
 
     // Emit real-time event
     this.webSocketGateway.emitChatMessageUpdated(
@@ -580,10 +622,13 @@ export class ChatService {
 
     await message.save();
 
-    const populated = await this.messageModel
+    const populatedRaw = await this.messageModel
       .findById(messageId)
       .populate('senderId', 'firstName lastName email avatar')
       .exec();
+
+    // Decrypt for response
+    const populated = this.decryptMessageContent(populatedRaw);
 
     // Emit real-time event
     this.webSocketGateway.emitChatMessageUpdated(
@@ -712,6 +757,11 @@ export class ChatService {
 
   /**
    * Search messages across all conversations user is part of
+   * Note: Search works on encrypted content, which won't match plaintext queries.
+   * For proper search, you'd need to either:
+   * 1. Store a searchable hash/index separately
+   * 2. Decrypt and filter in memory (slow for large datasets)
+   * 3. Use a separate search index with encrypted metadata
    */
   async searchMessages(userId: string, query: string): Promise<MessageDocument[]> {
     // Get all conversation IDs for user
@@ -722,16 +772,24 @@ export class ChatService {
 
     const conversationIds = conversations.map(c => c._id);
 
-    return this.messageModel
+    // Fetch recent messages and filter after decryption
+    const messages = await this.messageModel
       .find({
         conversationId: { $in: conversationIds },
-        content: { $regex: query, $options: 'i' },
         isDeleted: false,
       })
       .populate('senderId', 'firstName lastName email avatar')
       .populate('conversationId', 'name type')
       .sort({ createdAt: -1 })
-      .limit(50)
+      .limit(500) // Fetch more to filter
       .exec();
+
+    // Decrypt and filter
+    const decrypted = this.decryptMessages(messages);
+    const filtered = decrypted.filter(m =>
+      m.content.toLowerCase().includes(query.toLowerCase())
+    );
+
+    return filtered.slice(0, 50);
   }
 }

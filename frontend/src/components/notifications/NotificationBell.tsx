@@ -82,26 +82,29 @@ export const NotificationBell: React.FC = () => {
     };
   }, [socket]);
 
-  // Fetch full notifications when dropdown opens and auto-mark as read
+  // Fetch full notifications when dropdown opens
   useEffect(() => {
     if (isOpen) {
       fetchNotifications();
-      // Auto-mark all notifications as read when dropdown is opened
-      if (unreadCount > 0) {
-        // Small delay to let user see what's new before marking as read
-        const timer = setTimeout(async () => {
-          try {
-            await notificationsAPI.markAllAsRead();
-            setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-            setUnreadCount(0);
-          } catch (error) {
-            console.error('Error auto-marking notifications as read:', error);
-          }
-        }, 1000); // 1 second delay
-        return () => clearTimeout(timer);
-      }
     }
   }, [isOpen]);
+
+  // Auto-mark all notifications as read when dropdown is opened (with delay)
+  useEffect(() => {
+    if (isOpen && unreadCount > 0) {
+      // Small delay to let user see what's new before marking as read
+      const timer = setTimeout(async () => {
+        try {
+          await notificationsAPI.markAllAsRead();
+          setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+          setUnreadCount(0);
+        } catch (error) {
+          console.error('Error auto-marking notifications as read:', error);
+        }
+      }, 1000); // 1 second delay
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, unreadCount]);
 
   // Close dropdown when clicking outside
   useEffect(() => {

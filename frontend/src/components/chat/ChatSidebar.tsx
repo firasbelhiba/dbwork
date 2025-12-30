@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Conversation } from '@/types/chat';
 import { chatAPI } from '@/lib/api';
 import { ConversationList } from './ConversationList';
@@ -25,11 +25,15 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   const [loading, setLoading] = useState(true);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   const [showNewChatModal, setShowNewChatModal] = useState(false);
-  const [typingUsers, setTypingUsers] = useState<{ [conversationId: string]: string[] }>({});
-
   const { user } = useAuth();
   const { onChatMessage } = useWebSocket();
   const [unreadCount, setUnreadCount] = useState(0);
+  const activeConversationRef = useRef<string | null>(null);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    activeConversationRef.current = activeConversation?._id || null;
+  }, [activeConversation?._id]);
 
   // Fetch unread count from API (only on mount)
   const fetchUnreadCount = useCallback(async () => {
@@ -72,7 +76,8 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
           : data.conversationId;
 
         // Only increment unread if user is NOT currently viewing this conversation
-        const isViewingThisConversation = activeConversation?._id === messageConversationId;
+        // Use ref to get current value without stale closure
+        const isViewingThisConversation = activeConversationRef.current === messageConversationId;
 
         if (!isViewingThisConversation) {
           // Increment unread count immediately (real-time)
@@ -90,7 +95,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
       }
     });
     return unsubscribe;
-  }, [onChatMessage, user?._id, onUnreadCountChange, isOpen, fetchConversations, activeConversation?._id]);
+  }, [onChatMessage, user?._id, onUnreadCountChange, isOpen, fetchConversations]);
 
   // Fetch conversations when sidebar opens
   useEffect(() => {
@@ -156,7 +161,6 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
               <MessageThread
                 conversation={activeConversation}
                 onTyping={handleTyping}
-                typingUsers={typingUsers[activeConversation._id] || []}
               />
             </div>
           </>
