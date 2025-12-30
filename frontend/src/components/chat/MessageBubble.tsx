@@ -168,21 +168,23 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
               {message.attachments.map(renderAttachment)}
             </div>
           )}
-
-          {/* Reactions */}
-          {message.reactions && message.reactions.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-2">
-              {message.reactions.map((reaction, idx) => (
-                <span
-                  key={idx}
-                  className="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full bg-white/20 text-xs"
-                >
-                  {reaction.reaction}
-                </span>
-              ))}
-            </div>
-          )}
         </div>
+
+        {/* Reactions - displayed below the bubble */}
+        {message.reactions && message.reactions.length > 0 && (
+          <div className={`flex flex-wrap gap-1 mt-1 ${isOwnMessage ? 'justify-end' : ''}`}>
+            {message.reactions.map((reaction, idx) => (
+              <span
+                key={idx}
+                className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-gray-100 dark:bg-dark-400 text-sm border border-gray-200 dark:border-dark-300 cursor-pointer hover:bg-gray-200 dark:hover:bg-dark-300 transition-colors"
+                onClick={() => onReact?.(message, reaction.reaction)}
+                title="Click to react"
+              >
+                {reaction.reaction}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* Timestamp and edited label */}
         <div className={`flex items-center gap-1 mt-0.5 ${isOwnMessage ? 'justify-end' : ''}`}>
