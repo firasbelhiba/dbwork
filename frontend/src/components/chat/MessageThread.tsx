@@ -165,11 +165,17 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
   // Send message
   const handleSend = async (content: string, replyToId?: string) => {
     try {
-      // Don't add to state here - WebSocket will broadcast it back to all participants
-      // This prevents duplicate messages
-      await chatAPI.sendMessage(conversation._id, {
+      const response = await chatAPI.sendMessage(conversation._id, {
         content,
         replyTo: replyToId,
+      });
+      // Add message to state immediately for instant feedback
+      // The duplicate check in WebSocket handler will prevent duplicates
+      setMessages(prev => {
+        if (prev.some(m => m._id === response.data._id)) {
+          return prev;
+        }
+        return [...prev, response.data];
       });
     } catch (error: any) {
       console.error('Error sending message:', error);
@@ -180,12 +186,18 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
   // Send message with files
   const handleSendWithFiles = async (content: string, files: File[], replyToId?: string) => {
     try {
-      // Don't add to state here - WebSocket will broadcast it back to all participants
-      // This prevents duplicate messages
-      await chatAPI.sendMessageWithAttachments(conversation._id, {
+      const response = await chatAPI.sendMessageWithAttachments(conversation._id, {
         content,
         files,
         replyTo: replyToId,
+      });
+      // Add message to state immediately for instant feedback
+      // The duplicate check in WebSocket handler will prevent duplicates
+      setMessages(prev => {
+        if (prev.some(m => m._id === response.data._id)) {
+          return prev;
+        }
+        return [...prev, response.data];
       });
     } catch (error) {
       console.error('Error sending message with files:', error);
