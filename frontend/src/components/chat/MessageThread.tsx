@@ -6,6 +6,8 @@ import { chatAPI } from '@/lib/api';
 import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
 import { TypingIndicator } from './TypingIndicator';
+import { useWebSocket } from '@/contexts/WebSocketContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface MessageThreadProps {
   conversation: Conversation;
@@ -23,8 +25,20 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
+  const [wsTypingUsers, setWsTypingUsers] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const { user } = useAuth();
+  const {
+    joinChat,
+    leaveChat,
+    onChatMessage,
+    onChatMessageUpdated,
+    onChatMessageDeleted,
+    onChatTyping,
+    sendTypingIndicator
+  } = useWebSocket();
 
   // Fetch messages
   const fetchMessages = useCallback(async () => {
@@ -73,6 +87,71 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
   useEffect(() => {
     chatAPI.markAsRead(conversation._id).catch(console.error);
   }, [conversation._id]);
+
+  // Join WebSocket chat room and listen for real-time messages
+  useEffect(() => {
+    // Join the chat room
+    joinChat(conversation._id);
+    console.log('[MessageThread] Joined chat room:', conversation._id);
+
+    // Listen for new messages
+    const unsubMessage = onChatMessage((data) => {
+      console.log('[MessageThread] Received WebSocket message:', data);
+      // Only add if it's for this conversation and not already in the list
+      if (data.conversationId === conversation._id || (data as any).conversationId?._id === conversation._id) {
+        setMessages(prev => {
+          // Check if message already exists (might have been added by our own send)
+          if (prev.some(m => m._id === data._id)) {
+            return prev;
+          }
+          return [...prev, data as ChatMessage];
+        });
+      }
+    });
+
+    // Listen for message updates
+    const unsubUpdated = onChatMessageUpdated((data) => {
+      if (data.conversationId === conversation._id || (data as any).conversationId?._id === conversation._id) {
+        setMessages(prev =>
+          prev.map(m => (m._id === data._id ? data as ChatMessage : m))
+        );
+      }
+    });
+
+    // Listen for message deletions
+    const unsubDeleted = onChatMessageDeleted((data) => {
+      setMessages(prev =>
+        prev.map(m =>
+          m._id === data.messageId
+            ? { ...m, isDeleted: true, content: 'This message has been deleted' }
+            : m
+        )
+      );
+    });
+
+    // Listen for typing indicators
+    const unsubTyping = onChatTyping((data) => {
+      if (data.conversationId === conversation._id && data.userId !== user?._id) {
+        setWsTypingUsers(prev => {
+          if (data.isTyping) {
+            return prev.includes(data.userId) ? prev : [...prev, data.userId];
+          } else {
+            return prev.filter(id => id !== data.userId);
+          }
+        });
+      }
+    });
+
+    // Cleanup: leave chat room and unsubscribe
+    return () => {
+      leaveChat(conversation._id);
+      console.log('[MessageThread] Left chat room:', conversation._id);
+      unsubMessage();
+      unsubUpdated();
+      unsubDeleted();
+      unsubTyping();
+    };
+  }, [conversation._id, joinChat, leaveChat, onChatMessage, onChatMessageUpdated, onChatMessageDeleted, onChatTyping, user?._id]);
 
   // Handle scroll for infinite loading
   const handleScroll = () => {
@@ -260,8 +339,8 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
         )}
 
         {/* Typing indicator */}
-        {typingUsers.length > 0 && (
-          <TypingIndicator users={typingUsers} />
+        {(typingUsers.length > 0 || wsTypingUsers.length > 0) && (
+          <TypingIndicator users={[...new Set([...typingUsers, ...wsTypingUsers])]} />
         )}
 
         <div ref={messagesEndRef} />
@@ -271,7 +350,12 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
       <MessageInput
         onSend={handleSend}
         onSendWithFiles={handleSendWithFiles}
-        onTyping={onTyping}
+        onTyping={(isTyping) => {
+          // Send typing indicator via WebSocket
+          sendTypingIndicator(conversation._id, isTyping);
+          // Also call the prop callback if provided
+          onTyping?.(isTyping);
+        }}
         replyTo={replyTo}
         onCancelReply={() => setReplyTo(null)}
       />
