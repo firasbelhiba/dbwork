@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { v2 as cloudinary } from 'cloudinary';
+import { getCloudinary } from '../attachments/cloudinary.config';
 import { Conversation, ConversationDocument, ConversationType } from './schemas/conversation.schema';
 import { Message, MessageDocument, MessageType, MessageAttachment } from './schemas/message.schema';
 import { Project, ProjectDocument } from '../projects/schemas/project.schema';
@@ -806,6 +806,7 @@ export class ChatService {
    * Upload a file attachment to Cloudinary
    */
   async uploadAttachment(file: Express.Multer.File): Promise<MessageAttachment> {
+    const cloudinary = getCloudinary();
     return new Promise((resolve, reject) => {
       const isImage = file.mimetype.startsWith('image/');
 

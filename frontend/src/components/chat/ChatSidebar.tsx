@@ -30,7 +30,6 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   const [loadingProjectChat, setLoadingProjectChat] = useState(false);
   const { user } = useAuth();
   const { onChatMessage } = useWebSocket();
-  const [unreadCount, setUnreadCount] = useState(0);
   const activeConversationRef = useRef<string | null>(null);
   const fetchingProjectIdRef = useRef<string | null>(null);
   const {
@@ -38,6 +37,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
     pendingProjectId,
     clearPendingConversation,
     clearPendingProjectId,
+    setUnreadCount: setContextUnreadCount,
   } = useChatContext();
 
   // Keep ref in sync with state
@@ -50,12 +50,12 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
     try {
       const response = await chatAPI.getUnreadCount();
       const count = response.data.count || 0;
-      setUnreadCount(count);
+      setContextUnreadCount(count);
       onUnreadCountChange?.(count);
     } catch (error) {
       console.error('Error fetching unread count:', error);
     }
-  }, [onUnreadCountChange]);
+  }, [onUnreadCountChange, setContextUnreadCount]);
 
   // Fetch conversations
   const fetchConversations = useCallback(async () => {
@@ -90,12 +90,8 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
         const isViewingThisConversation = activeConversationRef.current === messageConversationId;
 
         if (!isViewingThisConversation) {
-          // Increment unread count immediately (real-time)
-          setUnreadCount(prev => {
-            const newCount = prev + 1;
-            onUnreadCountChange?.(newCount);
-            return newCount;
-          });
+          // Increment unread count immediately (real-time) - refresh from server
+          fetchUnreadCount();
         }
 
         // Refresh conversations list if sidebar is open (to update last message preview)
@@ -105,7 +101,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
       }
     });
     return unsubscribe;
-  }, [onChatMessage, user?._id, onUnreadCountChange, isOpen, fetchConversations]);
+  }, [onChatMessage, user?._id, onUnreadCountChange, isOpen, fetchConversations, fetchUnreadCount]);
 
   // Fetch conversations when sidebar opens
   useEffect(() => {

@@ -8,6 +8,7 @@ import { projectsAPI } from '@/lib/api';
 import { Project } from '@/types/project';
 import { UserRole } from '@/types/user';
 import { useAuth } from '@/contexts/AuthContext';
+import { useChatContext } from '@/contexts/ChatContext';
 import { ChangelogModal } from '@/components/changelog';
 
 interface NavItem {
@@ -92,6 +93,7 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) => {
   const pathname = usePathname();
   const { user } = useAuth();
+  const { unreadCount } = useChatContext();
   const [projects, setProjects] = useState<Project[]>([]);
   const [collapsed, setCollapsed] = useState(false);
   const [showChangelogModal, setShowChangelogModal] = useState(false);
@@ -177,6 +179,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) =
         <div className="px-3 space-y-1">
           {mainNavItems.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+            const isChatItem = item.name === 'Chat';
             return (
               <Link
                 key={item.href}
@@ -190,7 +193,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) =
                 )}
                 title={isCollapsed ? item.name : undefined}
               >
-                {item.icon}
+                <div className="relative">
+                  {item.icon}
+                  {isChatItem && unreadCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold rounded-full bg-red-500 text-white">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </div>
                 {!isCollapsed && <span>{item.name}</span>}
               </Link>
             );
