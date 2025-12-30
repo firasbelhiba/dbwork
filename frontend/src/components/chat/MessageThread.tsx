@@ -95,15 +95,13 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
   useEffect(() => {
     // Join the chat room
     joinChat(conversation._id);
-    console.log('[MessageThread] Joined chat room:', conversation._id);
 
     // Listen for new messages
     const unsubMessage = onChatMessage((data) => {
-      console.log('[MessageThread] Received WebSocket message:', data);
       // Only add if it's for this conversation and not already in the list
       if (data.conversationId === conversation._id || (data as any).conversationId?._id === conversation._id) {
         setMessages(prev => {
-          // Check if message already exists (might have been added by our own send)
+          // Check if message already exists
           if (prev.some(m => m._id === data._id)) {
             return prev;
           }
@@ -148,7 +146,6 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
     // Cleanup: leave chat room and unsubscribe
     return () => {
       leaveChat(conversation._id);
-      console.log('[MessageThread] Left chat room:', conversation._id);
       unsubMessage();
       unsubUpdated();
       unsubDeleted();
@@ -167,17 +164,15 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
 
   // Send message
   const handleSend = async (content: string, replyToId?: string) => {
-    console.log('[MessageThread] Sending message:', { conversationId: conversation._id, content, replyToId });
     try {
-      const response = await chatAPI.sendMessage(conversation._id, {
+      // Don't add to state here - WebSocket will broadcast it back to all participants
+      // This prevents duplicate messages
+      await chatAPI.sendMessage(conversation._id, {
         content,
         replyTo: replyToId,
       });
-      console.log('[MessageThread] Message sent successfully:', response.data);
-      setMessages(prev => [...prev, response.data]);
     } catch (error: any) {
-      console.error('[MessageThread] Error sending message:', error);
-      console.error('[MessageThread] Error response:', error.response?.data);
+      console.error('Error sending message:', error);
       throw error;
     }
   };
@@ -185,12 +180,13 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
   // Send message with files
   const handleSendWithFiles = async (content: string, files: File[], replyToId?: string) => {
     try {
-      const response = await chatAPI.sendMessageWithAttachments(conversation._id, {
+      // Don't add to state here - WebSocket will broadcast it back to all participants
+      // This prevents duplicate messages
+      await chatAPI.sendMessageWithAttachments(conversation._id, {
         content,
         files,
         replyTo: replyToId,
       });
-      setMessages(prev => [...prev, response.data]);
     } catch (error) {
       console.error('Error sending message with files:', error);
       throw error;
