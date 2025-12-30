@@ -26,6 +26,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   const [loading, setLoading] = useState(true);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   const [showNewChatModal, setShowNewChatModal] = useState(false);
+  const [loadingProjectChat, setLoadingProjectChat] = useState(false);
   const { user } = useAuth();
   const { onChatMessage } = useWebSocket();
   const [unreadCount, setUnreadCount] = useState(0);
@@ -120,21 +121,25 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   }, [pendingConversation, isOpen, clearPendingConversation]);
 
   // Handle pending project ID from context (e.g., when opening project group chat)
+  // This effect runs when pendingProjectId changes, regardless of isOpen state
+  // because the sidebar animation happens simultaneously
   useEffect(() => {
-    if (pendingProjectId && isOpen) {
+    if (pendingProjectId) {
       const fetchProjectConversation = async () => {
+        setLoadingProjectChat(true);
         try {
           const response = await chatAPI.getProjectConversation(pendingProjectId);
           setActiveConversation(response.data);
         } catch (error) {
           console.error('Error fetching project conversation:', error);
         } finally {
+          setLoadingProjectChat(false);
           clearPendingProjectId();
         }
       };
       fetchProjectConversation();
     }
-  }, [pendingProjectId, isOpen, clearPendingProjectId]);
+  }, [pendingProjectId, clearPendingProjectId]);
 
   // Handle conversation selection
   const handleSelectConversation = (conversation: Conversation) => {
@@ -181,7 +186,15 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        {activeConversation ? (
+        {loadingProjectChat ? (
+          // Loading state when fetching project conversation
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+              <p className="text-sm text-gray-500 dark:text-gray-400">Loading group chat...</p>
+            </div>
+          </div>
+        ) : activeConversation ? (
           // Message Thread View
           <>
             <ChatHeader
