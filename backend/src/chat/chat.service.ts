@@ -429,8 +429,10 @@ export class ChatService {
     const hasMore = messages.length > limit;
     const result = hasMore ? messages.slice(0, limit) : messages;
 
-    // Reverse if we fetched in ascending order (for 'after' cursor)
-    if (query.after) {
+    // Reverse to show oldest first (chronological order for chat display)
+    // For 'after' cursor: messages were fetched ascending, already in correct order
+    // For 'before' cursor or initial load: messages were fetched descending, need to reverse
+    if (!query.after) {
       result.reverse();
     }
 
