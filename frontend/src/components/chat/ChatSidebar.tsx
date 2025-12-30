@@ -7,6 +7,8 @@ import { ConversationList } from './ConversationList';
 import { ChatHeader } from './ChatHeader';
 import { MessageThread } from './MessageThread';
 import { NewConversationModal } from './NewConversationModal';
+import { useAuth } from '@/contexts/AuthContext';
+import { useWebSocket } from '@/contexts/WebSocketContext';
 
 interface ChatSidebarProps {
   isOpen: boolean;
@@ -25,42 +27,60 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [typingUsers, setTypingUsers] = useState<{ [conversationId: string]: string[] }>({});
 
+  const { user } = useAuth();
+  const { onChatMessage } = useWebSocket();
+
+  // Fetch unread count from API
+  const fetchUnreadCount = useCallback(async () => {
+    try {
+      const response = await chatAPI.getUnreadCount();
+      onUnreadCountChange?.(response.data.count || 0);
+    } catch (error) {
+      console.error('Error fetching unread count:', error);
+    }
+  }, [onUnreadCountChange]);
+
   // Fetch conversations
   const fetchConversations = useCallback(async () => {
     try {
       const response = await chatAPI.getConversations();
       setConversations(response.data);
-
-      // Calculate total unread
-      let totalUnread = 0;
-      response.data.forEach((conv: Conversation) => {
-        conv.readReceipts?.forEach(receipt => {
-          totalUnread += receipt.unreadCount || 0;
-        });
-      });
-      onUnreadCountChange?.(totalUnread);
     } catch (error) {
       console.error('Error fetching conversations:', error);
     } finally {
       setLoading(false);
     }
-  }, [onUnreadCountChange]);
+  }, []);
 
-  // Initial fetch
+  // Fetch unread count on mount and periodically (even when sidebar is closed)
+  useEffect(() => {
+    fetchUnreadCount();
+    const interval = setInterval(fetchUnreadCount, 30000);
+    return () => clearInterval(interval);
+  }, [fetchUnreadCount]);
+
+  // Listen for new messages via WebSocket to update unread count
+  useEffect(() => {
+    const unsubscribe = onChatMessage((data) => {
+      // If the message is from someone else, increment unread count
+      const senderId = typeof data.senderId === 'object' ? data.senderId._id : data.senderId;
+      if (senderId !== user?._id) {
+        // Refresh unread count
+        fetchUnreadCount();
+        // Also refresh conversations if sidebar is open
+        if (isOpen) {
+          fetchConversations();
+        }
+      }
+    });
+    return unsubscribe;
+  }, [onChatMessage, user?._id, fetchUnreadCount, isOpen, fetchConversations]);
+
+  // Fetch conversations when sidebar opens
   useEffect(() => {
     if (isOpen) {
       fetchConversations();
     }
-  }, [isOpen, fetchConversations]);
-
-  // Periodic refresh
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (isOpen) {
-        fetchConversations();
-      }
-    }, 30000);
-    return () => clearInterval(interval);
   }, [isOpen, fetchConversations]);
 
   // Handle conversation selection
@@ -71,7 +91,8 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   // Handle back to list
   const handleBackToList = () => {
     setActiveConversation(null);
-    fetchConversations(); // Refresh to update unread counts
+    fetchConversations(); // Refresh conversations
+    fetchUnreadCount(); // Refresh unread count (reading messages clears count)
   };
 
   // Handle new DM created
