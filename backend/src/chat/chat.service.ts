@@ -390,7 +390,7 @@ export class ChatService {
   }
 
   /**
-   * Get messages for a conversation with cursor-based pagination
+   * Get messages for a conversation with pagination
    */
   async getMessages(
     conversationId: string,
@@ -405,15 +405,18 @@ export class ChatService {
       isDeleted: false,
     };
 
-    // Cursor-based pagination
+    // Cursor-based pagination using createdAt for reliable chronological order
     if (query.before) {
-      filter._id = { $lt: new Types.ObjectId(query.before) };
-    } else if (query.after) {
-      filter._id = { $gt: new Types.ObjectId(query.after) };
+      // Get the message to find its createdAt
+      const beforeMsg = await this.messageModel.findById(query.before).select('createdAt').exec();
+      if (beforeMsg) {
+        filter.createdAt = { $lt: beforeMsg.createdAt };
+      }
     }
 
     const limit = query.limit || 50;
 
+    // Always fetch in descending order (newest first), then reverse for display
     const messages = await this.messageModel
       .find(filter)
       .populate('senderId', 'firstName lastName email avatar')
@@ -422,19 +425,15 @@ export class ChatService {
         path: 'replyTo',
         populate: { path: 'senderId', select: 'firstName lastName avatar' },
       })
-      .sort({ _id: query.after ? 1 : -1 })
-      .limit(limit + 1) // Fetch one extra to check if there are more
+      .sort({ createdAt: -1 })
+      .limit(limit + 1)
       .exec();
 
     const hasMore = messages.length > limit;
     const result = hasMore ? messages.slice(0, limit) : messages;
 
     // Reverse to show oldest first (chronological order for chat display)
-    // For 'after' cursor: messages were fetched ascending, already in correct order
-    // For 'before' cursor or initial load: messages were fetched descending, need to reverse
-    if (!query.after) {
-      result.reverse();
-    }
+    result.reverse();
 
     return { messages: result, hasMore };
   }
