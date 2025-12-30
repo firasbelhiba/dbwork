@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState, useRef, useCallb
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 import toast from 'react-hot-toast';
+import { showChatToast } from '@/components/chat/ChatToast';
 
 interface TimerAutoStoppedData {
   issueId: string;
@@ -17,8 +18,15 @@ interface NotificationData {
   title: string;
   message: string;
   userId: string;
+  link?: string;
   relatedIssue?: any;
   relatedProject?: any;
+  metadata?: {
+    conversationId?: string;
+    senderId?: string;
+    senderName?: string;
+    senderAvatar?: string;
+  };
   createdAt: string;
 }
 
@@ -181,11 +189,22 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
       console.log('[WebSocket] New notification received:', notification);
       // Play notification sound
       playNotificationSound();
-      // Show toast notification
-      toast(notification.message || notification.title || 'New notification', {
-        icon: '🔔',
-        duration: 5000,
-      });
+
+      // Use custom chat toast for chat message notifications
+      if (notification.type === 'chat_message' && notification.metadata?.conversationId) {
+        showChatToast(
+          notification.metadata.senderName || notification.title.replace('New message from ', ''),
+          notification.message,
+          notification.metadata.conversationId,
+          notification.metadata.senderAvatar
+        );
+      } else {
+        // Show standard toast notification for other types
+        toast(notification.message || notification.title || 'New notification', {
+          icon: '🔔',
+          duration: 5000,
+        });
+      }
     });
 
     // Request current online count when connected

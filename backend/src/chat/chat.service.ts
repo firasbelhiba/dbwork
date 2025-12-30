@@ -440,6 +440,13 @@ export class ChatService {
     for (const participant of otherParticipants) {
       const participantId = (participant as any)._id.toString();
 
+      // Get sender info for the notification
+      const sender = populated.senderId as any;
+      const senderName = sender?.firstName
+        ? `${sender.firstName} ${sender.lastName || ''}`.trim()
+        : 'Someone';
+      const senderAvatar = sender?.avatar || undefined;
+
       // Only notify if user is not in the conversation room (not viewing it)
       try {
         await this.notificationsService.create({
@@ -447,12 +454,14 @@ export class ChatService {
           type: 'chat_message' as any,
           title: conversation.type === ConversationType.PROJECT
             ? `New message in ${conversation.name}`
-            : `New message from ${(populated.senderId as any).firstName}`,
+            : `New message from ${senderName}`,
           message: dto.content.length > 100 ? dto.content.substring(0, 100) + '...' : dto.content,
           link: `/chat?conversation=${conversationId}`,
           metadata: {
             conversationId,
             senderId,
+            senderName,
+            senderAvatar,
             messageId: saved._id.toString(),
           },
         });
