@@ -4,6 +4,7 @@ import React from 'react';
 import { Conversation } from '@/types/chat';
 import { User } from '@/types/user';
 import { useAuth } from '@/contexts/AuthContext';
+import { UserAvatar } from '@/components/common/UserAvatar';
 
 interface ChatHeaderProps {
   conversation: Conversation;
@@ -45,7 +46,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
     return 'Unknown User';
   };
 
-  // Get avatar
+  // Get avatar with online status
   const getAvatar = () => {
     if (isProjectConversation) {
       return (
@@ -55,12 +56,15 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
       );
     }
     const otherUser = getOtherUser();
-    if (otherUser?.avatar) {
+    if (otherUser) {
       return (
-        <img
-          src={otherUser.avatar}
-          alt={getDisplayName()}
-          className="w-10 h-10 rounded-full object-cover"
+        <UserAvatar
+          userId={otherUser._id}
+          avatar={otherUser.avatar}
+          firstName={otherUser.firstName}
+          lastName={otherUser.lastName}
+          size="lg"
+          showOnlineStatus={true}
         />
       );
     }

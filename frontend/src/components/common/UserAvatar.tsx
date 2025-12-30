@@ -72,11 +72,13 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
         </div>
       )}
 
-      {/* Online indicator dot */}
-      {showOnlineStatus && isOnline && (
+      {/* Online/Offline indicator dot */}
+      {showOnlineStatus && (
         <span
-          className={`absolute ${dotPositionClasses[size]} ${dotSizeClasses[size]} bg-green-500 border-white dark:border-dark-500 rounded-full`}
-          title="Online"
+          className={`absolute ${dotPositionClasses[size]} ${dotSizeClasses[size]} ${
+            isOnline ? 'bg-green-500' : 'bg-red-500'
+          } border-white dark:border-dark-500 rounded-full`}
+          title={isOnline ? 'Online' : 'Offline'}
         />
       )}
     </div>
@@ -117,13 +119,13 @@ export const UserAvatarWithStatus: React.FC<UserAvatarWithStatusProps> = ({
         </div>
       )}
 
-      {/* Online indicator dot */}
-      {isOnline && (
-        <span
-          className={`absolute ${dotPositionClasses[size]} ${dotSizeClasses[size]} bg-green-500 border-white dark:border-dark-500 rounded-full`}
-          title="Online"
-        />
-      )}
+      {/* Online/Offline indicator dot */}
+      <span
+        className={`absolute ${dotPositionClasses[size]} ${dotSizeClasses[size]} ${
+          isOnline ? 'bg-green-500' : 'bg-red-500'
+        } border-white dark:border-dark-500 rounded-full`}
+        title={isOnline ? 'Online' : 'Offline'}
+      />
     </div>
   );
 };
