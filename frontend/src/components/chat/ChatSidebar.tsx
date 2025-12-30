@@ -7,6 +7,7 @@ import { ConversationList } from './ConversationList';
 import { ChatHeader } from './ChatHeader';
 import { MessageThread } from './MessageThread';
 import { NewConversationModal } from './NewConversationModal';
+import { LogoLoader } from '@/components/common/LogoLoader';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWebSocket } from '@/contexts/WebSocketContext';
 import { useChatContext } from '@/contexts/ChatContext';
@@ -189,10 +190,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
         {loadingProjectChat ? (
           // Loading state when fetching project conversation
           <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-              <p className="text-sm text-gray-500 dark:text-gray-400">Loading group chat...</p>
-            </div>
+            <LogoLoader size="sm" text="Loading group chat" />
           </div>
         ) : activeConversation ? (
           // Message Thread View
