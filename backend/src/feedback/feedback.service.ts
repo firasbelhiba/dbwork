@@ -13,6 +13,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { ActionType, EntityType } from '../activities/schemas/activity.schema';
 import { getCloudinary } from '../attachments/cloudinary.config';
 import { IssuesService } from '../issues/issues.service';
+import { TimeTrackingService } from '../issues/time-tracking.service';
 import { Project, ProjectDocument } from '../projects/schemas/project.schema';
 import { Issue, IssueDocument } from '../issues/schemas/issue.schema';
 import { IssueType, IssuePriority } from '@common/enums';
@@ -43,6 +44,8 @@ export class FeedbackService {
     private notificationsService: NotificationsService,
     @Inject(forwardRef(() => IssuesService))
     private issuesService: IssuesService,
+    @Inject(forwardRef(() => TimeTrackingService))
+    private timeTrackingService: TimeTrackingService,
   ) {}
 
   async create(
@@ -477,6 +480,19 @@ export class FeedbackService {
     };
 
     const createdIssue = await this.issuesService.create(ticketData as any, adminUserId);
+
+    // Start the timer for the assignee (Santa Admin)
+    try {
+      await this.timeTrackingService.startTimer(
+        createdIssue._id.toString(),
+        santaUser._id.toString(),
+      );
+      console.log(`[FEEDBACK] Started timer for ticket ${createdIssue.key}`);
+    } catch (error) {
+      console.error(`[FEEDBACK] Could not start timer for ticket: ${error.message}`);
+      // Don't fail if timer start fails
+    }
+
     return createdIssue;
   }
 
