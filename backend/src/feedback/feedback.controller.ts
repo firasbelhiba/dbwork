@@ -112,6 +112,16 @@ export class FeedbackController {
     return this.feedbackService.reopen(id, user._id);
   }
 
+  @Patch(':id/in-progress')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Mark feedback as in progress (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Feedback marked as in progress' })
+  @ApiResponse({ status: 403, description: 'Forbidden - admin only' })
+  @ApiResponse({ status: 404, description: 'Feedback not found' })
+  inProgress(@Param('id') id: string, @CurrentUser() user) {
+    return this.feedbackService.inProgress(id, user._id);
+  }
+
   @Patch(':id/to-test')
   @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Mark feedback as to test (Admin only)' })

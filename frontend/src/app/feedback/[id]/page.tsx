@@ -105,6 +105,21 @@ export default function FeedbackDetailPage() {
     }
   };
 
+  const handleInProgress = async () => {
+    if (!feedback) return;
+    try {
+      setActionLoading(true);
+      const response = await feedbackAPI.inProgress(feedback._id);
+      setFeedback(response.data);
+      toast.success('Feedback marked as in progress');
+    } catch (error: any) {
+      console.error('Error marking feedback as in progress:', error);
+      toast.error(error.response?.data?.message || 'Failed to mark feedback as in progress');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleToTest = async () => {
     if (!feedback) return;
     try {
@@ -185,6 +200,8 @@ export default function FeedbackDetailPage() {
     switch (status) {
       case FeedbackStatus.OPEN:
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+      case FeedbackStatus.IN_PROGRESS:
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
       case FeedbackStatus.TO_TEST:
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
       case FeedbackStatus.RESOLVED:
@@ -252,6 +269,7 @@ export default function FeedbackDetailPage() {
                 </span>
                 <span className={`text-sm font-medium px-2.5 py-0.5 rounded-full ${getStatusColor(feedback.status)}`}>
                   {feedback.status === FeedbackStatus.OPEN ? 'Open' :
+                   feedback.status === FeedbackStatus.IN_PROGRESS ? 'In Progress' :
                    feedback.status === FeedbackStatus.TO_TEST ? 'To Test' :
                    feedback.status === FeedbackStatus.RESOLVED ? 'Resolved' :
                    'Closed'}
@@ -514,8 +532,32 @@ export default function FeedbackDetailPage() {
               <>
                 {feedback.status === FeedbackStatus.OPEN && (
                   <>
+                    <Button variant="outline" onClick={handleInProgress} disabled={actionLoading}>
+                      {actionLoading ? 'Marking...' : 'In Progress'}
+                    </Button>
                     <Button variant="outline" onClick={handleToTest} disabled={actionLoading}>
-                      {actionLoading ? 'Marking as To Test...' : 'To Test'}
+                      {actionLoading ? 'Marking...' : 'To Test'}
+                    </Button>
+                    <Button onClick={handleResolve} disabled={actionLoading}>
+                      {actionLoading ? 'Resolving...' : 'Mark as Resolved'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={handleClose}
+                      disabled={actionLoading}
+                      className="text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/20"
+                    >
+                      {actionLoading ? 'Closing...' : 'Close'}
+                    </Button>
+                  </>
+                )}
+                {feedback.status === FeedbackStatus.IN_PROGRESS && (
+                  <>
+                    <Button variant="outline" onClick={handleReopen} disabled={actionLoading}>
+                      {actionLoading ? 'Reopening...' : 'Reopen'}
+                    </Button>
+                    <Button variant="outline" onClick={handleToTest} disabled={actionLoading}>
+                      {actionLoading ? 'Marking...' : 'To Test'}
                     </Button>
                     <Button onClick={handleResolve} disabled={actionLoading}>
                       {actionLoading ? 'Resolving...' : 'Mark as Resolved'}
@@ -534,6 +576,9 @@ export default function FeedbackDetailPage() {
                   <>
                     <Button variant="outline" onClick={handleReopen} disabled={actionLoading}>
                       {actionLoading ? 'Reopening...' : 'Reopen'}
+                    </Button>
+                    <Button variant="outline" onClick={handleInProgress} disabled={actionLoading}>
+                      {actionLoading ? 'Marking...' : 'In Progress'}
                     </Button>
                     <Button onClick={handleResolve} disabled={actionLoading}>
                       {actionLoading ? 'Resolving...' : 'Mark as Resolved'}

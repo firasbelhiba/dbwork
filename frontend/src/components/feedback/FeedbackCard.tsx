@@ -63,6 +63,9 @@ export const FeedbackCard: React.FC<FeedbackCardProps> = ({
           <Badge variant={getTypeColor(feedback.type)}>
             {getTypeLabel(feedback.type)}
           </Badge>
+          {feedback.status === FeedbackStatus.IN_PROGRESS && (
+            <Badge variant="primary">In Progress</Badge>
+          )}
           {feedback.status === FeedbackStatus.TO_TEST && (
             <Badge variant="warning">To Test</Badge>
           )}

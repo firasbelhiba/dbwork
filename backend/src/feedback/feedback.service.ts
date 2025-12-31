@@ -347,6 +347,51 @@ export class FeedbackService {
     return this.findOne(id);
   }
 
+  async inProgress(id: string, adminUserId: string): Promise<FeedbackDocument> {
+    const feedback = await this.feedbackModel.findById(id).exec();
+
+    if (!feedback) {
+      throw new NotFoundException('Feedback not found');
+    }
+
+    if (feedback.status === FeedbackStatus.IN_PROGRESS) {
+      throw new BadRequestException('Feedback is already marked as in progress');
+    }
+
+    const oldStatus = feedback.status;
+    feedback.status = FeedbackStatus.IN_PROGRESS;
+
+    await feedback.save();
+
+    // Log activity
+    await this.activitiesService.logActivity(
+      adminUserId,
+      ActionType.UPDATED,
+      EntityType.FEEDBACK,
+      feedback._id.toString(),
+      feedback.title,
+    );
+
+    // Notify feedback author about status change
+    try {
+      const feedbackAuthorId = feedback.userId.toString();
+      if (feedbackAuthorId !== adminUserId) {
+        await this.notificationsService.notifyFeedbackStatusChanged(
+          feedbackAuthorId,
+          feedback._id.toString(),
+          feedback.title,
+          oldStatus,
+          FeedbackStatus.IN_PROGRESS,
+          adminUserId,
+        );
+      }
+    } catch (error) {
+      console.error('[NOTIFICATION] Error notifying feedback status changed:', error);
+    }
+
+    return this.findOne(id);
+  }
+
   async toTest(id: string, adminUserId: string): Promise<FeedbackDocument> {
     const feedback = await this.feedbackModel.findById(id).exec();
 
