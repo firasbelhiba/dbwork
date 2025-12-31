@@ -15,6 +15,7 @@ import { QueryMessagesDto } from './dto/query-messages.dto';
 import { AppWebSocketGateway } from '../websocket/websocket.gateway';
 import { NotificationsService } from '../notifications/notifications.service';
 import { EncryptionUtil } from '../common/utils/encryption.util';
+import { NotificationType } from '../common/enums/notification-type.enum';
 
 @Injectable()
 export class ChatService {
@@ -478,7 +479,7 @@ export class ChatService {
         try {
           await this.notificationsService.create({
             userId: mentionedUserId,
-            type: 'chat_mention' as any,
+            type: NotificationType.CHAT_MENTION,
             title: `${senderName} mentioned you`,
             message: dto.content.length > 100 ? dto.content.substring(0, 100) + '...' : dto.content,
             link: `/chat?conversation=${conversationId}`,
@@ -513,7 +514,7 @@ export class ChatService {
       try {
         await this.notificationsService.create({
           userId: participantId,
-          type: 'chat_message' as any,
+          type: NotificationType.CHAT_MESSAGE,
           title: conversation.type === ConversationType.PROJECT
             ? `New message in ${conversation.name}`
             : `New message from ${senderName}`,

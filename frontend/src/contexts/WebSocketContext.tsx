@@ -207,8 +207,8 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
       // Play notification sound
       playNotificationSound();
 
-      // Use custom chat toast for chat message notifications
-      if (notification.type === 'chat_message' && notification.metadata?.conversationId) {
+      // Use custom chat toast for chat message and mention notifications
+      if ((notification.type === 'chat_message' || notification.type === 'chat_mention') && notification.metadata?.conversationId) {
         showChatToast(
           notification.metadata.senderName || notification.title.replace('New message from ', ''),
           notification.message,
