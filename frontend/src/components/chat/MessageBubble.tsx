@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { format } from 'date-fns';
 import { ChatMessage, MessageAttachment, ReadReceipt } from '@/types/chat';
 import { User } from '@/types/user';
@@ -34,7 +34,25 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 }) => {
   const { user: currentUser } = useAuth();
   const [showActions, setShowActions] = useState(false);
-  const [showReactionPicker, setShowReactionPicker] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
+    if (showDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDropdown]);
 
   const sender = message.senderId as User;
   const isOwnMessage = sender?._id === currentUser?._id;
@@ -217,7 +235,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => {
         setShowActions(false);
-        setShowReactionPicker(false);
+        setShowDropdown(false);
       }}
     >
       {/* Avatar */}
@@ -238,7 +256,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       )}
 
       {/* Message Content */}
-      <div className={`max-w-[70%] flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'}`}>
+      <div className={`relative max-w-[70%] flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'}`}>
         {/* Sender name for non-own messages */}
         {!isOwnMessage && (
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
@@ -306,73 +324,108 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           )}
         </div>
 
-        {/* Actions - displayed below the bubble */}
+        {/* WhatsApp-style dropdown trigger - shows on hover */}
         {showActions && !message.isDeleted && (
-          <div className={`flex items-center gap-1 mt-1 ${isOwnMessage ? 'justify-end' : ''}`}>
-            {/* Reaction */}
-            <div className="relative">
-              <button
-                onClick={() => setShowReactionPicker(!showReactionPicker)}
-                className="p-1.5 rounded-full bg-gray-100 dark:bg-dark-400 hover:bg-gray-200 dark:hover:bg-dark-300 transition-colors"
-                title="React"
+          <div
+            ref={dropdownRef}
+            className={`absolute top-1 ${isOwnMessage ? 'left-1' : 'right-1'} z-20`}
+          >
+            <button
+              onClick={() => setShowDropdown(!showDropdown)}
+              className="p-1 rounded-md bg-white/90 dark:bg-dark-500/90 hover:bg-white dark:hover:bg-dark-400 shadow-sm transition-colors"
+            >
+              <svg
+                className="w-4 h-4 text-gray-500 dark:text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </button>
-              {showReactionPicker && (
-                <div className={`absolute bottom-full mb-1 ${isOwnMessage ? 'right-0' : 'left-0'} flex gap-1 p-1.5 bg-white dark:bg-dark-500 rounded-lg shadow-lg border border-gray-200 dark:border-dark-400 z-10`}>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {/* Dropdown menu */}
+            {showDropdown && (
+              <div className={`absolute top-full mt-1 ${isOwnMessage ? 'left-0' : 'right-0'} bg-white dark:bg-dark-500 rounded-lg shadow-xl border border-gray-200 dark:border-dark-400 py-1 min-w-[160px] z-30`}>
+                {/* Quick reactions row */}
+                <div className="flex justify-center gap-1 px-2 py-2 border-b border-gray-100 dark:border-dark-400">
                   {reactions.map((emoji) => (
                     <button
                       key={emoji}
                       onClick={() => {
                         onReact?.(message, emoji);
-                        setShowReactionPicker(false);
+                        setShowDropdown(false);
                       }}
-                      className="p-1 hover:bg-gray-100 dark:hover:bg-dark-400 rounded transition-colors text-lg"
+                      className="p-1.5 hover:bg-gray-100 dark:hover:bg-dark-400 rounded-full transition-colors text-lg"
                     >
                       {emoji}
                     </button>
                   ))}
                 </div>
-              )}
-            </div>
 
-            {/* Reply */}
-            <button
-              onClick={() => onReply?.(message)}
-              className="p-1.5 rounded-full bg-gray-100 dark:bg-dark-400 hover:bg-gray-200 dark:hover:bg-dark-300 transition-colors"
-              title="Reply"
-            >
-              <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-              </svg>
-            </button>
+                {/* Menu actions */}
+                <div className="py-1">
+                  {/* Reply */}
+                  <button
+                    onClick={() => {
+                      onReply?.(message);
+                      setShowDropdown(false);
+                    }}
+                    className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-400 flex items-center gap-3"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                    </svg>
+                    Reply
+                  </button>
 
-            {/* Edit (own messages only) */}
-            {isOwnMessage && (
-              <button
-                onClick={() => onEdit?.(message)}
-                className="p-1.5 rounded-full bg-gray-100 dark:bg-dark-400 hover:bg-gray-200 dark:hover:bg-dark-300 transition-colors"
-                title="Edit"
-              >
-                <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-              </button>
-            )}
+                  {/* Copy */}
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(message.content);
+                      setShowDropdown(false);
+                    }}
+                    className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-400 flex items-center gap-3"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    Copy
+                  </button>
 
-            {/* Delete */}
-            {isOwnMessage && (
-              <button
-                onClick={() => onDelete?.(message)}
-                className="p-1.5 rounded-full bg-gray-100 dark:bg-dark-400 hover:bg-gray-200 dark:hover:bg-dark-300 transition-colors"
-                title="Delete"
-              >
-                <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
+                  {/* Edit (own messages only) */}
+                  {isOwnMessage && (
+                    <button
+                      onClick={() => {
+                        onEdit?.(message);
+                        setShowDropdown(false);
+                      }}
+                      className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-400 flex items-center gap-3"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Edit
+                    </button>
+                  )}
+
+                  {/* Delete (own messages only) */}
+                  {isOwnMessage && (
+                    <button
+                      onClick={() => {
+                        onDelete?.(message);
+                        setShowDropdown(false);
+                      }}
+                      className="w-full px-3 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-dark-400 flex items-center gap-3"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Delete
+                    </button>
+                  )}
+                </div>
+              </div>
             )}
           </div>
         )}
