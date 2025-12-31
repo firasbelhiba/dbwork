@@ -46,3 +46,5 @@ export { MultiUserSelect } from './MultiUserSelect';
 export { EmojiReactionPicker } from './EmojiReactionPicker';
 
 export { LinkifyText } from './LinkifyText';
+
+export { NewYearModal } from './NewYearModal';

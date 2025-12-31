@@ -6,6 +6,7 @@ import { Sidebar } from './Sidebar';
 import { WorkloadWarningBanner } from './WorkloadWarningBanner';
 import { TodoQueueSidebar } from '@/components/sidebar/TodoQueueSidebar';
 import { ChatSidebar } from '@/components/chat/ChatSidebar';
+import { NewYearModal } from '@/components/common';
 import { useKeyboardShortcuts } from '@/hooks';
 import { useChatContext } from '@/contexts/ChatContext';
 
@@ -104,6 +105,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         onClose={handleCloseChatSidebar}
         onUnreadCountChange={setUnreadCount}
       />
+
+      {/* New Year Modal - Shows once on Dec 31 */}
+      <NewYearModal />
     </div>
   );
 };
