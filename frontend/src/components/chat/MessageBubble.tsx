@@ -213,17 +213,47 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 
         {/* Bubble */}
         <div
-          className={`relative px-3 py-2 rounded-2xl ${
+          className={`relative px-3 py-1.5 rounded-2xl ${
             isOwnMessage
               ? 'bg-primary-500 text-white'
               : 'bg-gray-100 dark:bg-dark-400 text-gray-900 dark:text-white'
           } ${message.isDeleted ? 'opacity-50 italic' : ''}`}
         >
-          <p className="text-sm whitespace-pre-wrap break-words">{renderHighlightedText(message.content)}</p>
+          {/* Message content with inline timestamp */}
+          <div className="flex flex-wrap items-end gap-x-2">
+            <p className="text-sm whitespace-pre-wrap break-words inline">{renderHighlightedText(message.content)}</p>
+
+            {/* Timestamp and read status inside bubble */}
+            <span className={`inline-flex items-center gap-0.5 text-[10px] ml-auto mt-0.5 whitespace-nowrap ${
+              isOwnMessage
+                ? 'text-white/70'
+                : 'text-gray-400 dark:text-gray-500'
+            }`}>
+              {message.isEdited && <span>(edited)</span>}
+              <span>{format(new Date(message.createdAt), 'HH:mm')}</span>
+              {/* Check marks for own messages */}
+              {isOwnMessage && (
+                <span className={`inline-flex items-center ${messageStatus === 'seen' ? 'text-white' : 'text-white/70'}`}>
+                  {messageStatus === 'seen' ? (
+                    // Double check mark (seen)
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12l5 5L17 6" />
+                      <path d="M7 12l5 5L23 6" />
+                    </svg>
+                  ) : (
+                    // Single check mark (delivered)
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12l5 5L20 7" />
+                    </svg>
+                  )}
+                </span>
+              )}
+            </span>
+          </div>
 
           {/* Attachments */}
           {message.attachments && message.attachments.length > 0 && (
-            <div className="space-y-2">
+            <div className="space-y-2 mt-1">
               {message.attachments.map(renderAttachment)}
             </div>
           )}
@@ -316,32 +346,6 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           </div>
         )}
 
-        {/* Timestamp, edited label, and read status */}
-        <div className={`flex items-center gap-1 mt-0.5 ${isOwnMessage ? 'justify-end' : ''}`}>
-          <span className="text-[10px] text-gray-400">
-            {format(new Date(message.createdAt), 'HH:mm')}
-          </span>
-          {message.isEdited && (
-            <span className="text-[10px] text-gray-400">(edited)</span>
-          )}
-          {/* Check marks for own messages */}
-          {isOwnMessage && (
-            <span className={`inline-flex items-center ${messageStatus === 'seen' ? 'text-primary-500' : 'text-gray-400'}`}>
-              {messageStatus === 'seen' ? (
-                // Double check mark (seen)
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M1 12l5 5L17 6" />
-                  <path d="M7 12l5 5L23 6" />
-                </svg>
-              ) : (
-                // Single check mark (delivered)
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12l5 5L20 7" />
-                </svg>
-              )}
-            </span>
-          )}
-        </div>
       </div>
     </div>
   );
