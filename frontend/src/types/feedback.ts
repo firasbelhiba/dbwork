@@ -37,6 +37,7 @@ export interface Feedback {
   resolvedBy?: User;
   closedAt?: string;
   closedBy?: User;
+  linkedIssueId?: string;  // Linked ticket created when feedback is in progress
   createdAt: string;
   updatedAt: string;
 }

@@ -62,6 +62,10 @@ export class Feedback {
   @Prop({ type: Types.ObjectId, ref: 'User', default: null })
   closedBy: Types.ObjectId;
 
+  // Linked issue (ticket) created when feedback is in progress
+  @Prop({ type: Types.ObjectId, ref: 'Issue', default: null })
+  linkedIssueId: Types.ObjectId;
+
   createdAt: Date;
   updatedAt: Date;
 }

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Feedback, FeedbackDocument } from './schemas/feedback.schema';
@@ -12,8 +12,19 @@ import { ActivitiesService } from '../activities/activities.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ActionType, EntityType } from '../activities/schemas/activity.schema';
 import { getCloudinary } from '../attachments/cloudinary.config';
+import { IssuesService } from '../issues/issues.service';
+import { Project, ProjectDocument } from '../projects/schemas/project.schema';
+import { Issue, IssueDocument } from '../issues/schemas/issue.schema';
+import { IssueType, IssuePriority } from '@common/enums';
 
 const MAX_LIMIT = 100;
+
+// Configuration for auto-created tickets from feedback
+const FEEDBACK_TICKET_CONFIG = {
+  PROJECT_KEY: 'DAR',      // Project key to search for "Dar Blockchain"
+  CATEGORY: 'fullstack',   // Ticket category
+  ADMIN_EMAIL: 'santa@darblockchain.io', // Admin to assign tickets to
+};
 
 @Injectable()
 export class FeedbackService {
@@ -24,8 +35,14 @@ export class FeedbackService {
     private feedbackCommentModel: Model<FeedbackCommentDocument>,
     @InjectModel('User')
     private userModel: Model<any>,
+    @InjectModel(Project.name)
+    private projectModel: Model<ProjectDocument>,
+    @InjectModel(Issue.name)
+    private issueModel: Model<IssueDocument>,
     private activitiesService: ActivitiesService,
     private notificationsService: NotificationsService,
+    @Inject(forwardRef(() => IssuesService))
+    private issuesService: IssuesService,
   ) {}
 
   async create(
@@ -269,6 +286,21 @@ export class FeedbackService {
     feedback.resolvedAt = new Date();
     feedback.resolvedBy = new Types.ObjectId(adminUserId);
 
+    // Update linked ticket to done if exists
+    if (feedback.linkedIssueId) {
+      try {
+        await this.issuesService.update(
+          feedback.linkedIssueId.toString(),
+          { status: 'done' },
+          adminUserId,
+        );
+        console.log(`[FEEDBACK] Updated linked ticket ${feedback.linkedIssueId} to done`);
+      } catch (error) {
+        console.error('[FEEDBACK] Error updating linked ticket to done:', error);
+        // Don't fail if ticket update fails
+      }
+    }
+
     await feedback.save();
 
     // Log activity
@@ -361,6 +393,20 @@ export class FeedbackService {
     const oldStatus = feedback.status;
     feedback.status = FeedbackStatus.IN_PROGRESS;
 
+    // Create a linked ticket if not already created
+    if (!feedback.linkedIssueId) {
+      try {
+        const linkedIssue = await this.createLinkedTicket(feedback, adminUserId);
+        if (linkedIssue) {
+          feedback.linkedIssueId = new Types.ObjectId(linkedIssue._id.toString());
+          console.log(`[FEEDBACK] Created linked ticket ${linkedIssue.key} for feedback ${id}`);
+        }
+      } catch (error) {
+        console.error('[FEEDBACK] Error creating linked ticket:', error);
+        // Don't fail the status change if ticket creation fails
+      }
+    }
+
     await feedback.save();
 
     // Log activity
@@ -390,6 +436,48 @@ export class FeedbackService {
     }
 
     return this.findOne(id);
+  }
+
+  /**
+   * Create a linked ticket for feedback that moves to In Progress
+   * The ticket is created in the "Dar Blockchain" project with fullstack category
+   * and assigned to the Santa admin user
+   */
+  private async createLinkedTicket(feedback: FeedbackDocument, adminUserId: string): Promise<IssueDocument | null> {
+    // Find the Dar Blockchain project by key
+    const project = await this.projectModel.findOne({
+      key: { $regex: new RegExp(`^${FEEDBACK_TICKET_CONFIG.PROJECT_KEY}$`, 'i') },
+    }).exec();
+
+    if (!project) {
+      console.warn(`[FEEDBACK] Could not find project with key "${FEEDBACK_TICKET_CONFIG.PROJECT_KEY}" for linked ticket`);
+      return null;
+    }
+
+    // Find the Santa admin user
+    const santaUser = await this.userModel.findOne({
+      email: FEEDBACK_TICKET_CONFIG.ADMIN_EMAIL,
+    }).exec();
+
+    if (!santaUser) {
+      console.warn(`[FEEDBACK] Could not find admin user "${FEEDBACK_TICKET_CONFIG.ADMIN_EMAIL}" for ticket assignment`);
+      return null;
+    }
+
+    // Create the ticket using IssuesService
+    const ticketData = {
+      projectId: project._id.toString(),
+      title: `[Feedback] ${feedback.title}`,
+      description: `${feedback.description}\n\n---\n*This ticket was automatically created from feedback.*\n*Feedback ID: ${feedback._id}*`,
+      type: IssueType.TASK,
+      priority: IssuePriority.MEDIUM,
+      status: 'in_progress',
+      category: FEEDBACK_TICKET_CONFIG.CATEGORY,
+      assignees: [santaUser._id.toString()],
+    };
+
+    const createdIssue = await this.issuesService.create(ticketData as any, adminUserId);
+    return createdIssue;
   }
 
   async toTest(id: string, adminUserId: string): Promise<FeedbackDocument> {
