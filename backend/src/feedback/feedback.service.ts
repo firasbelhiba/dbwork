@@ -23,7 +23,7 @@ const MAX_LIMIT = 100;
 const FEEDBACK_TICKET_CONFIG = {
   PROJECT_KEY: 'DAR',      // Project key to search for "Dar Blockchain"
   CATEGORY: 'fullstack',   // Ticket category
-  ADMIN_EMAIL: 'santa@darblockchain.io', // Admin to assign tickets to
+  ADMIN_FIRST_NAME: 'Santa', // Admin first name to assign tickets to
 };
 
 @Injectable()
@@ -454,13 +454,13 @@ export class FeedbackService {
       return null;
     }
 
-    // Find the Santa admin user
+    // Find the Santa admin user by first name
     const santaUser = await this.userModel.findOne({
-      email: FEEDBACK_TICKET_CONFIG.ADMIN_EMAIL,
+      firstName: { $regex: new RegExp(`^${FEEDBACK_TICKET_CONFIG.ADMIN_FIRST_NAME}$`, 'i') },
     }).exec();
 
     if (!santaUser) {
-      console.warn(`[FEEDBACK] Could not find admin user "${FEEDBACK_TICKET_CONFIG.ADMIN_EMAIL}" for ticket assignment`);
+      console.warn(`[FEEDBACK] Could not find admin user with firstName "${FEEDBACK_TICKET_CONFIG.ADMIN_FIRST_NAME}" for ticket assignment`);
       return null;
     }
 
