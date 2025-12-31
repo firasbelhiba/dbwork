@@ -164,6 +164,7 @@ export class ChatService {
         path: 'lastMessage',
         populate: { path: 'senderId', model: 'User', select: 'firstName lastName avatar' },
       })
+      .populate({ path: 'projectId', model: 'Project', select: 'name logo' })
       .sort({ lastMessageAt: -1 })
       .exec();
 
@@ -191,6 +192,7 @@ export class ChatService {
         path: 'lastMessage',
         populate: { path: 'senderId', model: 'User', select: 'firstName lastName avatar' },
       })
+      .populate({ path: 'projectId', model: 'Project', select: 'name logo' })
       .exec();
 
     if (!conversation) {
@@ -232,6 +234,7 @@ export class ChatService {
         path: 'lastMessage',
         populate: { path: 'senderId', model: 'User', select: 'firstName lastName avatar' },
       })
+      .populate({ path: 'projectId', model: 'Project', select: 'name logo' })
       .exec();
 
     // If conversation doesn't exist, auto-create it from project data
@@ -277,6 +280,7 @@ export class ChatService {
           path: 'lastMessage',
           populate: { path: 'senderId', model: 'User', select: 'firstName lastName avatar' },
         })
+        .populate({ path: 'projectId', model: 'Project', select: 'name logo' })
         .exec();
     }
 

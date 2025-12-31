@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Conversation } from '@/types/chat';
+import { Conversation, ConversationProject } from '@/types/chat';
 import { User } from '@/types/user';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserAvatar } from '@/components/common/UserAvatar';
@@ -74,9 +74,27 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
     return 'Unknown User';
   };
 
+  // Get project data if populated
+  const getProjectData = (): ConversationProject | null => {
+    if (isProjectConversation && conversation.projectId && typeof conversation.projectId === 'object') {
+      return conversation.projectId as ConversationProject;
+    }
+    return null;
+  };
+
   // Get avatar with online status
   const getAvatar = () => {
     if (isProjectConversation) {
+      const project = getProjectData();
+      if (project?.logo) {
+        return (
+          <img
+            src={project.logo}
+            alt={conversation.name || 'Project'}
+            className="w-10 h-10 rounded-full object-cover"
+          />
+        );
+      }
       return (
         <div className="w-10 h-10 rounded-full bg-primary-500 text-white flex items-center justify-center font-medium">
           {(conversation.name || 'P').charAt(0).toUpperCase()}

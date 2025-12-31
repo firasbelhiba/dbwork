@@ -56,11 +56,18 @@ export interface ChatMessage {
   updatedAt: string;
 }
 
+// Populated project data for project conversations
+export interface ConversationProject {
+  _id: string;
+  name: string;
+  logo?: string;
+}
+
 export interface Conversation {
   _id: string;
   type: ConversationTypeValue;  // Accept both enum and string from API
   name?: string;
-  projectId?: string;
+  projectId?: string | ConversationProject;  // Can be populated with project data
   participants: User[];
   lastMessage?: ChatMessage;
   lastMessageAt?: string;
