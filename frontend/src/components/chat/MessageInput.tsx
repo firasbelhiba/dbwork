@@ -165,10 +165,14 @@ export const MessageInput: React.FC<MessageInputProps> = ({
       setFiles([]);
       onCancelReply?.();
       onTyping?.(false);
+      // Keep focus on the textarea after sending
+      textareaRef.current?.focus();
     } catch (error) {
       console.error('Error sending message:', error);
     } finally {
       setSending(false);
+      // Also focus after sending completes (in case of error)
+      textareaRef.current?.focus();
     }
   };
 
