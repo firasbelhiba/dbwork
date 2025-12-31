@@ -436,19 +436,30 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
           </div>
         ) : (
           <div className="space-y-1">
-            {filteredMessages.map(message => (
-              <MessageBubble
-                key={message._id}
-                message={message}
-                onReply={handleReply}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onReact={handleReact}
-                highlightText={searchQuery}
-                readReceipts={localReadReceipts}
-                isDirectMessage={conversation.type === 'direct'}
-              />
-            ))}
+            {filteredMessages.map((message, index) => {
+              // Check if this message is from the same sender as the previous one
+              const prevMessage = index > 0 ? filteredMessages[index - 1] : null;
+              const currentSenderId = typeof message.senderId === 'string' ? message.senderId : message.senderId?._id;
+              const prevSenderId = prevMessage
+                ? (typeof prevMessage.senderId === 'string' ? prevMessage.senderId : prevMessage.senderId?._id)
+                : null;
+              const isConsecutive = prevSenderId === currentSenderId && prevMessage?.type !== 'system' && message.type !== 'system';
+
+              return (
+                <MessageBubble
+                  key={message._id}
+                  message={message}
+                  onReply={handleReply}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onReact={handleReact}
+                  highlightText={searchQuery}
+                  readReceipts={localReadReceipts}
+                  isDirectMessage={conversation.type === 'direct'}
+                  isConsecutive={isConsecutive}
+                />
+              );
+            })}
           </div>
         )}
 

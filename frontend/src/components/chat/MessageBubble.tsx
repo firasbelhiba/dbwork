@@ -20,6 +20,8 @@ interface MessageBubbleProps {
   readReceipts?: ReadReceipt[];
   /** Whether this is a DM (1:1) conversation for simpler seen logic */
   isDirectMessage?: boolean;
+  /** Whether this message is from the same sender as the previous message (hide avatar/name) */
+  isConsecutive?: boolean;
 }
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
@@ -31,6 +33,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   highlightText = '',
   readReceipts = [],
   isDirectMessage = false,
+  isConsecutive = false,
 }) => {
   const { user: currentUser } = useAuth();
   const [showActions, setShowActions] = useState(false);
@@ -231,34 +234,36 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 
   return (
     <div
-      className={`flex gap-2 mb-3 group ${isOwnMessage ? 'flex-row-reverse' : ''}`}
+      className={`flex gap-2 ${isConsecutive ? 'mb-0.5' : 'mb-3'} group ${isOwnMessage ? 'flex-row-reverse' : ''}`}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => {
         setShowActions(false);
         setShowDropdown(false);
       }}
     >
-      {/* Avatar */}
+      {/* Avatar - hidden for consecutive messages, but keep spacing */}
       {!isOwnMessage && (
-        <div className="flex-shrink-0">
-          {sender?.avatar ? (
-            <img
-              src={sender.avatar}
-              alt={senderName}
-              className="w-8 h-8 rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-8 h-8 rounded-full bg-gray-400 text-white flex items-center justify-center text-sm font-medium">
-              {senderName.charAt(0).toUpperCase()}
-            </div>
+        <div className="flex-shrink-0 w-8">
+          {!isConsecutive && (
+            sender?.avatar ? (
+              <img
+                src={sender.avatar}
+                alt={senderName}
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-gray-400 text-white flex items-center justify-center text-sm font-medium">
+                {senderName.charAt(0).toUpperCase()}
+              </div>
+            )
           )}
         </div>
       )}
 
       {/* Message Content */}
       <div className={`relative max-w-[70%] flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'}`}>
-        {/* Sender name for non-own messages */}
-        {!isOwnMessage && (
+        {/* Sender name for non-own messages - hidden for consecutive */}
+        {!isOwnMessage && !isConsecutive && (
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
             {senderName} {senderLastName}
           </p>
