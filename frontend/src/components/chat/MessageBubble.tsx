@@ -2,9 +2,12 @@
 
 import React, { useState } from 'react';
 import { format } from 'date-fns';
-import { ChatMessage, MessageAttachment } from '@/types/chat';
+import { ChatMessage, MessageAttachment, ReadReceipt } from '@/types/chat';
 import { User } from '@/types/user';
 import { useAuth } from '@/contexts/AuthContext';
+
+// Message status for check marks
+type MessageStatus = 'sending' | 'sent' | 'delivered' | 'seen';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -13,6 +16,10 @@ interface MessageBubbleProps {
   onDelete?: (message: ChatMessage) => void;
   onReact?: (message: ChatMessage, reaction: string) => void;
   highlightText?: string;
+  /** Read receipts from the conversation to determine seen status */
+  readReceipts?: ReadReceipt[];
+  /** Whether this is a DM (1:1) conversation for simpler seen logic */
+  isDirectMessage?: boolean;
 }
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
@@ -22,6 +29,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   onDelete,
   onReact,
   highlightText = '',
+  readReceipts = [],
+  isDirectMessage = false,
 }) => {
   const { user: currentUser } = useAuth();
   const [showActions, setShowActions] = useState(false);
@@ -32,6 +41,36 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   const isSystemMessage = message.type === 'system';
   const senderName = sender?.firstName || 'Unknown';
   const senderLastName = sender?.lastName || '';
+
+  // Determine message status for check marks (only for own messages)
+  const getMessageStatus = (): MessageStatus => {
+    if (!isOwnMessage) return 'sent';
+
+    const messageTime = new Date(message.createdAt).getTime();
+
+    // For DMs, check if the other person has read it
+    if (isDirectMessage) {
+      const otherReadReceipt = readReceipts.find(r => r.userId !== currentUser?._id);
+      if (otherReadReceipt) {
+        const lastReadTime = new Date(otherReadReceipt.lastReadAt).getTime();
+        if (lastReadTime >= messageTime) {
+          return 'seen';
+        }
+      }
+      return 'delivered';
+    }
+
+    // For group chats, check if at least one other person has read it
+    const otherReceipts = readReceipts.filter(r => r.userId !== currentUser?._id);
+    const hasBeenSeen = otherReceipts.some(r => {
+      const lastReadTime = new Date(r.lastReadAt).getTime();
+      return lastReadTime >= messageTime;
+    });
+
+    return hasBeenSeen ? 'seen' : 'delivered';
+  };
+
+  const messageStatus = getMessageStatus();
 
   // Reaction emojis
   const reactions = ['\u{1F44D}', '\u{2764}\u{FE0F}', '\u{1F602}', '\u{1F62E}', '\u{1F622}', '\u{1F64F}'];
@@ -277,13 +316,30 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           </div>
         )}
 
-        {/* Timestamp and edited label */}
+        {/* Timestamp, edited label, and read status */}
         <div className={`flex items-center gap-1 mt-0.5 ${isOwnMessage ? 'justify-end' : ''}`}>
           <span className="text-[10px] text-gray-400">
             {format(new Date(message.createdAt), 'HH:mm')}
           </span>
           {message.isEdited && (
             <span className="text-[10px] text-gray-400">(edited)</span>
+          )}
+          {/* Check marks for own messages */}
+          {isOwnMessage && (
+            <span className={`inline-flex items-center ${messageStatus === 'seen' ? 'text-primary-500' : 'text-gray-400'}`}>
+              {messageStatus === 'seen' ? (
+                // Double check mark (seen)
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M1 12l5 5L17 6" />
+                  <path d="M7 12l5 5L23 6" />
+                </svg>
+              ) : (
+                // Single check mark (delivered)
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12l5 5L20 7" />
+                </svg>
+              )}
+            </span>
           )}
         </div>
       </div>

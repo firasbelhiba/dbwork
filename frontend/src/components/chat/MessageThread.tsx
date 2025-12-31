@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ChatMessage, Conversation, MessagesResponse } from '@/types/chat';
+import { ChatMessage, Conversation, MessagesResponse, ReadReceipt } from '@/types/chat';
 import { chatAPI } from '@/lib/api';
 import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
@@ -40,8 +40,29 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
     onChatMessageUpdated,
     onChatMessageDeleted,
     onChatTyping,
+    onChatRead,
     sendTypingIndicator
   } = useWebSocket();
+
+  // Local read receipts state for real-time updates
+  const [localReadReceipts, setLocalReadReceipts] = useState<ReadReceipt[]>(conversation.readReceipts || []);
+
+  // Sync read receipts when conversation changes
+  useEffect(() => {
+    setLocalReadReceipts(conversation.readReceipts || []);
+  }, [conversation._id, conversation.readReceipts]);
+
+  // Helper to get user name from ID using conversation participants
+  const getUserNameById = useCallback((userId: string): string => {
+    const participant = conversation.participants.find(p => p._id === userId);
+    if (participant) {
+      return participant.firstName || participant.lastName || 'Someone';
+    }
+    return 'Someone';
+  }, [conversation.participants]);
+
+  // Convert typing user IDs to names
+  const typingUserNames = [...new Set([...typingUsers, ...wsTypingUsers])].map(getUserNameById);
 
   // Fetch messages
   const fetchMessages = useCallback(async () => {
@@ -143,6 +164,27 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
       }
     });
 
+    // Listen for read receipts
+    const unsubRead = onChatRead((data) => {
+      if (data.conversationId === conversation._id) {
+        setLocalReadReceipts(prev => {
+          const existingIndex = prev.findIndex(r => r.userId === data.userId);
+          if (existingIndex >= 0) {
+            // Update existing receipt
+            const updated = [...prev];
+            updated[existingIndex] = {
+              ...updated[existingIndex],
+              lastReadAt: data.readAt,
+            };
+            return updated;
+          } else {
+            // Add new receipt
+            return [...prev, { userId: data.userId, lastReadAt: data.readAt, unreadCount: 0 }];
+          }
+        });
+      }
+    });
+
     // Cleanup: leave chat room and unsubscribe
     return () => {
       leaveChat(conversation._id);
@@ -150,8 +192,9 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
       unsubUpdated();
       unsubDeleted();
       unsubTyping();
+      unsubRead();
     };
-  }, [conversation._id, joinChat, leaveChat, onChatMessage, onChatMessageUpdated, onChatMessageDeleted, onChatTyping, user?._id]);
+  }, [conversation._id, joinChat, leaveChat, onChatMessage, onChatMessageUpdated, onChatMessageDeleted, onChatTyping, onChatRead, user?._id]);
 
   // Handle scroll for infinite loading
   const handleScroll = () => {
@@ -400,14 +443,16 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                 onDelete={handleDelete}
                 onReact={handleReact}
                 highlightText={searchQuery}
+                readReceipts={localReadReceipts}
+                isDirectMessage={conversation.type === 'direct'}
               />
             ))}
           </div>
         )}
 
         {/* Typing indicator */}
-        {(typingUsers.length > 0 || wsTypingUsers.length > 0) && (
-          <TypingIndicator users={[...new Set([...typingUsers, ...wsTypingUsers])]} />
+        {typingUserNames.length > 0 && (
+          <TypingIndicator users={typingUserNames} />
         )}
 
         <div ref={messagesEndRef} />
