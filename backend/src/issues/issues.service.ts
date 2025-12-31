@@ -864,7 +864,7 @@ export class IssuesService {
       .populate({ path: 'reporter', select: 'firstName lastName email avatar', model: 'User' })
       .populate('projectId', 'name key')
       .populate('sprintId', 'name status')
-      .sort({ createdAt: -1 })
+      .sort({ _id: -1 }) // Sort by _id descending (newest first, since ObjectId contains timestamp)
       .exec();
   }
 
