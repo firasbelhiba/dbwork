@@ -26,6 +26,10 @@ interface NotificationData {
     senderId?: string;
     senderName?: string;
     senderAvatar?: string;
+    changedBy?: string; // User who triggered the change
+    assignedBy?: string; // User who assigned
+    commentedBy?: string; // User who commented
+    mentionedBy?: string; // User who mentioned
   };
   createdAt: string;
 }
@@ -187,6 +191,19 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     // Listen for new notifications and play sound
     newSocket.on('notification:new', (notification: NotificationData) => {
       console.log('[WebSocket] New notification received:', notification);
+
+      // Check if the current user triggered this action - if so, skip the toast
+      // The user already knows about their own actions
+      const triggeredBy = notification.metadata?.changedBy ||
+                         notification.metadata?.assignedBy ||
+                         notification.metadata?.commentedBy ||
+                         notification.metadata?.senderId;
+
+      if (triggeredBy && triggeredBy === user?._id) {
+        console.log('[WebSocket] Skipping toast - user triggered this action');
+        return; // Don't show toast or play sound for own actions
+      }
+
       // Play notification sound
       playNotificationSound();
 
