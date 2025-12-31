@@ -68,14 +68,20 @@ export class ChatService {
       throw new BadRequestException('Cannot create conversation with yourself');
     }
 
+    // Validate ObjectIds
+    if (!Types.ObjectId.isValid(userId) || !Types.ObjectId.isValid(otherUserId)) {
+      throw new BadRequestException('Invalid user ID format');
+    }
+
     // Sort participant IDs to ensure consistent lookup
     const participants = [userId, otherUserId].sort();
+    const participantObjectIds = participants.map(id => new Types.ObjectId(id));
 
     // Try to find existing DM conversation
     const existing = await this.conversationModel
       .findOne({
         type: ConversationType.DIRECT,
-        participants: { $all: participants, $size: 2 },
+        participants: { $all: participantObjectIds, $size: 2 },
       })
       .populate({ path: 'participants', model: 'User', select: 'firstName lastName email avatar' })
       .populate({
@@ -91,9 +97,9 @@ export class ChatService {
     // Create new DM conversation
     const conversation = new this.conversationModel({
       type: ConversationType.DIRECT,
-      participants: participants.map(id => new Types.ObjectId(id)),
-      readReceipts: participants.map(id => ({
-        userId: new Types.ObjectId(id),
+      participants: participantObjectIds,
+      readReceipts: participantObjectIds.map(id => ({
+        userId: id,
         lastReadAt: new Date(),
         unreadCount: 0,
       })),
