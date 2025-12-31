@@ -34,11 +34,28 @@ interface NotificationData {
   createdAt: string;
 }
 
-// Notification sound utility - plays MP3 file
+// Notification sound utility - preload and reuse audio instance
+let notificationAudio: HTMLAudioElement | null = null;
+
+const getNotificationAudio = (): HTMLAudioElement | null => {
+  if (typeof window === 'undefined') return null;
+
+  if (!notificationAudio) {
+    notificationAudio = new Audio('/sounds/notification.mp3');
+    notificationAudio.volume = 0.5;
+    // Preload the audio
+    notificationAudio.load();
+  }
+  return notificationAudio;
+};
+
 const playNotificationSound = () => {
   try {
-    const audio = new Audio('/sounds/notification.mp3');
-    audio.volume = 0.5;
+    const audio = getNotificationAudio();
+    if (!audio) return;
+
+    // Reset to beginning if already playing
+    audio.currentTime = 0;
     audio.play().catch(error => {
       console.warn('Could not play notification sound:', error);
     });
@@ -109,6 +126,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
   // Use refs to avoid stale closures and unnecessary re-renders
   const socketRef = useRef<Socket | null>(null);
   const connectedRef = useRef(false);
+  const userRef = useRef(user);
   const timerAutoStoppedCallbacksRef = useRef<Set<(data: TimerAutoStoppedData) => void>>(new Set());
 
   // Chat callback refs
@@ -126,6 +144,11 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     connectedRef.current = connected;
   }, [connected]);
+
+  // Keep user ref in sync
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
 
   useEffect(() => {
     if (!user) {
@@ -194,12 +217,14 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
 
       // Check if the current user triggered this action - if so, skip the toast
       // The user already knows about their own actions
+      // Use userRef.current to avoid stale closure
+      const currentUser = userRef.current;
       const triggeredBy = notification.metadata?.changedBy ||
                          notification.metadata?.assignedBy ||
                          notification.metadata?.commentedBy ||
                          notification.metadata?.senderId;
 
-      if (triggeredBy && triggeredBy === user?._id) {
+      if (triggeredBy && currentUser && triggeredBy === currentUser._id) {
         console.log('[WebSocket] Skipping toast - user triggered this action');
         return; // Don't show toast or play sound for own actions
       }
