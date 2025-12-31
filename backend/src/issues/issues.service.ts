@@ -1498,8 +1498,8 @@ export class IssuesService {
         type: 'issue_status_changed' as any,
         title: 'Next ticket started automatically',
         message: `Your next queued ticket ${issue.key} has been moved to In Progress`,
-        link: `/issues/${issue.key}`,
-        metadata: { issueKey: issue.key, autoProgressed: true },
+        link: `/issues/${issue._id}`,
+        metadata: { issueId: issue._id.toString(), issueKey: issue.key, autoProgressed: true },
       });
 
       break; // Only progress to one ticket
