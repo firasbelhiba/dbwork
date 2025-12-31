@@ -25,8 +25,8 @@ export class Conversation {
   @Prop({ type: String, default: null })
   name: string; // Project name for group chats, null for DMs
 
-  @Prop({ type: Types.ObjectId, ref: 'Project', default: null })
-  projectId: Types.ObjectId; // Only for PROJECT type
+  @Prop({ type: Types.ObjectId, ref: 'Project' })
+  projectId?: Types.ObjectId; // Only for PROJECT type - omit for DMs to avoid unique constraint
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], required: true })
   participants: Types.ObjectId[];
