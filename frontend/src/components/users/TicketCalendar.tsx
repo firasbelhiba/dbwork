@@ -379,7 +379,7 @@ export const TicketCalendar: React.FC<TicketCalendarProps> = ({ userId }) => {
                 {selectedDayTickets.map((ticket) => (
                   <Link
                     key={ticket._id}
-                    href={`/issues/${ticket.key}`}
+                    href={`/issues/${ticket._id}`}
                     onClick={() => {
                       setSelectedDayTickets(null);
                       setSelectedDayDate(null);

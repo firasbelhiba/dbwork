@@ -435,7 +435,7 @@ export const UserProfileSidebar: React.FC<UserProfileSidebarProps> = ({
                   project.issues.map((issue) => (
                     <Link
                       key={issue._id}
-                      href={`/issues/${issue.key}`}
+                      href={`/issues/${issue._id}`}
                       onClick={onClose}
                       className="flex items-center gap-2 p-2 rounded hover:bg-gray-50 dark:hover:bg-dark-300 transition-colors group"
                     >

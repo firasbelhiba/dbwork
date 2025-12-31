@@ -85,7 +85,7 @@ export const SortableQueueItem: React.FC<SortableQueueItemProps> = ({
 
       {/* Issue content */}
       <Link
-        href={`/issues/${issue.key}`}
+        href={`/issues/${issue._id}`}
         className="flex-1 min-w-0"
         onClick={(e) => e.stopPropagation()}
       >

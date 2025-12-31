@@ -220,7 +220,7 @@ export const TodoQueueSidebar: React.FC<TodoQueueSidebarProps> = ({
                     In Progress
                   </div>
                   <Link
-                    href={`/issues/${data.currentInProgress.key}`}
+                    href={`/issues/${data.currentInProgress._id}`}
                     className="block p-3 rounded-lg bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-800 hover:bg-success-100 dark:hover:bg-success-900/30 transition-colors"
                   >
                     <div className="flex items-center gap-2">
