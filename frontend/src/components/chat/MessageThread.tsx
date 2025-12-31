@@ -206,11 +206,12 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
   };
 
   // Send message
-  const handleSend = async (content: string, replyToId?: string) => {
+  const handleSend = async (content: string, replyToId?: string, mentions?: string[]) => {
     try {
       const response = await chatAPI.sendMessage(conversation._id, {
         content,
         replyTo: replyToId,
+        mentions,
       });
       // Add message to state immediately for instant feedback
       // The duplicate check in WebSocket handler will prevent duplicates
@@ -227,12 +228,13 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
   };
 
   // Send message with files
-  const handleSendWithFiles = async (content: string, files: File[], replyToId?: string) => {
+  const handleSendWithFiles = async (content: string, files: File[], replyToId?: string, mentions?: string[]) => {
     try {
       const response = await chatAPI.sendMessageWithAttachments(conversation._id, {
         content,
         files,
         replyTo: replyToId,
+        mentions,
       });
       // Add message to state immediately for instant feedback
       // The duplicate check in WebSocket handler will prevent duplicates

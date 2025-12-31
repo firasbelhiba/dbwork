@@ -5,6 +5,8 @@ import dynamic from 'next/dynamic';
 import data from '@emoji-mart/data';
 import { ChatMessage, MessageAttachment } from '@/types/chat';
 import { User } from '@/types/user';
+import api from '@/lib/api';
+import { UserAvatar } from '@/components/common/UserAvatar';
 
 // Dynamically import emoji picker to avoid SSR issues
 const Picker = dynamic(
@@ -20,6 +22,14 @@ const Picker = dynamic(
     loading: () => <div className="w-[352px] h-[435px] bg-white dark:bg-dark-500 rounded-lg flex items-center justify-center">Loading...</div>,
   }
 );
+
+interface MentionUser {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  avatar?: string;
+}
 
 interface MessageInputProps {
   onSend: (content: string, replyTo?: string, mentions?: string[]) => Promise<void>;
@@ -38,7 +48,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   replyTo,
   onCancelReply,
   disabled = false,
-  placeholder = 'Type a message...',
+  placeholder = 'Type a message... Use @ to mention someone',
 }) => {
   const [content, setContent] = useState('');
   const [files, setFiles] = useState<File[]>([]);
@@ -49,6 +59,15 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const emojiButtonRef = useRef<HTMLButtonElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Mention state
+  const [showMentions, setShowMentions] = useState(false);
+  const [mentionSearch, setMentionSearch] = useState('');
+  const [mentionSuggestions, setMentionSuggestions] = useState<MentionUser[]>([]);
+  const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
+  const [mentionStart, setMentionStart] = useState(0);
+  const [mentionedUsers, setMentionedUsers] = useState<Map<string, MentionUser>>(new Map());
+  const mentionDropdownRef = useRef<HTMLDivElement>(null);
 
   // Create object URLs for file previews and clean them up
   const filePreviewUrls = useMemo(() => {
@@ -95,6 +114,42 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showEmojiPicker]);
 
+  // Close mention dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        showMentions &&
+        mentionDropdownRef.current &&
+        !mentionDropdownRef.current.contains(event.target as Node) &&
+        textareaRef.current &&
+        !textareaRef.current.contains(event.target as Node)
+      ) {
+        setShowMentions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showMentions]);
+
+  // Search users when mention search changes
+  useEffect(() => {
+    if (mentionSearch) {
+      const searchUsers = async () => {
+        try {
+          const response = await api.get(`/users/search?q=${mentionSearch}`);
+          setMentionSuggestions(response.data.slice(0, 5));
+        } catch (error) {
+          console.error('Error searching users:', error);
+          setMentionSuggestions([]);
+        }
+      };
+      searchUsers();
+    } else {
+      setMentionSuggestions([]);
+    }
+  }, [mentionSearch]);
+
   // Handle emoji selection
   const handleEmojiSelect = (emoji: any) => {
     const emojiChar = emoji.native;
@@ -114,9 +169,12 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     }
   };
 
-  // Handle typing indicator
+  // Handle typing indicator and mention detection
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setContent(e.target.value);
+    const newValue = e.target.value;
+    const cursorPosition = e.target.selectionStart;
+
+    setContent(newValue);
 
     // Emit typing start
     onTyping?.(true);
@@ -130,6 +188,52 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     typingTimeoutRef.current = setTimeout(() => {
       onTyping?.(false);
     }, 2000);
+
+    // Check if user is typing a mention
+    const textBeforeCursor = newValue.slice(0, cursorPosition);
+    const lastAtSymbol = textBeforeCursor.lastIndexOf('@');
+
+    if (lastAtSymbol !== -1) {
+      const textAfterAt = textBeforeCursor.slice(lastAtSymbol + 1);
+      // Check if there's no space after @ (still typing the mention)
+      if (!textAfterAt.includes(' ') && !textAfterAt.includes('\n')) {
+        setMentionStart(lastAtSymbol);
+        setMentionSearch(textAfterAt);
+        setShowMentions(true);
+        setSelectedMentionIndex(0);
+      } else {
+        setShowMentions(false);
+      }
+    } else {
+      setShowMentions(false);
+    }
+  };
+
+  // Insert mention into text
+  const insertMention = (user: MentionUser) => {
+    if (!textareaRef.current) return;
+
+    const mentionText = `${user.firstName}${user.lastName}`;
+    const beforeMention = content.slice(0, mentionStart);
+    const afterMention = content.slice(textareaRef.current.selectionStart);
+    const newValue = `${beforeMention}@${mentionText} ${afterMention}`;
+
+    setContent(newValue);
+    setShowMentions(false);
+    setMentionSearch('');
+
+    // Track mentioned user
+    setMentionedUsers(prev => new Map(prev).set(user._id, user));
+
+    // Set cursor position after the mention
+    setTimeout(() => {
+      if (textareaRef.current) {
+        const newPosition = beforeMention.length + mentionText.length + 2; // +2 for @ and space
+        textareaRef.current.selectionStart = newPosition;
+        textareaRef.current.selectionEnd = newPosition;
+        textareaRef.current.focus();
+      }
+    }, 0);
   };
 
   // Handle file selection
@@ -148,21 +252,37 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     setFiles(files.filter((_, i) => i !== index));
   };
 
+  // Extract mention IDs from content
+  const extractMentionIds = (): string[] => {
+    const mentionIds: string[] = [];
+    mentionedUsers.forEach((user, id) => {
+      // Check if the mention is still in the content
+      const mentionText = `@${user.firstName}${user.lastName}`;
+      if (content.includes(mentionText)) {
+        mentionIds.push(id);
+      }
+    });
+    return mentionIds;
+  };
+
   // Handle send
   const handleSend = async () => {
     const trimmedContent = content.trim();
     if (!trimmedContent && files.length === 0) return;
     if (sending) return;
 
+    const mentions = extractMentionIds();
+
     setSending(true);
     try {
       if (files.length > 0) {
-        await onSendWithFiles(trimmedContent, files, replyTo?._id);
+        await onSendWithFiles(trimmedContent, files, replyTo?._id, mentions);
       } else {
-        await onSend(trimmedContent, replyTo?._id);
+        await onSend(trimmedContent, replyTo?._id, mentions);
       }
       setContent('');
       setFiles([]);
+      setMentionedUsers(new Map()); // Clear mentioned users after send
       onCancelReply?.();
       onTyping?.(false);
       // Keep focus on the textarea after sending
@@ -178,6 +298,31 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
   // Handle key press
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Handle mention navigation
+    if (showMentions && mentionSuggestions.length > 0) {
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          setSelectedMentionIndex(prev =>
+            prev < mentionSuggestions.length - 1 ? prev + 1 : prev
+          );
+          return;
+        case 'ArrowUp':
+          e.preventDefault();
+          setSelectedMentionIndex(prev => prev > 0 ? prev - 1 : 0);
+          return;
+        case 'Enter':
+          e.preventDefault();
+          insertMention(mentionSuggestions[selectedMentionIndex]);
+          return;
+        case 'Escape':
+          e.preventDefault();
+          setShowMentions(false);
+          return;
+      }
+    }
+
+    // Normal enter to send
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -348,19 +493,62 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           )}
         </div>
 
-        {/* Text Input */}
-        <textarea
-          ref={textareaRef}
-          value={content}
-          onChange={handleContentChange}
-          onKeyDown={handleKeyDown}
-          onPaste={handlePaste}
-          disabled={disabled || sending}
-          placeholder={placeholder}
-          rows={1}
-          className="flex-1 resize-none px-4 py-2 rounded-2xl bg-gray-100 dark:bg-dark-400 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
-          style={{ maxHeight: '150px' }}
-        />
+        {/* Text Input with Mention Dropdown */}
+        <div className="relative flex-1">
+          <textarea
+            ref={textareaRef}
+            value={content}
+            onChange={handleContentChange}
+            onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
+            disabled={disabled || sending}
+            placeholder={placeholder}
+            rows={1}
+            className="w-full resize-none px-4 py-2 rounded-2xl bg-gray-100 dark:bg-dark-400 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
+            style={{ maxHeight: '150px' }}
+          />
+
+          {/* Mention Suggestions Dropdown */}
+          {showMentions && mentionSuggestions.length > 0 && (
+            <div
+              ref={mentionDropdownRef}
+              className="absolute z-50 w-64 bg-white dark:bg-dark-500 border border-gray-200 dark:border-dark-400 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+              style={{
+                bottom: '100%',
+                marginBottom: '0.25rem',
+                left: 0,
+              }}
+            >
+              {mentionSuggestions.map((user, index) => (
+                <button
+                  key={user._id}
+                  type="button"
+                  onClick={() => insertMention(user)}
+                  className={`w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-dark-400 flex items-center gap-3 transition-colors ${
+                    index === selectedMentionIndex ? 'bg-gray-100 dark:bg-dark-400' : ''
+                  }`}
+                >
+                  <UserAvatar
+                    userId={user._id}
+                    avatar={user.avatar}
+                    firstName={user.firstName}
+                    lastName={user.lastName}
+                    size="md"
+                    showOnlineStatus={true}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                      {user.firstName} {user.lastName}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                      @{user.firstName}{user.lastName}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Send Button */}
         <button

@@ -459,7 +459,46 @@ export class ChatService {
     // Emit real-time event
     this.webSocketGateway.emitChatMessage(conversationId, populated);
 
-    // Send notifications to other participants
+    // Get sender info for notifications
+    const sender = populated.senderId as any;
+    const senderName = sender?.firstName
+      ? `${sender.firstName} ${sender.lastName || ''}`.trim()
+      : 'Someone';
+    const senderAvatar = sender?.avatar || undefined;
+
+    // Track users who have been notified to avoid duplicate notifications
+    const notifiedUsers = new Set<string>();
+
+    // Send mention notifications first (higher priority)
+    if (dto.mentions && dto.mentions.length > 0) {
+      for (const mentionedUserId of dto.mentions) {
+        // Don't notify the sender if they mentioned themselves
+        if (mentionedUserId === senderId) continue;
+
+        try {
+          await this.notificationsService.create({
+            userId: mentionedUserId,
+            type: 'chat_mention' as any,
+            title: `${senderName} mentioned you`,
+            message: dto.content.length > 100 ? dto.content.substring(0, 100) + '...' : dto.content,
+            link: `/chat?conversation=${conversationId}`,
+            metadata: {
+              conversationId,
+              senderId,
+              senderName,
+              senderAvatar,
+              messageId: saved._id.toString(),
+              isMention: true,
+            },
+          });
+          notifiedUsers.add(mentionedUserId);
+        } catch (error) {
+          console.error('[ChatService] Error sending mention notification:', error);
+        }
+      }
+    }
+
+    // Send regular notifications to other participants (who weren't already notified for mention)
     const otherParticipants = conversation.participants.filter(
       (p: any) => p._id.toString() !== senderId,
     );
@@ -467,12 +506,8 @@ export class ChatService {
     for (const participant of otherParticipants) {
       const participantId = (participant as any)._id.toString();
 
-      // Get sender info for the notification
-      const sender = populated.senderId as any;
-      const senderName = sender?.firstName
-        ? `${sender.firstName} ${sender.lastName || ''}`.trim()
-        : 'Someone';
-      const senderAvatar = sender?.avatar || undefined;
+      // Skip if already notified via mention
+      if (notifiedUsers.has(participantId)) continue;
 
       // Only notify if user is not in the conversation room (not viewing it)
       try {

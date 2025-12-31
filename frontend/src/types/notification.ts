@@ -33,6 +33,9 @@ export enum NotificationType {
   FEEDBACK_COMMENTED = 'feedback_commented',
   // Changelog
   NEW_CHANGELOG = 'new_changelog',
+  // Chat notifications
+  CHAT_MESSAGE = 'chat_message',
+  CHAT_MENTION = 'chat_mention',
 }
 
 // Helper to group related notification types
@@ -52,6 +55,7 @@ export const NOTIFICATION_TYPE_GROUPS = {
   mentions: [
     NotificationType.MENTION,
     NotificationType.COMMENT_MENTION,
+    NotificationType.CHAT_MENTION,
   ],
   sprints: [
     NotificationType.SPRINT_STARTED,

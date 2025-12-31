@@ -75,22 +75,69 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   // Reaction emojis
   const reactions = ['\u{1F44D}', '\u{2764}\u{FE0F}', '\u{1F602}', '\u{1F62E}', '\u{1F622}', '\u{1F64F}'];
 
-  // Highlight matching text
-  const renderHighlightedText = (text: string) => {
-    if (!highlightText.trim()) return text;
+  // Highlight mentions in text
+  const renderMentions = (text: string): React.ReactNode => {
+    // Match @FirstnameLastname pattern (letters only, no spaces)
+    const mentionRegex = /@([A-Za-z]+)/g;
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let match;
 
-    const regex = new RegExp(`(${highlightText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-    const parts = text.split(regex);
+    while ((match = mentionRegex.exec(text)) !== null) {
+      // Add text before the mention
+      if (match.index > lastIndex) {
+        parts.push(text.slice(lastIndex, match.index));
+      }
+      // Add the highlighted mention
+      parts.push(
+        <span
+          key={match.index}
+          className={`font-medium ${
+            isOwnMessage
+              ? 'text-white underline decoration-white/50'
+              : 'text-primary-600 dark:text-primary-400'
+          }`}
+        >
+          {match[0]}
+        </span>
+      );
+      lastIndex = match.index + match[0].length;
+    }
 
-    return parts.map((part, i) =>
-      regex.test(part) ? (
-        <mark key={i} className="bg-yellow-300 dark:bg-yellow-500/50 rounded px-0.5">
-          {part}
-        </mark>
-      ) : (
-        part
-      )
-    );
+    // Add remaining text
+    if (lastIndex < text.length) {
+      parts.push(text.slice(lastIndex));
+    }
+
+    return parts.length > 0 ? parts : text;
+  };
+
+  // Highlight matching text (for search)
+  const renderHighlightedText = (text: string): React.ReactNode => {
+    // First render mentions
+    const contentWithMentions = renderMentions(text);
+
+    // If no search highlight, return with mentions only
+    if (!highlightText.trim()) return contentWithMentions;
+
+    // If the content is just a string (no mentions), apply search highlighting
+    if (typeof contentWithMentions === 'string') {
+      const regex = new RegExp(`(${highlightText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+      const parts = text.split(regex);
+
+      return parts.map((part, i) =>
+        regex.test(part) ? (
+          <mark key={i} className="bg-yellow-300 dark:bg-yellow-500/50 rounded px-0.5">
+            {part}
+          </mark>
+        ) : (
+          part
+        )
+      );
+    }
+
+    // If content has mentions, return as-is (mentions take priority over search highlight)
+    return contentWithMentions;
   };
 
   // Format file size

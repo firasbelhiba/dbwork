@@ -27,4 +27,5 @@ export enum NotificationType {
   NEW_CHANGELOG = 'new_changelog',
   ACHIEVEMENT_UNLOCKED = 'achievement_unlocked',
   CHAT_MESSAGE = 'chat_message',
+  CHAT_MENTION = 'chat_mention',
 }
