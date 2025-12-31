@@ -21,9 +21,9 @@ const MAX_LIMIT = 100;
 
 // Configuration for auto-created tickets from feedback
 const FEEDBACK_TICKET_CONFIG = {
-  PROJECT_KEY: 'DAR',      // Project key to search for "Dar Blockchain"
+  PROJECT_KEY: 'MKT',      // Project key for "Dar Blockchain"
   CATEGORY: 'fullstack',   // Ticket category
-  ADMIN_FIRST_NAME: 'Santa', // Admin first name to assign tickets to
+  ADMIN_FIRST_NAME: 'Santa', // Admin first name to assign tickets to (Santa Admin)
 };
 
 @Injectable()
