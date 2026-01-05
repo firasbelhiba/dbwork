@@ -4,6 +4,7 @@ import { APP_FILTER, APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { ScheduleModule } from '@nestjs/schedule';
 import configuration from './config/configuration';
+import { AppController } from './app.controller';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
@@ -64,6 +65,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     AvailabilityModule,
     ChatModule,
   ],
+  controllers: [AppController],
   providers: [
     {
       provide: APP_FILTER,
