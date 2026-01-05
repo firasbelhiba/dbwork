@@ -54,3 +54,9 @@ Jira.csv
 
 # Development changelog (local tracking only)
 changelog.md
+
+# SSH keys - NEVER commit these
+*.pem
+*.key
+id_rsa
+id_ed25519
