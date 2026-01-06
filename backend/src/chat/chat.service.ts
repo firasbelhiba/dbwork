@@ -499,7 +499,8 @@ export class ChatService {
       }
     }
 
-    // Send regular notifications to other participants (who weren't already notified for mention)
+    // Send real-time chat notifications to other participants (toast only, not saved to notifications list)
+    // These are emitted via WebSocket for toast/sound but NOT saved to the notifications database
     const otherParticipants = conversation.participants.filter(
       (p: any) => p._id.toString() !== senderId,
     );
@@ -507,13 +508,12 @@ export class ChatService {
     for (const participant of otherParticipants) {
       const participantId = (participant as any)._id.toString();
 
-      // Skip if already notified via mention
+      // Skip if already notified via mention (mentions are saved to notifications)
       if (notifiedUsers.has(participantId)) continue;
 
-      // Only notify if user is not in the conversation room (not viewing it)
+      // Emit WebSocket event for toast/sound notification only (not saved to DB)
       try {
-        await this.notificationsService.create({
-          userId: participantId,
+        this.webSocketGateway.emitChatNotification(participantId, {
           type: NotificationType.CHAT_MESSAGE,
           title: conversation.type === ConversationType.PROJECT
             ? `New message in ${conversation.name}`
@@ -529,7 +529,7 @@ export class ChatService {
           },
         });
       } catch (error) {
-        console.error('[ChatService] Error sending notification:', error);
+        console.error('[ChatService] Error sending chat notification:', error);
       }
     }
 

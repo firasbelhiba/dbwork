@@ -439,4 +439,9 @@ export class AppWebSocketGateway
   emitChatConversationUpdated(conversationId: string, conversation: any) {
     this.server.to(`chat:${conversationId}`).emit('chat:conversation:updated', conversation);
   }
+
+  // Emit chat notification for toast/sound only (not saved to notification list)
+  emitChatNotification(userId: string, notification: any) {
+    this.server.to(`user:${userId}`).emit('chat:notification', notification);
+  }
 }

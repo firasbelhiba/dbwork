@@ -278,6 +278,33 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
       chatReadCallbacksRef.current.forEach(callback => callback(data));
     });
 
+    // Listen for chat-only notifications (toast/sound only, not saved to notification list)
+    newSocket.on('chat:notification', (notification: NotificationData) => {
+      console.log('[WebSocket] Chat notification received (toast only):', notification);
+
+      // Check if the current user triggered this action - if so, skip the toast
+      const currentUser = userRef.current;
+      const triggeredBy = notification.metadata?.senderId;
+
+      if (triggeredBy && currentUser && triggeredBy === currentUser._id) {
+        console.log('[WebSocket] Skipping chat toast - user sent this message');
+        return;
+      }
+
+      // Play notification sound
+      playNotificationSound();
+
+      // Show chat toast
+      if (notification.metadata?.conversationId) {
+        showChatToast(
+          notification.metadata.senderName || 'Someone',
+          notification.message,
+          notification.metadata.conversationId,
+          notification.metadata.senderAvatar
+        );
+      }
+    });
+
     setSocket(newSocket);
 
     // Cleanup on unmount
