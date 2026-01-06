@@ -8,6 +8,7 @@ import { User, UserRole } from '@/types/user';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDateTime, getInitials } from '@/lib/utils';
 import { UserAvatar } from '@/components/common/UserAvatar';
+import { UserProfileSidebar } from '@/components/users/UserProfileSidebar';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 
@@ -21,6 +22,8 @@ export default function UsersPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [showProfileSidebar, setShowProfileSidebar] = useState(false);
+  const [profileUser, setProfileUser] = useState<User | null>(null);
 
   useEffect(() => {
     // Check if user is admin
@@ -68,6 +71,11 @@ export default function UsersPage() {
   const handleEditUser = (user: User) => {
     setSelectedUser(user);
     setShowEditModal(true);
+  };
+
+  const handleAvatarClick = (user: User) => {
+    setProfileUser(user);
+    setShowProfileSidebar(true);
   };
 
   // Filter users
@@ -217,7 +225,10 @@ export default function UsersPage() {
                       <tr key={user._id} className="hover:bg-gray-50 dark:hover:bg-dark-300 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
-                            <div className="flex-shrink-0">
+                            <div
+                              className="flex-shrink-0 cursor-pointer"
+                              onClick={() => handleAvatarClick(user)}
+                            >
                               <UserAvatar
                                 userId={user._id}
                                 avatar={user.avatar}
@@ -346,6 +357,16 @@ export default function UsersPage() {
           }}
         />
       )}
+
+      {/* User Profile Sidebar */}
+      <UserProfileSidebar
+        user={profileUser}
+        isOpen={showProfileSidebar}
+        onClose={() => {
+          setShowProfileSidebar(false);
+          setProfileUser(null);
+        }}
+      />
     </DashboardLayout>
   );
 }
