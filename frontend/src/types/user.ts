@@ -19,7 +19,7 @@ export interface User {
   createdAt: Date;
   updatedAt: Date;
   gmailEmail?: string | null;
-  organizationId?: string | null;
+  organizationIds?: string[];
 }
 
 export interface UserPreferences {

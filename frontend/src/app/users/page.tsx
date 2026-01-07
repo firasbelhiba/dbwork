@@ -274,24 +274,32 @@ export default function UsersPage() {
                             {user.role.replace(/_/g, ' ')}
                           </Badge>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-6 py-4">
                           {(() => {
-                            const org = organizations.find(o => o._id === user.organizationId);
-                            if (!org) return (
+                            const userOrgs = organizations.filter(o => user.organizationIds?.includes(o._id));
+                            if (userOrgs.length === 0) return (
                               <span className="text-gray-400 dark:text-gray-500 text-sm">—</span>
                             );
                             return (
-                              <div className="flex items-center gap-2">
-                                {org.logo ? (
-                                  <img src={org.logo} alt={org.name} className="w-6 h-6 rounded object-cover" />
-                                ) : (
-                                  <div className="w-6 h-6 rounded bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                                    <span className="text-xs font-bold text-primary-600 dark:text-primary-400">
-                                      {org.key.substring(0, 2)}
-                                    </span>
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                {userOrgs.map((org) => (
+                                  <div
+                                    key={org._id}
+                                    className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-dark-300 rounded-full"
+                                    title={org.name}
+                                  >
+                                    {org.logo ? (
+                                      <img src={org.logo} alt={org.name} className="w-4 h-4 rounded-full object-cover" />
+                                    ) : (
+                                      <div className="w-4 h-4 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                                        <span className="text-[8px] font-bold text-primary-600 dark:text-primary-400">
+                                          {org.key.substring(0, 2)}
+                                        </span>
+                                      </div>
+                                    )}
+                                    <span className="text-xs text-gray-700 dark:text-gray-300">{org.name}</span>
                                   </div>
-                                )}
-                                <span className="text-sm text-gray-900 dark:text-gray-100">{org.name}</span>
+                                ))}
                               </div>
                             );
                           })()}
@@ -555,10 +563,19 @@ function EditUserModal({ isOpen, onClose, user, organizations, onSuccess }: any)
     gmailEmail: user.gmailEmail || '',
     role: user.role,
     isActive: user.isActive,
-    organizationId: user.organizationId || '',
+    organizationIds: user.organizationIds || [],
   });
 
-  const selectedOrg = organizations?.find((org: Organization) => org._id === formData.organizationId);
+  const selectedOrgs = organizations?.filter((org: Organization) => formData.organizationIds.includes(org._id)) || [];
+
+  const toggleOrganization = (orgId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      organizationIds: prev.organizationIds.includes(orgId)
+        ? prev.organizationIds.filter((id: string) => id !== orgId)
+        : [...prev.organizationIds, orgId]
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -648,69 +665,107 @@ function EditUserModal({ isOpen, onClose, user, organizations, onSuccess }: any)
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Organization
+              Organizations
             </label>
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setShowOrgDropdown(!showOrgDropdown)}
                 disabled={updating}
-                className="w-full flex items-center justify-between px-3 py-2 text-left bg-white dark:bg-dark-300 border border-gray-300 dark:border-dark-200 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-between px-3 py-2 text-left bg-white dark:bg-dark-300 border border-gray-300 dark:border-dark-200 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed min-h-[42px]"
               >
-                {selectedOrg ? (
-                  <div className="flex items-center gap-2">
-                    {selectedOrg.logo ? (
-                      <img src={selectedOrg.logo} alt={selectedOrg.name} className="w-5 h-5 rounded object-cover" />
-                    ) : (
-                      <div className="w-5 h-5 rounded bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                        <span className="text-[10px] font-bold text-primary-600 dark:text-primary-400">
-                          {selectedOrg.key.substring(0, 2)}
-                        </span>
+                {selectedOrgs.length > 0 ? (
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {selectedOrgs.map((org: Organization) => (
+                      <div
+                        key={org._id}
+                        className="flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-dark-200 rounded-full"
+                      >
+                        {org.logo ? (
+                          <img src={org.logo} alt={org.name} className="w-4 h-4 rounded-full object-cover" />
+                        ) : (
+                          <div className="w-4 h-4 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                            <span className="text-[8px] font-bold text-primary-600 dark:text-primary-400">
+                              {org.key.substring(0, 2)}
+                            </span>
+                          </div>
+                        )}
+                        <span className="text-xs text-gray-700 dark:text-gray-300">{org.name}</span>
                       </div>
-                    )}
-                    <span className="text-sm text-gray-900 dark:text-gray-100">{selectedOrg.name}</span>
+                    ))}
                   </div>
                 ) : (
-                  <span className="text-sm text-gray-500 dark:text-gray-400">No organization</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Select organizations...</span>
                 )}
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
               {showOrgDropdown && (
                 <div className="absolute z-10 mt-1 w-full bg-white dark:bg-dark-300 border border-gray-200 dark:border-dark-200 rounded-md shadow-lg max-h-60 overflow-auto">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setFormData({ ...formData, organizationId: '' });
-                      setShowOrgDropdown(false);
-                    }}
-                    className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-dark-200 text-sm text-gray-500 dark:text-gray-400"
-                  >
-                    No organization
-                  </button>
-                  {organizations?.map((org: Organization) => (
-                    <button
-                      key={org._id}
-                      type="button"
-                      onClick={() => {
-                        setFormData({ ...formData, organizationId: org._id });
-                        setShowOrgDropdown(false);
-                      }}
-                      className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-dark-200 flex items-center gap-2"
-                    >
-                      {org.logo ? (
-                        <img src={org.logo} alt={org.name} className="w-5 h-5 rounded object-cover" />
-                      ) : (
-                        <div className="w-5 h-5 rounded bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                          <span className="text-[10px] font-bold text-primary-600 dark:text-primary-400">
-                            {org.key.substring(0, 2)}
-                          </span>
-                        </div>
+                  {organizations?.length === 0 ? (
+                    <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+                      No organizations available
+                    </div>
+                  ) : (
+                    <>
+                      {/* Clear all button */}
+                      {selectedOrgs.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, organizationIds: [] })}
+                          className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-dark-200 text-sm text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-dark-200"
+                        >
+                          Clear all
+                        </button>
                       )}
-                      <span className="text-sm text-gray-900 dark:text-gray-100">{org.name}</span>
+                      {organizations?.map((org: Organization) => {
+                        const isSelected = formData.organizationIds.includes(org._id);
+                        return (
+                          <button
+                            key={org._id}
+                            type="button"
+                            onClick={() => toggleOrganization(org._id)}
+                            className={`w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-dark-200 flex items-center gap-2 ${
+                              isSelected ? 'bg-primary-50 dark:bg-primary-900/20' : ''
+                            }`}
+                          >
+                            <div className={`w-4 h-4 rounded border flex items-center justify-center ${
+                              isSelected
+                                ? 'bg-primary-600 border-primary-600'
+                                : 'border-gray-300 dark:border-gray-600'
+                            }`}>
+                              {isSelected && (
+                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                </svg>
+                              )}
+                            </div>
+                            {org.logo ? (
+                              <img src={org.logo} alt={org.name} className="w-5 h-5 rounded object-cover" />
+                            ) : (
+                              <div className="w-5 h-5 rounded bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                                <span className="text-[10px] font-bold text-primary-600 dark:text-primary-400">
+                                  {org.key.substring(0, 2)}
+                                </span>
+                              </div>
+                            )}
+                            <span className="text-sm text-gray-900 dark:text-gray-100">{org.name}</span>
+                          </button>
+                        );
+                      })}
+                    </>
+                  )}
+                  {/* Done button */}
+                  <div className="border-t border-gray-100 dark:border-dark-200 p-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowOrgDropdown(false)}
+                      className="w-full px-3 py-1.5 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded"
+                    >
+                      Done
                     </button>
-                  ))}
+                  </div>
                 </div>
               )}
             </div>
