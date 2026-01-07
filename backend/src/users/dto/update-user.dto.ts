@@ -1,4 +1,4 @@
-import { IsString, IsEnum, IsOptional, IsObject, IsBoolean, IsEmail, IsMongoId, IsArray } from 'class-validator';
+import { IsString, IsEnum, IsOptional, IsObject, IsBoolean, IsEmail, IsMongoId, IsArray, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { UserRole } from '@common/enums';
 import { UserPreferences } from '@common/interfaces';
@@ -8,6 +8,12 @@ export class UpdateUserDto {
   @IsOptional()
   @IsEmail()
   email?: string;
+
+  @ApiProperty({ required: false, description: 'New password (min 6 characters)' })
+  @IsOptional()
+  @IsString()
+  @MinLength(6)
+  password?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()

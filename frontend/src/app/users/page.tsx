@@ -556,6 +556,9 @@ function AddUserModal({ isOpen, onClose, onSuccess }: any) {
 function EditUserModal({ isOpen, onClose, user, organizations, onSuccess }: any) {
   const [updating, setUpdating] = useState(false);
   const [showOrgDropdown, setShowOrgDropdown] = useState(false);
+  const [showPasswordSection, setShowPasswordSection] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [formData, setFormData] = useState({
     firstName: user.firstName,
     lastName: user.lastName,
@@ -580,9 +583,28 @@ function EditUserModal({ isOpen, onClose, user, organizations, onSuccess }: any)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validate password if provided
+    if (showPasswordSection && newPassword) {
+      if (newPassword.length < 6) {
+        toast.error('Password must be at least 6 characters');
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        toast.error('Passwords do not match');
+        return;
+      }
+    }
+
     try {
       setUpdating(true);
-      await usersAPI.update(user._id, formData);
+      const updateData: any = { ...formData };
+
+      // Include password only if provided
+      if (showPasswordSection && newPassword) {
+        updateData.password = newPassword;
+      }
+
+      await usersAPI.update(user._id, updateData);
       toast.success('User updated successfully');
       onSuccess();
     } catch (error: any) {
@@ -770,6 +792,52 @@ function EditUserModal({ isOpen, onClose, user, organizations, onSuccess }: any)
               )}
             </div>
           </div>
+
+          {/* Password Change Section */}
+          <div className="border-t border-gray-200 dark:border-dark-300 pt-4">
+            <button
+              type="button"
+              onClick={() => setShowPasswordSection(!showPasswordSection)}
+              className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400"
+            >
+              <svg className={`w-4 h-4 transition-transform ${showPasswordSection ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+              Change Password
+            </button>
+            {showPasswordSection && (
+              <div className="mt-3 space-y-3 pl-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    New Password
+                  </label>
+                  <Input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Min 6 characters"
+                    disabled={updating}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Confirm Password
+                  </label>
+                  <Input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirm new password"
+                    disabled={updating}
+                  />
+                </div>
+                {newPassword && confirmPassword && newPassword !== confirmPassword && (
+                  <p className="text-xs text-danger-500">Passwords do not match</p>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className="flex items-center">
             <input
               type="checkbox"
