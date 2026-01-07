@@ -7,60 +7,38 @@
  */
 
 const mongoose = require('mongoose');
-const axios = require('axios');
-const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 // ============================================================
 // SESSION DETAILS - UPDATE THESE FOR EACH SESSION
 // ============================================================
 const SESSION = {
-  title: 'Implement Organizations management feature',
+  title: 'Reorganize Profile Settings with Tabs UI',
   description: `## Summary
-Added Organizations feature to admin settings allowing admins to create organizations, manage members with roles, and optionally assign projects to organizations.
+Reorganize the profile settings page to use a tabbed interface for better organization and user experience.
 
-## Changes Made
+## Changes Planned
+- Add tabs to the Admin Settings section in profile page
+- Create "Organizations" tab for managing organizations
+- Organize existing settings (Database, Timer, etc.) into logical tabs
+- Improve navigation and discoverability of admin features
 
-### Backend (8 new files)
-1. **organization.schema.ts**: Organization entity with name, key, description, logo, creator, members with roles
-2. **DTOs**: create-organization, update-organization, add-member DTOs
-3. **organizations.service.ts**: Full CRUD, member management (add/remove/update roles), logo upload via Cloudinary
-4. **organizations.controller.ts**: REST API endpoints with admin-only access control
-5. **organizations.module.ts**: Module registration
+## Acceptance Criteria
+- [ ] Profile settings uses tabbed navigation
+- [ ] Organizations has its own dedicated tab
+- [ ] All existing functionality preserved
+- [ ] Responsive design maintained`,
 
-### Backend (4 modified files)
-6. **app.module.ts**: Registered OrganizationsModule
-7. **project.schema.ts**: Added optional organizationId field
-8. **create-project.dto.ts**: Added organizationId
-9. **update-project.dto.ts**: Added organizationId
-
-### Frontend (4 new files)
-10. **organization.ts**: TypeScript interfaces
-11. **admin/organizations/page.tsx**: Admin page with grid view, search, archive toggle
-12. **OrganizationFormModal.tsx**: Create/Edit form with logo upload
-13. **OrganizationMembersModal.tsx**: Member management with role selection
-
-### Frontend (1 modified file)
-14. **api.ts**: Added organizationsAPI methods
-
-## Features
-- CRUD operations for organizations (admin only)
-- Member management with role assignment (Admin, PM, Developer, Viewer)
-- Logo upload/remove via Cloudinary
-- Optional project assignment to organizations
-- Search and archive filter on admin page`,
-
-  timeSpentMinutes: 45,
+  timeSpentMinutes: 0,
   assigneeEmail: 'firasbenhiba49@gmail.com', // Santa Admin
   projectKey: 'MKT', // Dar Blockchain
   type: 'task',
   priority: 'medium',
+  status: 'in_progress', // Can be: todo, in_progress, in_review, done
   category: 'development',
-  labels: ['organizations', 'admin'],
+  labels: ['ui', 'settings', 'admin'],
 };
 // ============================================================
-
-const API_URL = process.env.BACKEND_URL || 'http://localhost:3001';
 
 async function main() {
   try {
@@ -83,64 +61,101 @@ async function main() {
     }
     console.log(`Found user: ${user.firstName} ${user.lastName}`);
 
-    // Generate a JWT token for the user
-    const token = jwt.sign(
-      { sub: user._id.toString(), email: user.email, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
+    // Get next issue number for project (extract from key field as issueNumber may not be set)
+    const allIssues = await db.collection('issues')
+      .find({ projectId: project._id })
+      .toArray();
+
+    let maxIssueNumber = 0;
+    for (const issue of allIssues) {
+      if (issue.key) {
+        const num = parseInt(issue.key.split('-')[1]);
+        if (!isNaN(num) && num > maxIssueNumber) {
+          maxIssueNumber = num;
+        }
+      }
+      if (issue.issueNumber && issue.issueNumber > maxIssueNumber) {
+        maxIssueNumber = issue.issueNumber;
+      }
+    }
+    const nextIssueNumber = maxIssueNumber + 1;
+    const issueKey = `${SESSION.projectKey}-${nextIssueNumber}`;
 
     const now = new Date();
 
-    // Create issue via API
-    const issueData = {
-      projectId: project._id.toString(),
+    // Create the issue with all required fields
+    const issue = {
+      projectId: project._id,
+      issueNumber: nextIssueNumber,
+      key: issueKey,
       title: SESSION.title,
       description: SESSION.description,
       type: SESSION.type,
       priority: SESSION.priority,
-      status: 'done',
-      assignees: [user._id.toString()],
+      status: SESSION.status || 'done',
+      assignees: [user._id],
       labels: SESSION.labels,
-      category: SESSION.category,
-      startDate: now.toISOString(),
-      dueDate: now.toISOString(),
-      estimatedHours: Math.round(SESSION.timeSpentMinutes / 60 * 10) / 10,
+      reporter: user._id,
+      timeTracking: {
+        estimatedHours: Math.round(SESSION.timeSpentMinutes / 60 * 10) / 10,
+        loggedHours: 0,
+        timeLogs: [],
+        activeTimeEntry: null,
+      },
+      attachments: [],
+      sprintId: null,
+      startDate: now,
+      dueDate: null,
+      storyPoints: 0,
+      watchers: [],
+      blockedBy: [],
+      blocks: [],
+      parentIssue: null,
+      order: 0,
+      isArchived: false,
+      archivedAt: null,
+      completedAt: SESSION.status === 'done' ? now : null,
+      isVisible: true,
+      visibleTo: [],
+      category: SESSION.category || 'development',
+      createdAt: now,
+      updatedAt: now,
+      __v: 0,
     };
 
-    console.log(`\nCreating issue via API: ${API_URL}/issues`);
+    const result = await db.collection('issues').insertOne(issue);
 
-    const response = await axios.post(`${API_URL}/issues`, issueData, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+    // Create activity for issue creation
+    const activity = {
+      type: 'issue_created',
+      userId: user._id,
+      projectId: project._id,
+      issueId: result.insertedId,
+      details: {
+        issueKey: issueKey,
+        issueTitle: SESSION.title,
       },
-    });
-
-    const createdIssue = response.data;
+      createdAt: now,
+    };
+    await db.collection('activities').insertOne(activity);
 
     console.log('\n========================================');
     console.log('✅ TICKET CREATED SUCCESSFULLY');
     console.log('========================================');
-    console.log(`Issue Key:    ${createdIssue.key}`);
+    console.log(`Issue Key:    ${issueKey}`);
     console.log(`Title:        ${SESSION.title}`);
     console.log(`Project:      ${project.name} (${SESSION.projectKey})`);
     console.log(`Assignee:     ${user.firstName} ${user.lastName}`);
-    console.log(`Time Est:     ${SESSION.timeSpentMinutes} minutes`);
-    console.log(`Status:       ${createdIssue.status}`);
+    console.log(`Status:       ${SESSION.status || 'done'}`);
     console.log(`Type:         ${SESSION.type}`);
     console.log(`Priority:     ${SESSION.priority}`);
     console.log(`Category:     ${SESSION.category}`);
     console.log(`Labels:       ${SESSION.labels.join(', ')}`);
-    console.log(`ID:           ${createdIssue._id}`);
+    console.log(`ID:           ${result.insertedId}`);
     console.log('========================================\n');
 
   } catch (error) {
-    if (error.response) {
-      console.error('❌ API Error:', error.response.status, error.response.data);
-    } else {
-      console.error('❌ Error:', error.message);
-    }
+    console.error('❌ Error:', error.message);
   } finally {
     await mongoose.disconnect();
     console.log('Disconnected from MongoDB');
