@@ -91,6 +91,45 @@ interface SidebarProps {
   isMobile?: boolean;
 }
 
+// localStorage key for project click counts
+const PROJECT_CLICKS_KEY = 'dbwork_project_clicks';
+
+// Get project click counts from localStorage
+const getProjectClickCounts = (): Record<string, number> => {
+  if (typeof window === 'undefined') return {};
+  try {
+    const stored = localStorage.getItem(PROJECT_CLICKS_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch {
+    return {};
+  }
+};
+
+// Increment click count for a project
+const incrementProjectClick = (projectId: string): void => {
+  if (typeof window === 'undefined') return;
+  try {
+    const counts = getProjectClickCounts();
+    counts[projectId] = (counts[projectId] || 0) + 1;
+    localStorage.setItem(PROJECT_CLICKS_KEY, JSON.stringify(counts));
+  } catch (error) {
+    console.error('Error saving project click count:', error);
+  }
+};
+
+// Sort projects by click frequency (most clicked first)
+const sortProjectsByFrequency = (projects: Project[], clickCounts: Record<string, number>): Project[] => {
+  return [...projects].sort((a, b) => {
+    const countA = clickCounts[a._id] || 0;
+    const countB = clickCounts[b._id] || 0;
+    // Sort by click count descending, then by name ascending for ties
+    if (countB !== countA) {
+      return countB - countA;
+    }
+    return a.name.localeCompare(b.name);
+  });
+};
+
 export const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) => {
   const pathname = usePathname();
   const { user } = useAuth();
@@ -101,14 +140,31 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) =
   const [collapsed, setCollapsed] = useState(false);
   const [showChangelogModal, setShowChangelogModal] = useState(false);
   const [showAllProjects, setShowAllProjects] = useState(false);
+  const [projectClickCounts, setProjectClickCounts] = useState<Record<string, number>>({});
 
   const INITIAL_PROJECTS_COUNT = 5;
+
+  // Load click counts from localStorage on mount
+  useEffect(() => {
+    setProjectClickCounts(getProjectClickCounts());
+  }, []);
 
   // Handle link clicks on mobile - close the drawer
   const handleLinkClick = () => {
     if (isMobile && onClose) {
       onClose();
     }
+  };
+
+  // Handle project click - track and update counts
+  const handleProjectClick = (projectId: string) => {
+    incrementProjectClick(projectId);
+    // Update state to re-sort immediately
+    setProjectClickCounts(prev => ({
+      ...prev,
+      [projectId]: (prev[projectId] || 0) + 1
+    }));
+    handleLinkClick();
   };
 
   useEffect(() => {
@@ -139,10 +195,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) =
     }
   };
 
-  // Filter projects based on selected organization
-  const filteredProjects = selectedOrganizationId
-    ? projects.filter(p => p.organizationId === selectedOrganizationId)
-    : projects;
+  // Filter projects based on selected organization and sort by click frequency
+  const filteredProjects = sortProjectsByFrequency(
+    selectedOrganizationId
+      ? projects.filter(p => p.organizationId === selectedOrganizationId)
+      : projects,
+    projectClickCounts
+  );
 
   // On mobile, always show expanded
   const isCollapsed = isMobile ? false : collapsed;
@@ -375,17 +434,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) =
                   .slice(0, showAllProjects ? filteredProjects.length : INITIAL_PROJECTS_COUNT)
                   .map((project) => {
                     const isActive = pathname.includes(`/projects/${project._id}`);
+                    const clickCount = projectClickCounts[project._id] || 0;
                     return (
                       <Link
                         key={project._id}
                         href={`/projects/${project._id}`}
-                        onClick={handleLinkClick}
+                        onClick={() => handleProjectClick(project._id)}
                         className={cn(
                           'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
                           isActive
                             ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
                             : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-400 hover:text-gray-900 dark:hover:text-gray-100'
                         )}
+                        title={clickCount > 0 ? `${project.name} (visited ${clickCount} time${clickCount > 1 ? 's' : ''})` : project.name}
                       >
                         {project.logo ? (
                           <img
