@@ -203,6 +203,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) =
     projectClickCounts
   );
 
+  // Only show organizations that have at least one project
+  const organizationsWithProjects = organizations.filter(org =>
+    projects.some(p => p.organizationId === org._id)
+  );
+
   // On mobile, always show expanded
   const isCollapsed = isMobile ? false : collapsed;
 
@@ -351,8 +356,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) =
                 Projects
               </h3>
               <div className="flex items-center gap-1">
-                {/* Organization filter icons */}
-                {organizations.length > 0 && (
+                {/* Organization filter icons - only show orgs with projects */}
+                {organizationsWithProjects.length > 0 && (
                   <>
                     {/* All projects button */}
                     <button
@@ -372,8 +377,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) =
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                       </svg>
                     </button>
-                    {/* Organization logos */}
-                    {organizations.map((org) => {
+                    {/* Organization logos - only those with projects */}
+                    {organizationsWithProjects.map((org) => {
                       const isSelected = selectedOrganizationId === org._id;
                       return (
                         <button
