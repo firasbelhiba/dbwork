@@ -13,12 +13,13 @@ import { MyCreatedTasksStats } from '@/components/charts/MyCreatedTasksStats';
 import Link from 'next/link';
 
 // Helper function to get display name for status (handles custom statuses)
-const getStatusDisplayName = (issue: Issue): string => {
+// Uses projects list to look up custom status names
+const getStatusDisplayName = (issue: Issue, projects: Project[]): string => {
   const status = issue.status as string;
 
   // Check if it's a custom status (starts with "custom_")
   if (status.startsWith('custom_')) {
-    // Try to find the custom status name from the project's customStatuses
+    // First try from the issue's populated projectId
     if (typeof issue.projectId === 'object' && issue.projectId?.customStatuses) {
       const customStatus = issue.projectId.customStatuses.find(
         (cs) => cs.id === status
@@ -27,7 +28,18 @@ const getStatusDisplayName = (issue: Issue): string => {
         return customStatus.name;
       }
     }
-    // Fallback: just show "Custom" if we can't find the name
+
+    // Fallback: look up in projects list
+    const projectId = typeof issue.projectId === 'object' ? issue.projectId._id : issue.projectId;
+    const project = projects.find(p => p._id === projectId);
+    if (project?.customStatuses) {
+      const customStatus = project.customStatuses.find(cs => cs.id === status);
+      if (customStatus) {
+        return customStatus.name;
+      }
+    }
+
+    // Final fallback: just show "Custom" if we can't find the name
     return 'Custom';
   }
 
@@ -261,7 +273,7 @@ export default function DashboardPage() {
                         </p>
                       </div>
                       <Badge variant={issue.status.startsWith('custom_') ? 'default' : issue.status as any} dot>
-                        {getStatusDisplayName(issue)}
+                        {getStatusDisplayName(issue, projects)}
                       </Badge>
                     </div>
                   </Link>
