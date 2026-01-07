@@ -38,7 +38,9 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   const { user: currentUser } = useAuth();
   const [showActions, setShowActions] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [dropdownAbove, setDropdownAbove] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerButtonRef = useRef<HTMLButtonElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -336,7 +338,20 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
             className={`absolute top-1 ${isOwnMessage ? 'left-1' : 'right-1'} z-20`}
           >
             <button
-              onClick={() => setShowDropdown(!showDropdown)}
+              ref={triggerButtonRef}
+              onClick={() => {
+                // Calculate if dropdown should open above or below
+                if (triggerButtonRef.current) {
+                  const rect = triggerButtonRef.current.getBoundingClientRect();
+                  const viewportHeight = window.innerHeight;
+                  const spaceBelow = viewportHeight - rect.bottom;
+                  const dropdownHeight = 280; // Approximate height of dropdown
+
+                  // If not enough space below, show above
+                  setDropdownAbove(spaceBelow < dropdownHeight);
+                }
+                setShowDropdown(!showDropdown);
+              }}
               className="p-1 rounded-md bg-white/90 dark:bg-dark-500/90 hover:bg-white dark:hover:bg-dark-400 shadow-sm transition-colors"
             >
               <svg
@@ -351,7 +366,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 
             {/* Dropdown menu */}
             {showDropdown && (
-              <div className={`absolute top-full mt-1 ${isOwnMessage ? 'left-0' : 'right-0'} bg-white dark:bg-dark-500 rounded-lg shadow-xl border border-gray-200 dark:border-dark-400 py-1 min-w-[160px] z-30`}>
+              <div className={`absolute ${dropdownAbove ? 'bottom-full mb-1' : 'top-full mt-1'} ${isOwnMessage ? 'left-0' : 'right-0'} bg-white dark:bg-dark-500 rounded-lg shadow-xl border border-gray-200 dark:border-dark-400 py-1 min-w-[160px] z-30`}>
                 {/* Quick reactions row */}
                 <div className="flex justify-center gap-1 px-2 py-2 border-b border-gray-100 dark:border-dark-400">
                   {reactions.map((emoji) => (
