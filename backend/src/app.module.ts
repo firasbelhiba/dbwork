@@ -27,6 +27,7 @@ import { GoogleCalendarModule } from './google-calendar/google-calendar.module';
 import { AuditsModule } from './audits/audits.module';
 import { AvailabilityModule } from './availability/availability.module';
 import { ChatModule } from './chat/chat.module';
+import { OrganizationsModule } from './organizations/organizations.module';
 import { HttpExceptionFilter } from './common/filters';
 import { LoggingInterceptor } from './common/interceptors';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
@@ -64,6 +65,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     AuditsModule,
     AvailabilityModule,
     ChatModule,
+    OrganizationsModule,
   ],
   controllers: [AppController],
   providers: [

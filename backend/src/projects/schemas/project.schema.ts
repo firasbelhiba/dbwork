@@ -27,6 +27,9 @@ export class Project {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   lead: Types.ObjectId;
 
+  @Prop({ type: Types.ObjectId, ref: 'Organization', required: false })
+  organizationId?: Types.ObjectId;
+
   @Prop({ type: [{
     userId: { type: Types.ObjectId, ref: 'User' },
     addedAt: { type: Date, default: Date.now }
@@ -113,3 +116,4 @@ ProjectSchema.index({ lead: 1 });
 ProjectSchema.index({ 'members.userId': 1 });
 ProjectSchema.index({ isArchived: 1 });
 ProjectSchema.index({ createdAt: -1 });
+ProjectSchema.index({ organizationId: 1 });

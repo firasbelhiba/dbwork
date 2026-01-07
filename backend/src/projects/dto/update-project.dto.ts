@@ -26,4 +26,9 @@ export class UpdateProjectDto {
   @IsOptional()
   @IsBoolean()
   isArchived?: boolean;
+
+  @ApiProperty({ required: false, description: 'Organization ID to assign project to' })
+  @IsOptional()
+  @IsMongoId()
+  organizationId?: string;
 }

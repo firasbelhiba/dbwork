@@ -445,6 +445,34 @@ export const auditsAPI = {
   },
 };
 
+// Organizations API
+export const organizationsAPI = {
+  getAll: (params?: { isArchived?: boolean }) => api.get('/organizations', { params }),
+  getMyOrganizations: () => api.get('/organizations/my'),
+  getById: (id: string) => api.get(`/organizations/${id}`),
+  getByKey: (key: string) => api.get(`/organizations/key/${key}`),
+  create: (data: { name: string; key: string; description?: string; settings?: any }) =>
+    api.post('/organizations', data),
+  update: (id: string, data: { name?: string; description?: string; settings?: any; isArchived?: boolean }) =>
+    api.patch(`/organizations/${id}`, data),
+  delete: (id: string) => api.delete(`/organizations/${id}`),
+  // Member management
+  addMember: (id: string, data: { userId: string; role?: string }) =>
+    api.post(`/organizations/${id}/members`, data),
+  removeMember: (id: string, userId: string) => api.delete(`/organizations/${id}/members/${userId}`),
+  updateMemberRole: (id: string, userId: string, role: string) =>
+    api.patch(`/organizations/${id}/members/${userId}`, { role }),
+  // Logo management
+  uploadLogo: (id: string, file: File) => {
+    const formData = new FormData();
+    formData.append('logo', file);
+    return api.post(`/organizations/${id}/logo`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  removeLogo: (id: string) => api.delete(`/organizations/${id}/logo`),
+};
+
 // Chat API
 export const chatAPI = {
   // Conversations

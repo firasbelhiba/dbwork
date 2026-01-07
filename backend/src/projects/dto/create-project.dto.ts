@@ -24,4 +24,9 @@ export class CreateProjectDto {
   @IsOptional()
   @IsObject()
   settings?: any;
+
+  @ApiProperty({ required: false, description: 'Organization ID to assign project to' })
+  @IsOptional()
+  @IsMongoId()
+  organizationId?: string;
 }
