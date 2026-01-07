@@ -1,4 +1,4 @@
-import { IsString, IsEnum, IsOptional, IsObject, IsBoolean, IsEmail } from 'class-validator';
+import { IsString, IsEnum, IsOptional, IsObject, IsBoolean, IsEmail, IsMongoId } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { UserRole } from '@common/enums';
 import { UserPreferences } from '@common/interfaces';
@@ -43,4 +43,9 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   gmailEmail?: string;
+
+  @ApiProperty({ required: false, description: 'Organization ID to assign the user to' })
+  @IsOptional()
+  @IsMongoId()
+  organizationId?: string;
 }

@@ -154,6 +154,10 @@ export class User {
     refreshToken: string | null;
     expiryDate: number | null;
   };
+
+  // Organization assignment
+  @Prop({ type: Types.ObjectId, ref: 'Organization', default: null })
+  organizationId: Types.ObjectId | null;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
@@ -162,6 +166,7 @@ export const UserSchema = SchemaFactory.createForClass(User);
 UserSchema.index({ email: 1 });
 UserSchema.index({ role: 1 });
 UserSchema.index({ isActive: 1 });
+UserSchema.index({ organizationId: 1 });
 
 // Virtual for full name
 UserSchema.virtual('fullName').get(function() {

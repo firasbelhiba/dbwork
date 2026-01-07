@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button, Badge, Input, Select, Breadcrumb, LogoLoader } from '@/components/common';
-import { usersAPI, authAPI } from '@/lib/api';
+import { usersAPI, authAPI, organizationsAPI } from '@/lib/api';
 import { User, UserRole } from '@/types/user';
+import { Organization } from '@/types/organization';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDateTime, getInitials } from '@/lib/utils';
 import { UserAvatar } from '@/components/common/UserAvatar';
@@ -16,6 +17,7 @@ export default function UsersPage() {
   const router = useRouter();
   const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
@@ -35,6 +37,7 @@ export default function UsersPage() {
 
     if (currentUser) {
       fetchUsers();
+      fetchOrganizations();
     }
   }, [currentUser, router]);
 
@@ -49,6 +52,15 @@ export default function UsersPage() {
       toast.error('Failed to load users');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchOrganizations = async () => {
+    try {
+      const response = await organizationsAPI.getAll();
+      setOrganizations(response.data);
+    } catch (error) {
+      console.error('Error fetching organizations:', error);
     }
   };
 
@@ -195,6 +207,9 @@ export default function UsersPage() {
                       Role
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Organization
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Status
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -211,7 +226,7 @@ export default function UsersPage() {
                 <tbody className="divide-y divide-gray-200 dark:divide-dark-300">
                   {filteredUsers.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-6 py-12 text-center">
+                      <td colSpan={7} className="px-6 py-12 text-center">
                         <div className="text-gray-500 dark:text-gray-400">
                           <svg className="w-12 h-12 mx-auto mb-3 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -258,6 +273,28 @@ export default function UsersPage() {
                           <Badge variant={getRoleBadgeVariant(user.role)}>
                             {user.role.replace(/_/g, ' ')}
                           </Badge>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {(() => {
+                            const org = organizations.find(o => o._id === user.organizationId);
+                            if (!org) return (
+                              <span className="text-gray-400 dark:text-gray-500 text-sm">—</span>
+                            );
+                            return (
+                              <div className="flex items-center gap-2">
+                                {org.logo ? (
+                                  <img src={org.logo} alt={org.name} className="w-6 h-6 rounded object-cover" />
+                                ) : (
+                                  <div className="w-6 h-6 rounded bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                                    <span className="text-xs font-bold text-primary-600 dark:text-primary-400">
+                                      {org.key.substring(0, 2)}
+                                    </span>
+                                  </div>
+                                )}
+                                <span className="text-sm text-gray-900 dark:text-gray-100">{org.name}</span>
+                              </div>
+                            );
+                          })()}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <Badge variant={user.isActive ? 'success' : 'default'} dot>
@@ -350,6 +387,7 @@ export default function UsersPage() {
             setSelectedUser(null);
           }}
           user={selectedUser}
+          organizations={organizations}
           onSuccess={() => {
             fetchUsers();
             setShowEditModal(false);
@@ -507,8 +545,9 @@ function AddUserModal({ isOpen, onClose, onSuccess }: any) {
   );
 }
 
-function EditUserModal({ isOpen, onClose, user, onSuccess }: any) {
+function EditUserModal({ isOpen, onClose, user, organizations, onSuccess }: any) {
   const [updating, setUpdating] = useState(false);
+  const [showOrgDropdown, setShowOrgDropdown] = useState(false);
   const [formData, setFormData] = useState({
     firstName: user.firstName,
     lastName: user.lastName,
@@ -516,7 +555,10 @@ function EditUserModal({ isOpen, onClose, user, onSuccess }: any) {
     gmailEmail: user.gmailEmail || '',
     role: user.role,
     isActive: user.isActive,
+    organizationId: user.organizationId || '',
   });
+
+  const selectedOrg = organizations?.find((org: Organization) => org._id === formData.organizationId);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -603,6 +645,75 @@ function EditUserModal({ isOpen, onClose, user, onSuccess }: any) {
               <option value={UserRole.DEVELOPER}>Developer</option>
               <option value={UserRole.VIEWER}>Viewer</option>
             </Select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Organization
+            </label>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowOrgDropdown(!showOrgDropdown)}
+                disabled={updating}
+                className="w-full flex items-center justify-between px-3 py-2 text-left bg-white dark:bg-dark-300 border border-gray-300 dark:border-dark-200 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {selectedOrg ? (
+                  <div className="flex items-center gap-2">
+                    {selectedOrg.logo ? (
+                      <img src={selectedOrg.logo} alt={selectedOrg.name} className="w-5 h-5 rounded object-cover" />
+                    ) : (
+                      <div className="w-5 h-5 rounded bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                        <span className="text-[10px] font-bold text-primary-600 dark:text-primary-400">
+                          {selectedOrg.key.substring(0, 2)}
+                        </span>
+                      </div>
+                    )}
+                    <span className="text-sm text-gray-900 dark:text-gray-100">{selectedOrg.name}</span>
+                  </div>
+                ) : (
+                  <span className="text-sm text-gray-500 dark:text-gray-400">No organization</span>
+                )}
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {showOrgDropdown && (
+                <div className="absolute z-10 mt-1 w-full bg-white dark:bg-dark-300 border border-gray-200 dark:border-dark-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData({ ...formData, organizationId: '' });
+                      setShowOrgDropdown(false);
+                    }}
+                    className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-dark-200 text-sm text-gray-500 dark:text-gray-400"
+                  >
+                    No organization
+                  </button>
+                  {organizations?.map((org: Organization) => (
+                    <button
+                      key={org._id}
+                      type="button"
+                      onClick={() => {
+                        setFormData({ ...formData, organizationId: org._id });
+                        setShowOrgDropdown(false);
+                      }}
+                      className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-dark-200 flex items-center gap-2"
+                    >
+                      {org.logo ? (
+                        <img src={org.logo} alt={org.name} className="w-5 h-5 rounded object-cover" />
+                      ) : (
+                        <div className="w-5 h-5 rounded bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                          <span className="text-[10px] font-bold text-primary-600 dark:text-primary-400">
+                            {org.key.substring(0, 2)}
+                          </span>
+                        </div>
+                      )}
+                      <span className="text-sm text-gray-900 dark:text-gray-100">{org.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <div className="flex items-center">
             <input
