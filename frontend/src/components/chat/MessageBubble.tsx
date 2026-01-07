@@ -450,13 +450,13 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           </div>
         )}
 
-        {/* Reactions - displayed below actions */}
+        {/* Reactions - WhatsApp-style attached to bubble bottom */}
         {message.reactions && message.reactions.length > 0 && (
-          <div className={`flex flex-wrap gap-1 mt-1 ${isOwnMessage ? 'justify-end' : ''}`}>
+          <div className={`flex flex-wrap gap-0.5 -mt-2 ${isOwnMessage ? 'justify-end mr-2' : 'ml-2'}`}>
             {message.reactions.map((reaction, idx) => (
               <span
                 key={idx}
-                className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-gray-100 dark:bg-dark-400 text-sm border border-gray-200 dark:border-dark-300 cursor-pointer hover:bg-gray-200 dark:hover:bg-dark-300 transition-colors"
+                className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white dark:bg-dark-500 text-sm shadow-sm border border-gray-200 dark:border-dark-300 cursor-pointer hover:scale-110 transition-transform"
                 onClick={() => onReact?.(message, reaction.reaction)}
                 title="Click to react"
               >
