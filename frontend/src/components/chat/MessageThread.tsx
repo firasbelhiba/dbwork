@@ -468,6 +468,8 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
           <TypingIndicator users={typingUserNames} />
         )}
 
+        {/* Extra padding at the bottom for reactions/dropdowns to have space */}
+        <div className="h-16" />
         <div ref={messagesEndRef} />
       </div>
 
