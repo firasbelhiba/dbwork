@@ -289,7 +289,9 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
             isOwnMessage
               ? 'bg-primary-500 text-white'
               : 'bg-gray-100 dark:bg-dark-400 text-gray-900 dark:text-white'
-          } ${message.isDeleted ? 'opacity-50 italic' : ''}`}
+          } ${message.isDeleted ? 'opacity-50 italic' : ''} ${
+            message.reactions && message.reactions.length > 0 ? 'pb-5' : ''
+          }`}
         >
           {/* Message content with inline timestamp */}
           <div className="flex flex-wrap items-end gap-x-2">
@@ -327,6 +329,22 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           {message.attachments && message.attachments.length > 0 && (
             <div className="space-y-2 mt-1">
               {message.attachments.map(renderAttachment)}
+            </div>
+          )}
+
+          {/* Reactions - WhatsApp-style inside bubble at bottom */}
+          {message.reactions && message.reactions.length > 0 && (
+            <div className={`absolute -bottom-2 ${isOwnMessage ? 'left-2' : 'right-2'} flex flex-wrap gap-0.5`}>
+              {message.reactions.map((reaction, idx) => (
+                <span
+                  key={idx}
+                  className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white dark:bg-dark-500 text-sm shadow-sm border border-gray-200 dark:border-dark-300 cursor-pointer hover:scale-110 transition-transform"
+                  onClick={() => onReact?.(message, reaction.reaction)}
+                  title="Click to react"
+                >
+                  {reaction.reaction}
+                </span>
+              ))}
             </div>
           )}
         </div>
@@ -447,22 +465,6 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                 </div>
               </div>
             )}
-          </div>
-        )}
-
-        {/* Reactions - WhatsApp-style attached to bubble bottom */}
-        {message.reactions && message.reactions.length > 0 && (
-          <div className={`flex flex-wrap gap-0.5 -mt-2 ${isOwnMessage ? 'justify-end mr-2' : 'ml-2'}`}>
-            {message.reactions.map((reaction, idx) => (
-              <span
-                key={idx}
-                className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white dark:bg-dark-500 text-sm shadow-sm border border-gray-200 dark:border-dark-300 cursor-pointer hover:scale-110 transition-transform"
-                onClick={() => onReact?.(message, reaction.reaction)}
-                title="Click to react"
-              >
-                {reaction.reaction}
-              </span>
-            ))}
           </div>
         )}
 
