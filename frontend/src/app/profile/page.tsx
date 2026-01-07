@@ -934,6 +934,34 @@ export default function ProfilePage() {
               </div>
             </div>
 
+            {/* Manage Organizations */}
+            <div className="mb-4 md:mb-6">
+              <h3 className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">
+                Organizations
+              </h3>
+              <a
+                href="/admin/organizations"
+                className="flex items-center justify-between p-3 md:p-4 bg-gray-50 dark:bg-dark-500 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
+                    <svg className="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm md:text-base text-gray-900 dark:text-white">Manage Organizations</p>
+                    <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
+                      Create and manage organizations, assign members and projects
+                    </p>
+                  </div>
+                </div>
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            </div>
+
             {/* Database Statistics */}
             <div className="mb-4 md:mb-6">
               <h3 className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">
