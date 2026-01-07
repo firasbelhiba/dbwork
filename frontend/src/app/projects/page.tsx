@@ -181,11 +181,35 @@ export default function ProjectsPage() {
                   <h3 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 truncate">{project.name}</h3>
                   <p className="text-gray-600 dark:text-gray-400 text-xs md:text-sm mb-3 md:mb-4 line-clamp-2">{project.description}</p>
                   <div className="flex items-center justify-between pt-3 md:pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                      </svg>
-                      <span className="text-xs md:text-sm text-gray-600 dark:text-gray-400">{project.members?.length || 0} members</span>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                        <span className="text-xs md:text-sm text-gray-600 dark:text-gray-400">{project.members?.length || 0}</span>
+                      </div>
+                      {/* Organization logo */}
+                      {project.organizationId && (() => {
+                        const org = organizations.find(o => o._id === project.organizationId);
+                        if (!org) return null;
+                        return (
+                          <div className="flex items-center" title={org.name}>
+                            {org.logo ? (
+                              <img
+                                src={org.logo}
+                                alt={org.name}
+                                className="w-5 h-5 rounded object-cover"
+                              />
+                            ) : (
+                              <div className="w-5 h-5 rounded bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                                <span className="text-[8px] font-bold text-primary-600 dark:text-primary-400">
+                                  {org.key.substring(0, 2)}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </div>
                     <div className="text-xs md:text-sm text-gray-500 dark:text-gray-400 truncate max-w-[100px]">
                       {typeof project.lead === 'object'
