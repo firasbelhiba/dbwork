@@ -12,6 +12,29 @@ import { RecentActivityWidget } from '@/components/activities/RecentActivityWidg
 import { MyCreatedTasksStats } from '@/components/charts/MyCreatedTasksStats';
 import Link from 'next/link';
 
+// Helper function to get display name for status (handles custom statuses)
+const getStatusDisplayName = (issue: Issue): string => {
+  const status = issue.status as string;
+
+  // Check if it's a custom status (starts with "custom_")
+  if (status.startsWith('custom_')) {
+    // Try to find the custom status name from the project's customStatuses
+    if (typeof issue.projectId === 'object' && issue.projectId?.customStatuses) {
+      const customStatus = issue.projectId.customStatuses.find(
+        (cs) => cs.id === status
+      );
+      if (customStatus) {
+        return customStatus.name;
+      }
+    }
+    // Fallback: just show "Custom" if we can't find the name
+    return 'Custom';
+  }
+
+  // Standard status - just replace underscores with spaces
+  return status.replace(/_/g, ' ');
+};
+
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
@@ -237,8 +260,8 @@ export default function DashboardPage() {
                           {typeof issue.projectId === 'object' ? issue.projectId.key : ''}-{issue._id.slice(-4)}
                         </p>
                       </div>
-                      <Badge variant={issue.status as any} dot>
-                        {issue.status.replace('_', ' ')}
+                      <Badge variant={issue.status.startsWith('custom_') ? 'default' : issue.status as any} dot>
+                        {getStatusDisplayName(issue)}
                       </Badge>
                     </div>
                   </Link>
