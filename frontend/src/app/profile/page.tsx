@@ -410,6 +410,282 @@ export default function ProfilePage() {
           <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1">Manage your account settings and preferences</p>
         </div>
 
+        {/* Admin Settings - Only visible for admins - NOW AT THE TOP */}
+        {user.role === 'admin' && (
+          <div className="bg-white dark:bg-dark-600 rounded-lg shadow-sm border border-red-200 dark:border-red-900/50 p-4 md:p-6 lg:p-8 mb-4 md:mb-6">
+            <div className="flex items-center gap-3 mb-4 md:mb-6">
+              <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                <svg className="w-5 h-5 md:w-6 md:h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white">Admin Settings</h2>
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Administrator-only features and tools</p>
+              </div>
+            </div>
+
+            {/* Tabs Navigation */}
+            <div className="border-b border-gray-200 dark:border-dark-400 mb-6">
+              <nav className="flex gap-1 -mb-px overflow-x-auto" aria-label="Admin settings tabs">
+                <button
+                  onClick={() => setAdminTab('organizations')}
+                  className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                    adminTab === 'organizations'
+                      ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                  Organizations
+                </button>
+                <button
+                  onClick={() => setAdminTab('database')}
+                  className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                    adminTab === 'database'
+                      ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+                  </svg>
+                  Database
+                </button>
+                <button
+                  onClick={() => setAdminTab('timer')}
+                  className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                    adminTab === 'timer'
+                      ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Timer Settings
+                </button>
+              </nav>
+            </div>
+
+            {/* Tab Content */}
+            {/* Organizations Tab */}
+            {adminTab === 'organizations' && (
+              <div className="space-y-4">
+                <a
+                  href="/admin/organizations"
+                  className="flex items-center justify-between p-4 bg-gray-50 dark:bg-dark-500 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
+                      <svg className="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm md:text-base text-gray-900 dark:text-white">Manage Organizations</p>
+                      <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
+                        Create and manage organizations, assign members and projects
+                      </p>
+                    </div>
+                  </div>
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </a>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Organizations allow you to group projects and users together for better management.
+                </p>
+              </div>
+            )}
+
+            {/* Database Tab */}
+            {adminTab === 'database' && (
+              <div className="space-y-6">
+                {/* Database Statistics */}
+                <div>
+                  <h3 className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">
+                    Database Statistics
+                  </h3>
+                  {loadingStats ? (
+                    <div className="flex items-center justify-center py-4">
+                      <LogoLoader size="sm" text="Loading stats" />
+                    </div>
+                  ) : dbStats ? (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+                      <div className="bg-gray-50 dark:bg-dark-500 rounded-lg p-3 md:p-4">
+                        <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{dbStats.totalDocuments?.toLocaleString() || 0}</p>
+                        <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Total Documents</p>
+                      </div>
+                      <div className="bg-gray-50 dark:bg-dark-500 rounded-lg p-3 md:p-4">
+                        <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{dbStats.databaseSize || 'N/A'}</p>
+                        <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Database Size</p>
+                      </div>
+                      <div className="bg-gray-50 dark:bg-dark-500 rounded-lg p-3 md:p-4 col-span-2 md:col-span-1">
+                        <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{Object.keys(dbStats.collections || {}).length}</p>
+                        <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Collections</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">Unable to load statistics</p>
+                  )}
+                </div>
+
+                {/* Export Database */}
+                <div className="border-t border-gray-200 dark:border-dark-400 pt-6">
+                  <h3 className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">
+                    Data Management
+                  </h3>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3 md:p-4 bg-gray-50 dark:bg-dark-500 rounded-lg">
+                    <div>
+                      <p className="font-medium text-sm md:text-base text-gray-900 dark:text-white">Export Database</p>
+                      <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
+                        Download a complete backup of all data as JSON
+                      </p>
+                    </div>
+                    <Button
+                      onClick={handleExportDatabase}
+                      loading={exportingDatabase}
+                      disabled={exportingDatabase}
+                      variant="secondary"
+                      className="flex items-center justify-center gap-2 w-full sm:w-auto"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      {exportingDatabase ? 'Exporting...' : 'Export'}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Collection Details */}
+                {dbStats?.collections && Object.keys(dbStats.collections).length > 0 && (
+                  <div className="border-t border-gray-200 dark:border-dark-400 pt-6">
+                    <h3 className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">
+                      Collection Details
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                      {Object.entries(dbStats.collections).map(([name, count]) => (
+                        <div key={name} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-dark-500 rounded text-xs md:text-sm">
+                          <span className="text-gray-700 dark:text-gray-300 truncate">{name}</span>
+                          <span className="font-medium text-gray-900 dark:text-white ml-2">{(count as number).toLocaleString()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Timer Settings Tab */}
+            {adminTab === 'timer' && (
+              <div>
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  Configure when active timers should automatically stop at the end of the work day
+                </p>
+
+                {loadingTimerSettings ? (
+                  <div className="flex items-center justify-center py-4">
+                    <LogoLoader size="sm" text="Loading settings" />
+                  </div>
+                ) : timerSettings ? (
+                  <div className="space-y-4">
+                    {/* Enable/Disable Toggle */}
+                    <div className="flex items-center justify-between p-3 md:p-4 bg-gray-50 dark:bg-dark-500 rounded-lg">
+                      <div>
+                        <p className="font-medium text-sm md:text-base text-gray-900 dark:text-white">Enable Auto-Stop</p>
+                        <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
+                          Automatically stop all running timers at the specified time
+                        </p>
+                      </div>
+                      <div className="relative inline-block w-11 h-6">
+                        <input
+                          type="checkbox"
+                          checked={timerSettings.timerAutoStopEnabled}
+                          onChange={(e) => setTimerSettings({ ...timerSettings, timerAutoStopEnabled: e.target.checked })}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                      </div>
+                    </div>
+
+                    {/* Weekdays Only Toggle */}
+                    <div className="flex items-center justify-between p-3 md:p-4 bg-gray-50 dark:bg-dark-500 rounded-lg">
+                      <div>
+                        <p className="font-medium text-sm md:text-base text-gray-900 dark:text-white">Weekdays Only</p>
+                        <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
+                          Only auto-stop timers on weekdays (Monday - Friday)
+                        </p>
+                      </div>
+                      <div className="relative inline-block w-11 h-6">
+                        <input
+                          type="checkbox"
+                          checked={timerSettings.timerAutoStopWeekdaysOnly}
+                          onChange={(e) => setTimerSettings({ ...timerSettings, timerAutoStopWeekdaysOnly: e.target.checked })}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                      </div>
+                    </div>
+
+                    {/* Time Picker */}
+                    <div className="p-3 md:p-4 bg-gray-50 dark:bg-dark-500 rounded-lg">
+                      <p className="font-medium text-sm md:text-base text-gray-900 dark:text-white mb-3">Auto-Stop Time</p>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={timerSettings.timerAutoStopHour}
+                          onChange={(e) => setTimerSettings({ ...timerSettings, timerAutoStopHour: parseInt(e.target.value) })}
+                          className="h-10 px-3 rounded-md border-2 border-gray-300 dark:border-dark-400 bg-white dark:bg-dark-600 text-gray-900 dark:text-white text-sm focus:border-primary-500 dark:focus:border-primary-500 focus:outline-none"
+                        >
+                          {Array.from({ length: 24 }, (_, i) => (
+                            <option key={i} value={i}>
+                              {i.toString().padStart(2, '0')}
+                            </option>
+                          ))}
+                        </select>
+                        <span className="text-xl font-bold text-gray-700 dark:text-gray-300">:</span>
+                        <select
+                          value={timerSettings.timerAutoStopMinute}
+                          onChange={(e) => setTimerSettings({ ...timerSettings, timerAutoStopMinute: parseInt(e.target.value) })}
+                          className="h-10 px-3 rounded-md border-2 border-gray-300 dark:border-dark-400 bg-white dark:bg-dark-600 text-gray-900 dark:text-white text-sm focus:border-primary-500 dark:focus:border-primary-500 focus:outline-none"
+                        >
+                          {Array.from({ length: 60 }, (_, i) => (
+                            <option key={i} value={i}>
+                              {i.toString().padStart(2, '0')}
+                            </option>
+                          ))}
+                        </select>
+                        <span className="text-sm text-gray-600 dark:text-gray-400 ml-2">(Tunisia Time)</span>
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                        Current setting: {timerSettings.timerAutoStopHour.toString().padStart(2, '0')}:{timerSettings.timerAutoStopMinute.toString().padStart(2, '0')}
+                      </p>
+                    </div>
+
+                    {/* Save Button */}
+                    <div className="flex justify-end">
+                      <Button
+                        onClick={handleSaveTimerSettings}
+                        loading={savingTimerSettings}
+                        disabled={savingTimerSettings}
+                      >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        {savingTimerSettings ? 'Saving...' : 'Save Timer Settings'}
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">Unable to load timer settings</p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Profile Information */}
         <div className="bg-white dark:bg-dark-600 rounded-lg shadow-sm border border-gray-200 dark:border-dark-400 p-4 md:p-6 lg:p-8 mb-4 md:mb-6">
           <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white mb-4 md:mb-6">Profile Information</h2>
@@ -921,282 +1197,6 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
-
-        {/* Admin Settings - Only visible for admins */}
-        {user.role === 'admin' && (
-          <div className="bg-white dark:bg-dark-600 rounded-lg shadow-sm border border-red-200 dark:border-red-900/50 p-4 md:p-6 lg:p-8 mt-4 md:mt-6">
-            <div className="flex items-center gap-3 mb-4 md:mb-6">
-              <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
-                <svg className="w-5 h-5 md:w-6 md:h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              </div>
-              <div>
-                <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white">Admin Settings</h2>
-                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Administrator-only features and tools</p>
-              </div>
-            </div>
-
-            {/* Tabs Navigation */}
-            <div className="border-b border-gray-200 dark:border-dark-400 mb-6">
-              <nav className="flex gap-1 -mb-px overflow-x-auto" aria-label="Admin settings tabs">
-                <button
-                  onClick={() => setAdminTab('organizations')}
-                  className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                    adminTab === 'organizations'
-                      ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
-                  }`}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
-                  Organizations
-                </button>
-                <button
-                  onClick={() => setAdminTab('database')}
-                  className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                    adminTab === 'database'
-                      ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
-                  }`}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
-                  </svg>
-                  Database
-                </button>
-                <button
-                  onClick={() => setAdminTab('timer')}
-                  className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                    adminTab === 'timer'
-                      ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
-                  }`}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Timer Settings
-                </button>
-              </nav>
-            </div>
-
-            {/* Tab Content */}
-            {/* Organizations Tab */}
-            {adminTab === 'organizations' && (
-              <div className="space-y-4">
-                <a
-                  href="/admin/organizations"
-                  className="flex items-center justify-between p-4 bg-gray-50 dark:bg-dark-500 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
-                      <svg className="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm md:text-base text-gray-900 dark:text-white">Manage Organizations</p>
-                      <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
-                        Create and manage organizations, assign members and projects
-                      </p>
-                    </div>
-                  </div>
-                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </a>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Organizations allow you to group projects and users together for better management.
-                </p>
-              </div>
-            )}
-
-            {/* Database Tab */}
-            {adminTab === 'database' && (
-              <div className="space-y-6">
-                {/* Database Statistics */}
-                <div>
-                  <h3 className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">
-                    Database Statistics
-                  </h3>
-                  {loadingStats ? (
-                    <div className="flex items-center justify-center py-4">
-                      <LogoLoader size="sm" text="Loading stats" />
-                    </div>
-                  ) : dbStats ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-                      <div className="bg-gray-50 dark:bg-dark-500 rounded-lg p-3 md:p-4">
-                        <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{dbStats.totalDocuments?.toLocaleString() || 0}</p>
-                        <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Total Documents</p>
-                      </div>
-                      <div className="bg-gray-50 dark:bg-dark-500 rounded-lg p-3 md:p-4">
-                        <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{dbStats.databaseSize || 'N/A'}</p>
-                        <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Database Size</p>
-                      </div>
-                      <div className="bg-gray-50 dark:bg-dark-500 rounded-lg p-3 md:p-4 col-span-2 md:col-span-1">
-                        <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{Object.keys(dbStats.collections || {}).length}</p>
-                        <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Collections</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-gray-500 dark:text-gray-400 text-sm">Unable to load statistics</p>
-                  )}
-                </div>
-
-                {/* Export Database */}
-                <div className="border-t border-gray-200 dark:border-dark-400 pt-6">
-                  <h3 className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">
-                    Data Management
-                  </h3>
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3 md:p-4 bg-gray-50 dark:bg-dark-500 rounded-lg">
-                    <div>
-                      <p className="font-medium text-sm md:text-base text-gray-900 dark:text-white">Export Database</p>
-                      <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
-                        Download a complete backup of all data as JSON
-                      </p>
-                    </div>
-                    <Button
-                      onClick={handleExportDatabase}
-                      loading={exportingDatabase}
-                      disabled={exportingDatabase}
-                      variant="secondary"
-                      className="flex items-center justify-center gap-2 w-full sm:w-auto"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                      </svg>
-                      {exportingDatabase ? 'Exporting...' : 'Export'}
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Collection Details */}
-                {dbStats?.collections && Object.keys(dbStats.collections).length > 0 && (
-                  <div className="border-t border-gray-200 dark:border-dark-400 pt-6">
-                    <h3 className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">
-                      Collection Details
-                    </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                      {Object.entries(dbStats.collections).map(([name, count]) => (
-                        <div key={name} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-dark-500 rounded text-xs md:text-sm">
-                          <span className="text-gray-700 dark:text-gray-300 truncate">{name}</span>
-                          <span className="font-medium text-gray-900 dark:text-white ml-2">{(count as number).toLocaleString()}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Timer Settings Tab */}
-            {adminTab === 'timer' && (
-              <div>
-                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  Configure when active timers should automatically stop at the end of the work day
-                </p>
-
-                {loadingTimerSettings ? (
-                  <div className="flex items-center justify-center py-4">
-                    <LogoLoader size="sm" text="Loading settings" />
-                  </div>
-                ) : timerSettings ? (
-                  <div className="space-y-4">
-                    {/* Enable/Disable Toggle */}
-                    <div className="flex items-center justify-between p-3 md:p-4 bg-gray-50 dark:bg-dark-500 rounded-lg">
-                      <div>
-                        <p className="font-medium text-sm md:text-base text-gray-900 dark:text-white">Enable Auto-Stop</p>
-                        <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
-                          Automatically stop all running timers at the specified time
-                        </p>
-                      </div>
-                      <div className="relative inline-block w-11 h-6">
-                        <input
-                          type="checkbox"
-                          checked={timerSettings.timerAutoStopEnabled}
-                          onChange={(e) => setTimerSettings({ ...timerSettings, timerAutoStopEnabled: e.target.checked })}
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-                      </div>
-                    </div>
-
-                    {/* Weekdays Only Toggle */}
-                    <div className="flex items-center justify-between p-3 md:p-4 bg-gray-50 dark:bg-dark-500 rounded-lg">
-                      <div>
-                        <p className="font-medium text-sm md:text-base text-gray-900 dark:text-white">Weekdays Only</p>
-                        <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
-                          Only auto-stop timers on weekdays (Monday - Friday)
-                        </p>
-                      </div>
-                      <div className="relative inline-block w-11 h-6">
-                        <input
-                          type="checkbox"
-                          checked={timerSettings.timerAutoStopWeekdaysOnly}
-                          onChange={(e) => setTimerSettings({ ...timerSettings, timerAutoStopWeekdaysOnly: e.target.checked })}
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-                      </div>
-                    </div>
-
-                    {/* Time Picker */}
-                    <div className="p-3 md:p-4 bg-gray-50 dark:bg-dark-500 rounded-lg">
-                      <p className="font-medium text-sm md:text-base text-gray-900 dark:text-white mb-3">Auto-Stop Time</p>
-                      <div className="flex items-center gap-2">
-                        <select
-                          value={timerSettings.timerAutoStopHour}
-                          onChange={(e) => setTimerSettings({ ...timerSettings, timerAutoStopHour: parseInt(e.target.value) })}
-                          className="h-10 px-3 rounded-md border-2 border-gray-300 dark:border-dark-400 bg-white dark:bg-dark-600 text-gray-900 dark:text-white text-sm focus:border-primary-500 dark:focus:border-primary-500 focus:outline-none"
-                        >
-                          {Array.from({ length: 24 }, (_, i) => (
-                            <option key={i} value={i}>
-                              {i.toString().padStart(2, '0')}
-                            </option>
-                          ))}
-                        </select>
-                        <span className="text-xl font-bold text-gray-700 dark:text-gray-300">:</span>
-                        <select
-                          value={timerSettings.timerAutoStopMinute}
-                          onChange={(e) => setTimerSettings({ ...timerSettings, timerAutoStopMinute: parseInt(e.target.value) })}
-                          className="h-10 px-3 rounded-md border-2 border-gray-300 dark:border-dark-400 bg-white dark:bg-dark-600 text-gray-900 dark:text-white text-sm focus:border-primary-500 dark:focus:border-primary-500 focus:outline-none"
-                        >
-                          {Array.from({ length: 60 }, (_, i) => (
-                            <option key={i} value={i}>
-                              {i.toString().padStart(2, '0')}
-                            </option>
-                          ))}
-                        </select>
-                        <span className="text-sm text-gray-600 dark:text-gray-400 ml-2">(Tunisia Time)</span>
-                      </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                        Current setting: {timerSettings.timerAutoStopHour.toString().padStart(2, '0')}:{timerSettings.timerAutoStopMinute.toString().padStart(2, '0')}
-                      </p>
-                    </div>
-
-                    {/* Save Button */}
-                    <div className="flex justify-end">
-                      <Button
-                        onClick={handleSaveTimerSettings}
-                        loading={savingTimerSettings}
-                        disabled={savingTimerSettings}
-                      >
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                        {savingTimerSettings ? 'Saving...' : 'Save Timer Settings'}
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">Unable to load timer settings</p>
-                )}
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </DashboardLayout>
   );
