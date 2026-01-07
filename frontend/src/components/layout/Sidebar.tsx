@@ -4,8 +4,9 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { projectsAPI } from '@/lib/api';
+import { projectsAPI, organizationsAPI } from '@/lib/api';
 import { Project } from '@/types/project';
+import { Organization } from '@/types/organization';
 import { UserRole } from '@/types/user';
 import { useAuth } from '@/contexts/AuthContext';
 import { useChatContext } from '@/contexts/ChatContext';
@@ -95,6 +96,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) =
   const { user } = useAuth();
   const { unreadCount } = useChatContext();
   const [projects, setProjects] = useState<Project[]>([]);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [selectedOrganizationId, setSelectedOrganizationId] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState(false);
   const [showChangelogModal, setShowChangelogModal] = useState(false);
   const [showAllProjects, setShowAllProjects] = useState(false);
@@ -111,6 +114,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) =
   useEffect(() => {
     if (user) {
       fetchProjects();
+      fetchOrganizations();
     }
   }, [user]);
 
@@ -125,6 +129,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) =
       console.error('Error fetching projects:', error);
     }
   };
+
+  const fetchOrganizations = async () => {
+    try {
+      const response = await organizationsAPI.getAll();
+      setOrganizations(response.data || []);
+    } catch (error) {
+      console.error('Error fetching organizations:', error);
+    }
+  };
+
+  // Filter projects based on selected organization
+  const filteredProjects = selectedOrganizationId
+    ? projects.filter(p => p.organizationId === selectedOrganizationId)
+    : projects;
 
   // On mobile, always show expanded
   const isCollapsed = isMobile ? false : collapsed;
@@ -266,16 +284,92 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) =
 
         </div>
 
+        {/* Organizations section */}
+        {!isCollapsed && organizations.length > 0 && (
+          <div className="mt-6 flex flex-col min-h-0">
+            <div className="px-6 mb-2 flex items-center justify-between">
+              <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Organizations
+              </h3>
+            </div>
+            <div className="px-3 space-y-1">
+              {/* All Projects option */}
+              <button
+                onClick={() => {
+                  setSelectedOrganizationId(null);
+                  setShowAllProjects(false);
+                }}
+                className={cn(
+                  'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                  selectedOrganizationId === null
+                    ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-400 hover:text-gray-900 dark:hover:text-gray-100'
+                )}
+              >
+                <div className="w-5 h-5 rounded bg-gray-200 dark:bg-dark-300 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-3 h-3 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                  </svg>
+                </div>
+                <span className="truncate">All Projects</span>
+              </button>
+              {/* Organization items */}
+              {organizations.map((org) => {
+                const isSelected = selectedOrganizationId === org._id;
+                const orgProjectCount = projects.filter(p => p.organizationId === org._id).length;
+                return (
+                  <button
+                    key={org._id}
+                    onClick={() => {
+                      setSelectedOrganizationId(isSelected ? null : org._id);
+                      setShowAllProjects(false);
+                    }}
+                    className={cn(
+                      'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                      isSelected
+                        ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-400 hover:text-gray-900 dark:hover:text-gray-100'
+                    )}
+                  >
+                    {org.logo ? (
+                      <img
+                        src={org.logo}
+                        alt={org.name}
+                        className="w-5 h-5 rounded object-cover flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="w-5 h-5 rounded bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
+                        <span className="text-[10px] font-bold text-primary-700 dark:text-primary-400">
+                          {org.key.substring(0, 2)}
+                        </span>
+                      </div>
+                    )}
+                    <span className="truncate flex-1 text-left">{org.name}</span>
+                    {orgProjectCount > 0 && (
+                      <span className="text-xs text-gray-400 dark:text-gray-500">
+                        {orgProjectCount}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Projects section */}
         {!isCollapsed && (
           <div className="mt-6 flex flex-col min-h-0">
             <div className="px-6 mb-2 flex items-center justify-between">
               <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Projects
+                {selectedOrganizationId
+                  ? `${organizations.find(o => o._id === selectedOrganizationId)?.name || 'Organization'} Projects`
+                  : 'Projects'
+                }
               </h3>
-              {projects.length > 0 && (
+              {filteredProjects.length > 0 && (
                 <span className="text-xs text-gray-400 dark:text-gray-500">
-                  {projects.length}
+                  {filteredProjects.length}
                 </span>
               )}
             </div>
@@ -290,41 +384,47 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) =
                 scrollbarColor: 'rgb(156 163 175) transparent'
               } : undefined}
             >
-              {projects
-                .slice(0, showAllProjects ? projects.length : INITIAL_PROJECTS_COUNT)
-                .map((project) => {
-                  const isActive = pathname.includes(`/projects/${project._id}`);
-                  return (
-                    <Link
-                      key={project._id}
-                      href={`/projects/${project._id}`}
-                      onClick={handleLinkClick}
-                      className={cn(
-                        'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
-                        isActive
-                          ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-400 hover:text-gray-900 dark:hover:text-gray-100'
-                      )}
-                    >
-                      {project.logo ? (
-                        <img
-                          src={project.logo}
-                          alt={project.name}
-                          className="w-5 h-5 rounded object-cover flex-shrink-0"
-                        />
-                      ) : (
-                        <div className="w-5 h-5 rounded bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs font-bold text-primary-700 dark:text-primary-400">
-                            {project.key.substring(0, 2)}
-                          </span>
-                        </div>
-                      )}
-                      <span className="truncate">{project.name}</span>
-                    </Link>
-                  );
-                })}
+              {filteredProjects.length === 0 ? (
+                <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+                  No projects in this organization
+                </div>
+              ) : (
+                filteredProjects
+                  .slice(0, showAllProjects ? filteredProjects.length : INITIAL_PROJECTS_COUNT)
+                  .map((project) => {
+                    const isActive = pathname.includes(`/projects/${project._id}`);
+                    return (
+                      <Link
+                        key={project._id}
+                        href={`/projects/${project._id}`}
+                        onClick={handleLinkClick}
+                        className={cn(
+                          'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                          isActive
+                            ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-400 hover:text-gray-900 dark:hover:text-gray-100'
+                        )}
+                      >
+                        {project.logo ? (
+                          <img
+                            src={project.logo}
+                            alt={project.name}
+                            className="w-5 h-5 rounded object-cover flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="w-5 h-5 rounded bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
+                            <span className="text-xs font-bold text-primary-700 dark:text-primary-400">
+                              {project.key.substring(0, 2)}
+                            </span>
+                          </div>
+                        )}
+                        <span className="truncate">{project.name}</span>
+                      </Link>
+                    );
+                  })
+              )}
             </div>
-            {projects.length > INITIAL_PROJECTS_COUNT && (
+            {filteredProjects.length > INITIAL_PROJECTS_COUNT && (
               <div className="px-3 mt-1">
                 <button
                   onClick={() => setShowAllProjects(!showAllProjects)}
@@ -341,7 +441,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) =
                   <span>
                     {showAllProjects
                       ? 'Show less'
-                      : `View more (${projects.length - INITIAL_PROJECTS_COUNT} more)`
+                      : `View more (${filteredProjects.length - INITIAL_PROJECTS_COUNT} more)`
                     }
                   </span>
                 </button>
