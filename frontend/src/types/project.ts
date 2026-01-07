@@ -11,6 +11,7 @@ export interface Project {
   settings: ProjectSettings;
   customStatuses: CustomStatus[];
   demoEvents: DemoEvent[];
+  organizationId?: string;
   isArchived: boolean;
   archivedAt?: Date;
   createdAt: Date;

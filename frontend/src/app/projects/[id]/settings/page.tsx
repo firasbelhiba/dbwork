@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { projectsAPI, usersAPI } from '@/lib/api';
+import { projectsAPI, usersAPI, organizationsAPI } from '@/lib/api';
+import { Organization } from '@/types/organization';
 import { Project, ProjectMember } from '@/types/project';
 import { User, UserRole } from '@/types/user';
 import { Button, Input, Textarea, Select, Badge, Breadcrumb, LogoLoader } from '@/components/common';
@@ -63,10 +64,16 @@ export default function ProjectSettingsPage() {
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
 
+  // Organization assignment
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [selectedOrganizationId, setSelectedOrganizationId] = useState<string>('');
+  const [savingOrganization, setSavingOrganization] = useState(false);
+
   useEffect(() => {
     if (projectId && currentUser) {
       fetchProjectData();
       fetchUsers();
+      fetchOrganizations();
     }
   }, [projectId, currentUser]);
 
@@ -107,6 +114,8 @@ export default function ProjectSettingsPage() {
         allowAttachments: true,
         maxAttachmentSize: 10,
       });
+      // Set organization ID if project has one
+      setSelectedOrganizationId(projectData.organizationId || '');
     } catch (error) {
       console.error('Error fetching project:', error);
       toast.error('Failed to load project');
@@ -122,6 +131,32 @@ export default function ProjectSettingsPage() {
       setAllUsers(response.data.items || response.data);
     } catch (error) {
       console.error('Error fetching users:', error);
+    }
+  };
+
+  const fetchOrganizations = async () => {
+    try {
+      const response = await organizationsAPI.getAll();
+      setOrganizations(response.data || []);
+    } catch (error) {
+      console.error('Error fetching organizations:', error);
+    }
+  };
+
+  const handleSaveOrganization = async () => {
+    try {
+      setSavingOrganization(true);
+      await projectsAPI.update(projectId, {
+        organizationId: selectedOrganizationId || null,
+      });
+      toast.success(selectedOrganizationId ? 'Organization assigned successfully' : 'Organization removed from project');
+      fetchProjectData();
+    } catch (error: any) {
+      console.error('Error updating organization:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to update organization';
+      toast.error(errorMessage);
+    } finally {
+      setSavingOrganization(false);
     }
   };
 
@@ -646,6 +681,87 @@ export default function ProjectSettingsPage() {
 
           {activeTab === 'settings' && (
             <div className="space-y-6">
+              {/* Organization Assignment - Admin only */}
+              {currentUser?.role === UserRole.ADMIN && (
+                <div className="bg-white dark:bg-dark-400 rounded-lg shadow-sm border border-gray-200 dark:border-dark-300 p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
+                      <svg className="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Organization</h2>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Assign this project to an organization</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Select Organization
+                      </label>
+                      <Select
+                        value={selectedOrganizationId}
+                        onChange={(e) => setSelectedOrganizationId(e.target.value)}
+                        disabled={savingOrganization}
+                      >
+                        <option value="">No Organization</option>
+                        {organizations.map((org) => (
+                          <option key={org._id} value={org._id}>
+                            {org.name} ({org.key})
+                          </option>
+                        ))}
+                      </Select>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {organizations.length === 0
+                          ? 'No organizations available. Create one in Admin Settings.'
+                          : 'Choose an organization to group this project under.'}
+                      </p>
+                    </div>
+
+                    {/* Current organization display */}
+                    {selectedOrganizationId && (
+                      <div className="p-4 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          {organizations.find(o => o._id === selectedOrganizationId)?.logo ? (
+                            <img
+                              src={organizations.find(o => o._id === selectedOrganizationId)?.logo}
+                              alt="Organization logo"
+                              className="w-10 h-10 rounded-lg object-cover"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                              <span className="text-sm font-bold text-primary-600 dark:text-primary-400">
+                                {organizations.find(o => o._id === selectedOrganizationId)?.key.substring(0, 2)}
+                              </span>
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              {organizations.find(o => o._id === selectedOrganizationId)?.name}
+                            </p>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">
+                              {organizations.find(o => o._id === selectedOrganizationId)?.description || 'No description'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex justify-end">
+                      <Button
+                        onClick={handleSaveOrganization}
+                        loading={savingOrganization}
+                        disabled={savingOrganization}
+                      >
+                        {selectedOrganizationId ? 'Save Organization' : 'Remove Organization'}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="bg-white dark:bg-dark-400 rounded-lg shadow-sm border border-gray-200 dark:border-dark-300 p-6">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Project Settings</h2>
                 <div className="space-y-4">
