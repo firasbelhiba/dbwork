@@ -1000,7 +1000,20 @@ export default function ProjectSettingsPage() {
   );
 }
 
-// MemberRow component with direct role dropdown
+// All available project roles
+const ALL_PROJECT_ROLES = [
+  { value: 'project_manager', label: 'Project Manager' },
+  { value: 'tech_lead', label: 'Tech Lead' },
+  { value: 'frontend', label: 'Frontend' },
+  { value: 'backend', label: 'Backend' },
+  { value: 'fullstack', label: 'Fullstack' },
+  { value: 'designer', label: 'Designer' },
+  { value: 'qa', label: 'QA' },
+  { value: 'devops', label: 'DevOps' },
+  { value: 'member', label: 'Member' },
+];
+
+// MemberRow component with multi-select roles
 function MemberRow({ member, memberUser, projectId, onRemove, onRoleChange }: {
   member: ProjectMember;
   memberUser: User;
@@ -1008,25 +1021,38 @@ function MemberRow({ member, memberUser, projectId, onRemove, onRoleChange }: {
   onRemove: () => void;
   onRoleChange: () => void;
 }) {
-  const [updatingRole, setUpdatingRole] = useState(false);
-  const currentRole = member.projectRole || 'member';
+  const [updatingRoles, setUpdatingRoles] = useState(false);
+  const [showRoleDropdown, setShowRoleDropdown] = useState(false);
+  // Handle both old single role and new array format
+  const currentRoles: string[] = member.projectRoles ||
+    (member as any).projectRole ? [(member as any).projectRole] : ['member'];
 
-  const handleRoleChange = async (newRole: string) => {
-    if (newRole === currentRole) {
-      return;
+  const handleRoleToggle = async (role: string) => {
+    let newRoles: string[];
+
+    if (currentRoles.includes(role)) {
+      // Remove role if already selected (but keep at least one)
+      if (currentRoles.length > 1) {
+        newRoles = currentRoles.filter(r => r !== role);
+      } else {
+        return; // Can't remove the last role
+      }
+    } else {
+      // Add role
+      newRoles = [...currentRoles, role];
     }
 
     try {
-      setUpdatingRole(true);
-      await projectsAPI.updateMemberRole(projectId, memberUser._id, newRole);
-      toast.success('Role updated successfully');
+      setUpdatingRoles(true);
+      await projectsAPI.updateMemberRoles(projectId, memberUser._id, newRoles);
+      toast.success('Roles updated successfully');
       onRoleChange();
     } catch (error: any) {
-      console.error('Error updating role:', error);
-      const errorMessage = error.response?.data?.message || 'Failed to update role';
+      console.error('Error updating roles:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to update roles';
       toast.error(errorMessage);
     } finally {
-      setUpdatingRole(false);
+      setUpdatingRoles(false);
     }
   };
 
@@ -1052,36 +1078,61 @@ function MemberRow({ member, memberUser, projectId, onRemove, onRoleChange }: {
         </div>
       </div>
       <div className="flex items-center gap-3 ml-4">
-        {/* Project Role - Direct dropdown */}
+        {/* Project Roles - Multi-select dropdown */}
         <div className="relative">
-          <select
-            value={currentRole}
-            onChange={(e) => handleRoleChange(e.target.value)}
-            disabled={updatingRole}
-            className="appearance-none text-sm pl-3 pr-8 py-1.5 border border-gray-300 dark:border-dark-300 rounded-lg bg-white dark:bg-dark-400 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent cursor-pointer hover:border-primary-400 dark:hover:border-primary-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          <button
+            onClick={() => setShowRoleDropdown(!showRoleDropdown)}
+            disabled={updatingRoles}
+            className="flex items-center gap-1 text-sm px-3 py-1.5 border border-gray-300 dark:border-dark-300 rounded-lg bg-white dark:bg-dark-400 text-gray-900 dark:text-gray-100 hover:border-primary-400 dark:hover:border-primary-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <option value="project_manager">Project Manager</option>
-            <option value="tech_lead">Tech Lead</option>
-            <option value="frontend">Frontend</option>
-            <option value="backend">Backend</option>
-            <option value="fullstack">Fullstack</option>
-            <option value="designer">Designer</option>
-            <option value="qa">QA</option>
-            <option value="devops">DevOps</option>
-            <option value="member">Member</option>
-          </select>
-          <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-            {updatingRole ? (
-              <svg className="w-4 h-4 animate-spin text-primary-500" fill="none" viewBox="0 0 24 24">
+            <div className="flex flex-wrap gap-1 max-w-[200px]">
+              {currentRoles.map(role => (
+                <Badge key={role} variant={getProjectRoleBadgeVariant(role)} className="text-xs">
+                  {PROJECT_ROLE_LABELS[role] || role}
+                </Badge>
+              ))}
+            </div>
+            {updatingRoles ? (
+              <svg className="w-4 h-4 ml-1 animate-spin text-primary-500 flex-shrink-0" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
             ) : (
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 ml-1 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             )}
-          </div>
+          </button>
+
+          {/* Dropdown menu */}
+          {showRoleDropdown && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setShowRoleDropdown(false)}
+              />
+              <div className="absolute right-0 mt-1 w-56 bg-white dark:bg-dark-400 rounded-lg shadow-lg border border-gray-200 dark:border-dark-300 z-20 py-1">
+                <div className="px-3 py-2 border-b border-gray-200 dark:border-dark-300">
+                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Select roles (click to toggle)</p>
+                </div>
+                {ALL_PROJECT_ROLES.map(role => (
+                  <button
+                    key={role.value}
+                    onClick={() => handleRoleToggle(role.value)}
+                    disabled={updatingRoles || (currentRoles.length === 1 && currentRoles.includes(role.value))}
+                    className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-dark-300 flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="text-gray-900 dark:text-gray-100">{role.label}</span>
+                    {currentRoles.includes(role.value) && (
+                      <svg className="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
         {/* Remove button */}
         <button
@@ -1101,8 +1152,9 @@ function MemberRow({ member, memberUser, projectId, onRemove, onRoleChange }: {
 function AddMemberModal({ isOpen, onClose, projectId, allUsers, currentMembers, onSuccess }: any) {
   const [adding, setAdding] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState('');
-  const [selectedRole, setSelectedRole] = useState('member');
+  const [selectedRoles, setSelectedRoles] = useState<string[]>(['member']);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showRoleDropdown, setShowRoleDropdown] = useState(false);
 
   // Filter out users who are already members
   const availableUsers = allUsers.filter((user: User) => {
@@ -1117,6 +1169,21 @@ function AddMemberModal({ isOpen, onClose, projectId, allUsers, currentMembers, 
 
   const selectedUser = availableUsers.find((u: User) => u._id === selectedUserId);
 
+  const handleRoleToggle = (role: string) => {
+    setSelectedRoles(prev => {
+      if (prev.includes(role)) {
+        // Remove role if already selected (but keep at least one)
+        if (prev.length > 1) {
+          return prev.filter(r => r !== role);
+        }
+        return prev;
+      } else {
+        // Add role
+        return [...prev, role];
+      }
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -1125,11 +1192,16 @@ function AddMemberModal({ isOpen, onClose, projectId, allUsers, currentMembers, 
       return;
     }
 
+    if (selectedRoles.length === 0) {
+      toast.error('Please select at least one role');
+      return;
+    }
+
     try {
       setAdding(true);
       await projectsAPI.addMember(projectId, {
         userId: selectedUserId,
-        projectRole: selectedRole,
+        projectRoles: selectedRoles,
       });
       toast.success('Member added successfully');
       onSuccess();
@@ -1264,30 +1336,64 @@ function AddMemberModal({ isOpen, onClose, projectId, allUsers, currentMembers, 
             </div>
           </div>
 
-          {/* Project Role Selection */}
+          {/* Project Roles Selection - Multi-select */}
           {selectedUserId && (
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Project Role <span className="text-danger-500">*</span>
+                Project Roles <span className="text-danger-500">*</span>
               </label>
-              <select
-                value={selectedRole}
-                onChange={(e) => setSelectedRole(e.target.value)}
-                disabled={adding}
-                className="w-full px-3 py-2.5 border border-gray-300 dark:border-dark-300 rounded-lg bg-white dark:bg-dark-400 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-              >
-                <option value="project_manager">Project Manager</option>
-                <option value="tech_lead">Tech Lead</option>
-                <option value="frontend">Frontend Developer</option>
-                <option value="backend">Backend Developer</option>
-                <option value="fullstack">Fullstack Developer</option>
-                <option value="designer">Designer</option>
-                <option value="qa">QA Engineer</option>
-                <option value="devops">DevOps Engineer</option>
-                <option value="member">Member</option>
-              </select>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowRoleDropdown(!showRoleDropdown)}
+                  disabled={adding}
+                  className="w-full flex items-center justify-between px-3 py-2.5 border border-gray-300 dark:border-dark-300 rounded-lg bg-white dark:bg-dark-400 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all disabled:opacity-50"
+                >
+                  <div className="flex flex-wrap gap-1">
+                    {selectedRoles.map(role => (
+                      <Badge key={role} variant={getProjectRoleBadgeVariant(role)} className="text-xs">
+                        {PROJECT_ROLE_LABELS[role] || role}
+                      </Badge>
+                    ))}
+                  </div>
+                  <svg className={`w-5 h-5 text-gray-400 transition-transform flex-shrink-0 ml-2 ${showRoleDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {/* Dropdown menu */}
+                {showRoleDropdown && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setShowRoleDropdown(false)}
+                    />
+                    <div className="absolute left-0 right-0 mt-1 bg-white dark:bg-dark-400 rounded-lg shadow-lg border border-gray-200 dark:border-dark-300 z-20 py-1 max-h-48 overflow-y-auto">
+                      <div className="px-3 py-2 border-b border-gray-200 dark:border-dark-300">
+                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Select one or more roles</p>
+                      </div>
+                      {ALL_PROJECT_ROLES.map(role => (
+                        <button
+                          key={role.value}
+                          type="button"
+                          onClick={() => handleRoleToggle(role.value)}
+                          disabled={adding || (selectedRoles.length === 1 && selectedRoles.includes(role.value))}
+                          className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-dark-300 flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <span className="text-gray-900 dark:text-gray-100">{role.label}</span>
+                          {selectedRoles.includes(role.value) && (
+                            <svg className="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                This role defines their function within this project only
+                These roles define their function within this project only. You can assign multiple roles.
               </p>
             </div>
           )}
@@ -1312,12 +1418,14 @@ function AddMemberModal({ isOpen, onClose, projectId, allUsers, currentMembers, 
                     {selectedUser.firstName} {selectedUser.lastName}
                   </p>
                   <p className="text-xs text-gray-600 dark:text-gray-400">{selectedUser.email}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge variant={getProjectRoleBadgeVariant(selectedRole)} className="text-xs">
-                      {PROJECT_ROLE_LABELS[selectedRole] || 'Member'}
-                    </Badge>
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    {selectedRoles.map(role => (
+                      <Badge key={role} variant={getProjectRoleBadgeVariant(role)} className="text-xs">
+                        {PROJECT_ROLE_LABELS[role] || role}
+                      </Badge>
+                    ))}
                     <span className="text-xs text-gray-500 dark:text-gray-400">
-                      project role
+                      project {selectedRoles.length === 1 ? 'role' : 'roles'}
                     </span>
                   </div>
                 </div>

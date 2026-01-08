@@ -440,7 +440,7 @@ export class ProjectsService {
 
     project.members.push({
       userId: new Types.ObjectId(addMemberDto.userId),
-      projectRole: addMemberDto.projectRole || 'member',
+      projectRoles: addMemberDto.projectRoles || ['member'],
       addedAt: new Date(),
     } as any);
 
@@ -490,10 +490,10 @@ export class ProjectsService {
     return savedProject;
   }
 
-  async updateMemberRole(
+  async updateMemberRoles(
     projectId: string,
     userId: string,
-    projectRole: string,
+    projectRoles: string[],
     actionUserId?: string,
   ): Promise<ProjectDocument> {
     const project = await this.findOne(projectId);
@@ -511,10 +511,10 @@ export class ProjectsService {
       throw new NotFoundException('User is not a member of this project');
     }
 
-    // Update the role using updateOne to avoid populated object issues
+    // Update the roles using updateOne to avoid populated object issues
     await this.projectModel.updateOne(
       { _id: projectId, 'members.userId': new Types.ObjectId(userId) },
-      { $set: { 'members.$.projectRole': projectRole } },
+      { $set: { 'members.$.projectRoles': projectRoles } },
     );
 
     // Fetch and return the updated project
@@ -529,7 +529,7 @@ export class ProjectsService {
         savedProject._id.toString(),
         savedProject.name,
         savedProject._id.toString(),
-        { updatedUserId: userId, newRole: projectRole },
+        { updatedUserId: userId, newRoles: projectRoles },
       );
     }
 

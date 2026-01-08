@@ -2,6 +2,6 @@ import { ProjectRole } from '../enums';
 
 export interface ProjectMember {
   userId: string;
-  projectRole: ProjectRole;
+  projectRoles: ProjectRole[];
   addedAt: Date;
 }
