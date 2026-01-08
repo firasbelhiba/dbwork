@@ -1024,8 +1024,11 @@ function MemberRow({ member, memberUser, projectId, onRemove, onRoleChange }: {
   const [updatingRoles, setUpdatingRoles] = useState(false);
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
   // Handle both old single role and new array format
-  const currentRoles: string[] = member.projectRoles ||
-    (member as any).projectRole ? [(member as any).projectRole] : ['member'];
+  const currentRoles: string[] = member.projectRoles && member.projectRoles.length > 0
+    ? member.projectRoles
+    : (member as any).projectRole
+      ? [(member as any).projectRole]
+      : ['member'];
 
   const handleRoleToggle = async (role: string) => {
     let newRoles: string[];
