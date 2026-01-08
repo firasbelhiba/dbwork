@@ -1,7 +1,7 @@
 import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Connection, Model } from 'mongoose';
-import { AppSettings, AppSettingsDocument, ProjectRoleDefinition, DEFAULT_PROJECT_ROLES } from './schemas/app-settings.schema';
+import { AppSettings, AppSettingsDocument, ProjectRoleDefinition, DEFAULT_PROJECT_ROLES, TicketCategoryDefinition, DEFAULT_TICKET_CATEGORIES } from './schemas/app-settings.schema';
 
 export interface TimerSettings {
   timerAutoStopHour: number;
@@ -20,6 +20,19 @@ export interface CreateProjectRoleDto {
 export interface UpdateProjectRoleDto {
   label?: string;
   color?: string;
+}
+
+export interface CreateTicketCategoryDto {
+  name: string;
+  label: string;
+  color: string;
+  visibility: ('dev' | 'marketing' | 'design')[];
+}
+
+export interface UpdateTicketCategoryDto {
+  label?: string;
+  color?: string;
+  visibility?: ('dev' | 'marketing' | 'design')[];
 }
 
 @Injectable()
@@ -422,5 +435,187 @@ export class AdminService {
 
     this.logger.log('Project roles reordered successfully');
     return reorderedRoles;
+  }
+
+  // =====================
+  // Ticket Categories Management
+  // =====================
+
+  /**
+   * Get all ticket categories
+   */
+  async getTicketCategories(): Promise<TicketCategoryDefinition[]> {
+    const settings = await this.getOrCreateSettings();
+    return settings.ticketCategories || DEFAULT_TICKET_CATEGORIES;
+  }
+
+  /**
+   * Create a new ticket category
+   */
+  async createTicketCategory(dto: CreateTicketCategoryDto): Promise<TicketCategoryDefinition[]> {
+    this.logger.log('Creating new ticket category:', dto);
+
+    const settings = await this.getOrCreateSettings();
+    const categories = settings.ticketCategories || [...DEFAULT_TICKET_CATEGORIES];
+
+    // Validate name format (lowercase, underscores only)
+    const nameRegex = /^[a-z][a-z0-9_]*$/;
+    if (!nameRegex.test(dto.name)) {
+      throw new BadRequestException('Category name must be lowercase letters, numbers, and underscores only, starting with a letter');
+    }
+
+    // Check if category with this name already exists
+    if (categories.some(c => c.name === dto.name)) {
+      throw new BadRequestException(`Category with name "${dto.name}" already exists`);
+    }
+
+    // Validate visibility
+    const validVisibilities = ['dev', 'marketing', 'design'];
+    for (const v of dto.visibility) {
+      if (!validVisibilities.includes(v)) {
+        throw new BadRequestException(`Invalid visibility value: ${v}. Must be one of: ${validVisibilities.join(', ')}`);
+      }
+    }
+
+    const newCategory: TicketCategoryDefinition = {
+      id: dto.name,
+      name: dto.name,
+      label: dto.label,
+      color: dto.color,
+      visibility: dto.visibility,
+      isDefault: false,
+      order: categories.length,
+    };
+
+    categories.push(newCategory);
+
+    await this.appSettingsModel.findOneAndUpdate(
+      { key: 'app_settings' },
+      { $set: { ticketCategories: categories } },
+      { new: true, upsert: true },
+    ).exec();
+
+    this.logger.log(`Ticket category "${dto.label}" created successfully`);
+    return categories;
+  }
+
+  /**
+   * Update a ticket category
+   */
+  async updateTicketCategory(categoryId: string, dto: UpdateTicketCategoryDto): Promise<TicketCategoryDefinition[]> {
+    this.logger.log(`Updating ticket category ${categoryId}:`, dto);
+
+    const settings = await this.getOrCreateSettings();
+    const categories = settings.ticketCategories || [...DEFAULT_TICKET_CATEGORIES];
+
+    const categoryIndex = categories.findIndex(c => c.id === categoryId);
+    if (categoryIndex === -1) {
+      throw new NotFoundException(`Category with id "${categoryId}" not found`);
+    }
+
+    // Update the category
+    if (dto.label !== undefined) {
+      categories[categoryIndex].label = dto.label;
+    }
+    if (dto.color !== undefined) {
+      categories[categoryIndex].color = dto.color;
+    }
+    if (dto.visibility !== undefined) {
+      // Validate visibility
+      const validVisibilities = ['dev', 'marketing', 'design'];
+      for (const v of dto.visibility) {
+        if (!validVisibilities.includes(v)) {
+          throw new BadRequestException(`Invalid visibility value: ${v}. Must be one of: ${validVisibilities.join(', ')}`);
+        }
+      }
+      categories[categoryIndex].visibility = dto.visibility;
+    }
+
+    await this.appSettingsModel.findOneAndUpdate(
+      { key: 'app_settings' },
+      { $set: { ticketCategories: categories } },
+      { new: true, upsert: true },
+    ).exec();
+
+    this.logger.log(`Ticket category "${categoryId}" updated successfully`);
+    return categories;
+  }
+
+  /**
+   * Delete a ticket category (only custom categories can be deleted)
+   */
+  async deleteTicketCategory(categoryId: string): Promise<TicketCategoryDefinition[]> {
+    this.logger.log(`Deleting ticket category ${categoryId}`);
+
+    const settings = await this.getOrCreateSettings();
+    const categories = settings.ticketCategories || [...DEFAULT_TICKET_CATEGORIES];
+
+    const categoryIndex = categories.findIndex(c => c.id === categoryId);
+    if (categoryIndex === -1) {
+      throw new NotFoundException(`Category with id "${categoryId}" not found`);
+    }
+
+    // Check if it's a default category
+    if (categories[categoryIndex].isDefault) {
+      throw new BadRequestException('Cannot delete default ticket categories');
+    }
+
+    categories.splice(categoryIndex, 1);
+
+    // Re-order remaining categories
+    categories.forEach((category, index) => {
+      category.order = index;
+    });
+
+    await this.appSettingsModel.findOneAndUpdate(
+      { key: 'app_settings' },
+      { $set: { ticketCategories: categories } },
+      { new: true, upsert: true },
+    ).exec();
+
+    this.logger.log(`Ticket category "${categoryId}" deleted successfully`);
+    return categories;
+  }
+
+  /**
+   * Reorder ticket categories
+   */
+  async reorderTicketCategories(categoryIds: string[]): Promise<TicketCategoryDefinition[]> {
+    this.logger.log('Reordering ticket categories:', categoryIds);
+
+    const settings = await this.getOrCreateSettings();
+    const categories = settings.ticketCategories || [...DEFAULT_TICKET_CATEGORIES];
+
+    // Validate that all category IDs exist
+    for (const id of categoryIds) {
+      if (!categories.some(c => c.id === id)) {
+        throw new BadRequestException(`Category with id "${id}" not found`);
+      }
+    }
+
+    // Reorder based on the provided order
+    const reorderedCategories: TicketCategoryDefinition[] = [];
+    categoryIds.forEach((id, index) => {
+      const category = categories.find(c => c.id === id);
+      if (category) {
+        reorderedCategories.push({ ...category, order: index });
+      }
+    });
+
+    // Add any categories that weren't in the reorder list (shouldn't happen, but just in case)
+    categories.forEach(category => {
+      if (!reorderedCategories.some(c => c.id === category.id)) {
+        reorderedCategories.push({ ...category, order: reorderedCategories.length });
+      }
+    });
+
+    await this.appSettingsModel.findOneAndUpdate(
+      { key: 'app_settings' },
+      { $set: { ticketCategories: reorderedCategories } },
+      { new: true, upsert: true },
+    ).exec();
+
+    this.logger.log('Ticket categories reordered successfully');
+    return reorderedCategories;
   }
 }

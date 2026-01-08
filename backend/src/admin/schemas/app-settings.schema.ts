@@ -13,6 +13,29 @@ export interface ProjectRoleDefinition {
   order: number;
 }
 
+// Ticket Category definition for custom categories
+export interface TicketCategoryDefinition {
+  id: string;
+  name: string;
+  label: string;
+  color: string;
+  visibility: ('dev' | 'marketing' | 'design')[];
+  isDefault: boolean;
+  order: number;
+}
+
+// Default ticket categories
+export const DEFAULT_TICKET_CATEGORIES: TicketCategoryDefinition[] = [
+  { id: 'development', name: 'development', label: 'Development', color: '#3b82f6', visibility: ['dev'], isDefault: true, order: 0 },
+  { id: 'bug', name: 'bug', label: 'Bug', color: '#ef4444', visibility: ['dev'], isDefault: true, order: 1 },
+  { id: 'feature', name: 'feature', label: 'Feature', color: '#22c55e', visibility: ['dev', 'marketing'], isDefault: true, order: 2 },
+  { id: 'design', name: 'design', label: 'Design', color: '#ec4899', visibility: ['design'], isDefault: true, order: 3 },
+  { id: 'marketing', name: 'marketing', label: 'Marketing', color: '#f59e0b', visibility: ['marketing'], isDefault: true, order: 4 },
+  { id: 'documentation', name: 'documentation', label: 'Documentation', color: '#8b5cf6', visibility: ['dev', 'marketing', 'design'], isDefault: true, order: 5 },
+  { id: 'research', name: 'research', label: 'Research', color: '#14b8a6', visibility: ['dev', 'marketing', 'design'], isDefault: true, order: 6 },
+  { id: 'other', name: 'other', label: 'Other', color: '#6b7280', visibility: ['dev', 'marketing', 'design'], isDefault: true, order: 7 },
+];
+
 // Default project roles
 export const DEFAULT_PROJECT_ROLES: ProjectRoleDefinition[] = [
   { id: 'project_manager', name: 'project_manager', label: 'Project Manager', color: '#f59e0b', isDefault: true, order: 0 },
@@ -51,6 +74,10 @@ export class AppSettings {
   // Custom Project Roles
   @Prop({ type: [Object], default: DEFAULT_PROJECT_ROLES })
   projectRoles: ProjectRoleDefinition[];
+
+  // Custom Ticket Categories
+  @Prop({ type: [Object], default: DEFAULT_TICKET_CATEGORIES })
+  ticketCategories: TicketCategoryDefinition[];
 }
 
 export const AppSettingsSchema = SchemaFactory.createForClass(AppSettings);

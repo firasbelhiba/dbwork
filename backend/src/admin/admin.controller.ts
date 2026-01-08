@@ -12,12 +12,12 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Response } from 'express';
-import { AdminService, TimerSettings, CreateProjectRoleDto, UpdateProjectRoleDto } from './admin.service';
+import { AdminService, TimerSettings, CreateProjectRoleDto, UpdateProjectRoleDto, CreateTicketCategoryDto, UpdateTicketCategoryDto } from './admin.service';
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@auth/guards/roles.guard';
 import { Roles, CurrentUser } from '@common/decorators';
 import { UserRole } from '@common/enums';
-import { ProjectRoleDefinition } from './schemas/app-settings.schema';
+import { ProjectRoleDefinition, TicketCategoryDefinition } from './schemas/app-settings.schema';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
@@ -183,5 +183,64 @@ export class AdminController {
     @Body() body: { roleIds: string[] },
   ): Promise<ProjectRoleDefinition[]> {
     return this.adminService.reorderProjectRoles(body.roleIds);
+  }
+
+  // =====================
+  // Ticket Categories Management
+  // =====================
+
+  @Get('settings/ticket-categories')
+  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER, UserRole.DEVELOPER, UserRole.VIEWER)
+  @ApiOperation({ summary: 'Get all ticket categories' })
+  @ApiResponse({ status: 200, description: 'Ticket categories retrieved successfully' })
+  async getTicketCategories(): Promise<TicketCategoryDefinition[]> {
+    return this.adminService.getTicketCategories();
+  }
+
+  @Post('settings/ticket-categories')
+  @ApiOperation({ summary: 'Create a new ticket category (Admin only)' })
+  @ApiResponse({ status: 201, description: 'Ticket category created successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid category data' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
+  async createTicketCategory(
+    @Body() dto: CreateTicketCategoryDto,
+  ): Promise<TicketCategoryDefinition[]> {
+    return this.adminService.createTicketCategory(dto);
+  }
+
+  @Put('settings/ticket-categories/:categoryId')
+  @ApiOperation({ summary: 'Update a ticket category (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Ticket category updated successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid category data' })
+  @ApiResponse({ status: 404, description: 'Category not found' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
+  async updateTicketCategory(
+    @Param('categoryId') categoryId: string,
+    @Body() dto: UpdateTicketCategoryDto,
+  ): Promise<TicketCategoryDefinition[]> {
+    return this.adminService.updateTicketCategory(categoryId, dto);
+  }
+
+  @Delete('settings/ticket-categories/:categoryId')
+  @ApiOperation({ summary: 'Delete a ticket category (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Ticket category deleted successfully' })
+  @ApiResponse({ status: 400, description: 'Cannot delete default categories' })
+  @ApiResponse({ status: 404, description: 'Category not found' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
+  async deleteTicketCategory(
+    @Param('categoryId') categoryId: string,
+  ): Promise<TicketCategoryDefinition[]> {
+    return this.adminService.deleteTicketCategory(categoryId);
+  }
+
+  @Post('settings/ticket-categories/reorder')
+  @ApiOperation({ summary: 'Reorder ticket categories (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Ticket categories reordered successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid category IDs' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
+  async reorderTicketCategories(
+    @Body() body: { categoryIds: string[] },
+  ): Promise<TicketCategoryDefinition[]> {
+    return this.adminService.reorderTicketCategories(body.categoryIds);
   }
 }

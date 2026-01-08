@@ -404,6 +404,16 @@ export const adminAPI = {
     api.delete(`/admin/settings/project-roles/${roleId}`),
   reorderProjectRoles: (roleIds: string[]) =>
     api.post('/admin/settings/project-roles/reorder', { roleIds }),
+  // Ticket Categories
+  getTicketCategories: () => api.get('/admin/settings/ticket-categories'),
+  createTicketCategory: (data: { name: string; label: string; color: string; visibility: ('dev' | 'marketing' | 'design')[] }) =>
+    api.post('/admin/settings/ticket-categories', data),
+  updateTicketCategory: (categoryId: string, data: { label?: string; color?: string; visibility?: ('dev' | 'marketing' | 'design')[] }) =>
+    api.put(`/admin/settings/ticket-categories/${categoryId}`, data),
+  deleteTicketCategory: (categoryId: string) =>
+    api.delete(`/admin/settings/ticket-categories/${categoryId}`),
+  reorderTicketCategories: (categoryIds: string[]) =>
+    api.post('/admin/settings/ticket-categories/reorder', { categoryIds }),
 };
 
 // Google Calendar API

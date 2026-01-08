@@ -44,7 +44,7 @@ export default function ProfilePage() {
   const [loadingStats, setLoadingStats] = useState(false);
 
   // Admin settings tab
-  const [adminTab, setAdminTab] = useState<'organizations' | 'database' | 'timer' | 'project-roles'>('organizations');
+  const [adminTab, setAdminTab] = useState<'organizations' | 'database' | 'timer' | 'project-roles' | 'ticket-categories'>('organizations');
 
   // Timer settings state
   const [timerSettings, setTimerSettings] = useState<{
@@ -480,6 +480,19 @@ export default function ProfilePage() {
                   </svg>
                   Project Roles
                 </button>
+                <button
+                  onClick={() => setAdminTab('ticket-categories')}
+                  className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                    adminTab === 'ticket-categories'
+                      ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                  </svg>
+                  Ticket Categories
+                </button>
               </nav>
             </div>
 
@@ -723,6 +736,36 @@ export default function ProfilePage() {
                 </a>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   Project roles define what function a team member performs within a specific project (e.g., Frontend Lead, Backend Developer, QA Engineer).
+                </p>
+              </div>
+            )}
+
+            {/* Ticket Categories Tab */}
+            {adminTab === 'ticket-categories' && (
+              <div className="space-y-4">
+                <a
+                  href="/admin/ticket-categories"
+                  className="flex items-center justify-between p-4 bg-gray-50 dark:bg-dark-500 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-teal-100 dark:bg-teal-900/30 rounded-lg">
+                      <svg className="w-5 h-5 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm md:text-base text-gray-900 dark:text-white">Manage Ticket Categories</p>
+                      <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
+                        Create and customize categories for tickets with visibility options
+                      </p>
+                    </div>
+                  </div>
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </a>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Ticket categories help organize issues by type of work. Each category can be configured with visibility options to control which team views (Dev, Marketing, Design) can see tickets of that category.
                 </p>
               </div>
             )}
