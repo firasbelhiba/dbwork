@@ -30,7 +30,7 @@ const getRoleBadgeVariant = (role: UserRole) => {
 };
 
 // Helper function to get badge variant based on project role
-const getProjectRoleBadgeVariant = (role?: string) => {
+const getProjectRoleBadgeVariant = (role?: string): 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger' => {
   switch (role) {
     case 'project_manager':
       return 'warning';
@@ -41,13 +41,13 @@ const getProjectRoleBadgeVariant = (role?: string) => {
     case 'backend':
       return 'success';
     case 'fullstack':
-      return 'info';
+      return 'primary';
     case 'designer':
       return 'secondary';
     case 'qa':
       return 'default';
     case 'devops':
-      return 'info';
+      return 'success';
     default:
       return 'default';
   }
