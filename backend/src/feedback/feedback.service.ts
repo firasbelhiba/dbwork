@@ -22,7 +22,7 @@ const MAX_LIMIT = 100;
 
 // Configuration for auto-created tickets from feedback
 const FEEDBACK_TICKET_CONFIG = {
-  PROJECT_KEY: 'MKT',      // Project key for "Dar Blockchain"
+  PROJECT_KEY: 'DBWR',      // Project key for "DB Work"
   CATEGORY: 'fullstack',   // Ticket category
   ADMIN_FIRST_NAME: 'Santa', // Admin first name to assign tickets to (Santa Admin)
 };
@@ -443,11 +443,11 @@ export class FeedbackService {
 
   /**
    * Create a linked ticket for feedback that moves to In Progress
-   * The ticket is created in the "Dar Blockchain" project with fullstack category
+   * The ticket is created in the "DB Work" project with fullstack category
    * and assigned to the Santa admin user
    */
   private async createLinkedTicket(feedback: FeedbackDocument, adminUserId: string): Promise<IssueDocument | null> {
-    // Find the Dar Blockchain project by key
+    // Find the DB Work project by key
     const project = await this.projectModel.findOne({
       key: { $regex: new RegExp(`^${FEEDBACK_TICKET_CONFIG.PROJECT_KEY}$`, 'i') },
     }).exec();
