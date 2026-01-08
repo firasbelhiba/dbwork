@@ -44,7 +44,7 @@ export default function ProfilePage() {
   const [loadingStats, setLoadingStats] = useState(false);
 
   // Admin settings tab
-  const [adminTab, setAdminTab] = useState<'organizations' | 'database' | 'timer'>('organizations');
+  const [adminTab, setAdminTab] = useState<'organizations' | 'database' | 'timer' | 'project-roles'>('organizations');
 
   // Timer settings state
   const [timerSettings, setTimerSettings] = useState<{
@@ -467,6 +467,19 @@ export default function ProfilePage() {
                   </svg>
                   Timer Settings
                 </button>
+                <button
+                  onClick={() => setAdminTab('project-roles')}
+                  className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                    adminTab === 'project-roles'
+                      ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  Project Roles
+                </button>
               </nav>
             </div>
 
@@ -681,6 +694,36 @@ export default function ProfilePage() {
                 ) : (
                   <p className="text-gray-500 dark:text-gray-400 text-sm">Unable to load timer settings</p>
                 )}
+              </div>
+            )}
+
+            {/* Project Roles Tab */}
+            {adminTab === 'project-roles' && (
+              <div className="space-y-4">
+                <a
+                  href="/admin/project-roles"
+                  className="flex items-center justify-between p-4 bg-gray-50 dark:bg-dark-500 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                      <svg className="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm md:text-base text-gray-900 dark:text-white">Manage Project Roles</p>
+                      <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
+                        Create and customize roles for project team members
+                      </p>
+                    </div>
+                  </div>
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </a>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Project roles define what function a team member performs within a specific project (e.g., Frontend Lead, Backend Developer, QA Engineer).
+                </p>
               </div>
             )}
           </div>
