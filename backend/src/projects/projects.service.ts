@@ -500,9 +500,10 @@ export class ProjectsService {
 
     // Find the member - handle both populated and non-populated userId
     const memberIndex = project.members.findIndex((member) => {
-      const memberId = typeof member.userId === 'object' && member.userId !== null
-        ? (member.userId as any)._id?.toString() || member.userId.toString()
-        : member.userId.toString();
+      if (!member.userId) return false;
+      const memberId = typeof member.userId === 'object'
+        ? (member.userId as any)._id?.toString() || String(member.userId)
+        : String(member.userId);
       return memberId === userId.toString();
     });
 
