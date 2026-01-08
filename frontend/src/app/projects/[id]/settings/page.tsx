@@ -1000,7 +1000,7 @@ export default function ProjectSettingsPage() {
   );
 }
 
-// MemberRow component with role editing
+// MemberRow component with direct role dropdown
 function MemberRow({ member, memberUser, projectId, onRemove, onRoleChange }: {
   member: ProjectMember;
   memberUser: User;
@@ -1008,13 +1008,11 @@ function MemberRow({ member, memberUser, projectId, onRemove, onRoleChange }: {
   onRemove: () => void;
   onRoleChange: () => void;
 }) {
-  const [isEditingRole, setIsEditingRole] = useState(false);
   const [updatingRole, setUpdatingRole] = useState(false);
-  const [selectedRole, setSelectedRole] = useState(member.projectRole || 'member');
+  const currentRole = member.projectRole || 'member';
 
   const handleRoleChange = async (newRole: string) => {
-    if (newRole === (member.projectRole || 'member')) {
-      setIsEditingRole(false);
+    if (newRole === currentRole) {
       return;
     }
 
@@ -1022,7 +1020,6 @@ function MemberRow({ member, memberUser, projectId, onRemove, onRoleChange }: {
       setUpdatingRole(true);
       await projectsAPI.updateMemberRole(projectId, memberUser._id, newRole);
       toast.success('Role updated successfully');
-      setIsEditingRole(false);
       onRoleChange();
     } catch (error: any) {
       console.error('Error updating role:', error);
@@ -1034,99 +1031,66 @@ function MemberRow({ member, memberUser, projectId, onRemove, onRoleChange }: {
   };
 
   return (
-    <div className="p-6 flex items-center justify-between">
-      <div className="flex items-center">
+    <div className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-dark-300/50 transition-colors">
+      <div className="flex items-center flex-1 min-w-0">
         {memberUser.avatar ? (
           <img
             src={memberUser.avatar}
             alt={`${memberUser.firstName} ${memberUser.lastName}`}
-            className="w-10 h-10 rounded-full object-cover"
+            className="w-10 h-10 rounded-full object-cover flex-shrink-0"
           />
         ) : (
-          <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium">
+          <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium flex-shrink-0">
             {getInitials(memberUser.firstName, memberUser.lastName)}
           </div>
         )}
-        <div className="ml-4">
-          <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+        <div className="ml-3 min-w-0">
+          <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
             {memberUser.firstName} {memberUser.lastName}
           </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">{memberUser.email}</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400 truncate">{memberUser.email}</div>
         </div>
       </div>
-      <div className="flex items-center gap-3">
-        {/* Project Role - Editable */}
-        {isEditingRole ? (
-          <div className="flex items-center gap-2">
-            <select
-              value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
-              disabled={updatingRole}
-              className="text-xs px-2 py-1 border border-gray-300 dark:border-dark-300 rounded bg-white dark:bg-dark-400 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500"
-            >
-              <option value="project_manager">Project Manager</option>
-              <option value="tech_lead">Tech Lead</option>
-              <option value="frontend">Frontend</option>
-              <option value="backend">Backend</option>
-              <option value="fullstack">Fullstack</option>
-              <option value="designer">Designer</option>
-              <option value="qa">QA</option>
-              <option value="devops">DevOps</option>
-              <option value="member">Member</option>
-            </select>
-            <button
-              onClick={() => handleRoleChange(selectedRole)}
-              disabled={updatingRole}
-              className="text-primary-600 hover:text-primary-900 dark:text-primary-400"
-              title="Save"
-            >
-              {updatingRole ? (
-                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-              ) : (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              )}
-            </button>
-            <button
-              onClick={() => {
-                setSelectedRole(member.projectRole || 'member');
-                setIsEditingRole(false);
-              }}
-              disabled={updatingRole}
-              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              title="Cancel"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => setIsEditingRole(true)}
-            className="group flex items-center gap-1"
-            title="Click to change role"
+      <div className="flex items-center gap-3 ml-4">
+        {/* Project Role - Direct dropdown */}
+        <div className="relative">
+          <select
+            value={currentRole}
+            onChange={(e) => handleRoleChange(e.target.value)}
+            disabled={updatingRole}
+            className="appearance-none text-sm pl-3 pr-8 py-1.5 border border-gray-300 dark:border-dark-300 rounded-lg bg-white dark:bg-dark-400 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent cursor-pointer hover:border-primary-400 dark:hover:border-primary-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Badge variant={getProjectRoleBadgeVariant(member.projectRole)}>
-              {PROJECT_ROLE_LABELS[member.projectRole || 'member'] || 'Member'}
-            </Badge>
-            <svg className="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-            </svg>
-          </button>
-        )}
+            <option value="project_manager">Project Manager</option>
+            <option value="tech_lead">Tech Lead</option>
+            <option value="frontend">Frontend</option>
+            <option value="backend">Backend</option>
+            <option value="fullstack">Fullstack</option>
+            <option value="designer">Designer</option>
+            <option value="qa">QA</option>
+            <option value="devops">DevOps</option>
+            <option value="member">Member</option>
+          </select>
+          <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+            {updatingRole ? (
+              <svg className="w-4 h-4 animate-spin text-primary-500" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            )}
+          </div>
+        </div>
         {/* Remove button */}
         <button
           onClick={onRemove}
-          className="text-danger-600 hover:text-danger-900 dark:text-danger-400 dark:hover:text-danger-300"
+          className="p-1.5 text-gray-400 hover:text-danger-600 dark:hover:text-danger-400 hover:bg-danger-50 dark:hover:bg-danger-900/20 rounded-lg transition-colors"
           title="Remove member"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
           </svg>
         </button>
       </div>
