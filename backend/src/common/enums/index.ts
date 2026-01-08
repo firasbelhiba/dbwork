@@ -4,3 +4,4 @@ export * from './issue-priority.enum';
 export * from './issue-status.enum';
 export * from './sprint-status.enum';
 export * from './notification-type.enum';
+export * from './project-role.enum';

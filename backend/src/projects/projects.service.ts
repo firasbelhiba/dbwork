@@ -440,6 +440,7 @@ export class ProjectsService {
 
     project.members.push({
       userId: new Types.ObjectId(addMemberDto.userId),
+      projectRole: addMemberDto.projectRole || 'member',
       addedAt: new Date(),
     } as any);
 
@@ -484,6 +485,44 @@ export class ProjectsService {
       await this.chatService.addParticipantToProjectChat(projectId, addMemberDto.userId);
     } catch (error) {
       console.error('[CHAT] Error adding user to project chat:', error);
+    }
+
+    return savedProject;
+  }
+
+  async updateMemberRole(
+    projectId: string,
+    userId: string,
+    projectRole: string,
+    actionUserId?: string,
+  ): Promise<ProjectDocument> {
+    const project = await this.findOne(projectId);
+
+    // Find the member
+    const memberIndex = project.members.findIndex(
+      (member) => member.userId.toString() === userId.toString(),
+    );
+
+    if (memberIndex === -1) {
+      throw new NotFoundException('User is not a member of this project');
+    }
+
+    // Update the role
+    (project.members[memberIndex] as any).projectRole = projectRole;
+
+    const savedProject = await project.save();
+
+    // Log activity
+    if (actionUserId) {
+      await this.activitiesService.logActivity(
+        actionUserId,
+        ActionType.UPDATED,
+        EntityType.PROJECT,
+        savedProject._id.toString(),
+        savedProject.name,
+        savedProject._id.toString(),
+        { updatedUserId: userId, newRole: projectRole },
+      );
     }
 
     return savedProject;

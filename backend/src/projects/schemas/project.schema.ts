@@ -32,6 +32,7 @@ export class Project {
 
   @Prop({ type: [{
     userId: { type: Types.ObjectId, ref: 'User' },
+    projectRole: { type: String, default: 'member' },
     addedAt: { type: Date, default: Date.now }
   }], default: [] })
   members: ProjectMember[];

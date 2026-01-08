@@ -22,7 +22,7 @@ import {
   ApiConsumes,
 } from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
-import { CreateProjectDto, UpdateProjectDto, AddMemberDto, CreateCustomStatusDto, UpdateCustomStatusDto, ReorderCustomStatusesDto, CreateDemoEventDto, UpdateDemoEventDto } from './dto';
+import { CreateProjectDto, UpdateProjectDto, AddMemberDto, UpdateMemberRoleDto, CreateCustomStatusDto, UpdateCustomStatusDto, ReorderCustomStatusesDto, CreateDemoEventDto, UpdateDemoEventDto } from './dto';
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@auth/guards/roles.guard';
 import { Roles, CurrentUser } from '@common/decorators';
@@ -160,6 +160,20 @@ export class ProjectsController {
   @ApiResponse({ status: 409, description: 'User is already a member' })
   addMember(@Param('id') id: string, @Body() addMemberDto: AddMemberDto, @CurrentUser() user) {
     return this.projectsService.addMember(id, addMemberDto, user._id);
+  }
+
+  @Patch(':id/members/:userId/role')
+  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
+  @ApiOperation({ summary: 'Update member role in project' })
+  @ApiResponse({ status: 200, description: 'Member role successfully updated' })
+  @ApiResponse({ status: 404, description: 'User is not a member of this project' })
+  updateMemberRole(
+    @Param('id') id: string,
+    @Param('userId') userId: string,
+    @Body() updateMemberRoleDto: UpdateMemberRoleDto,
+    @CurrentUser() user,
+  ) {
+    return this.projectsService.updateMemberRole(id, userId, updateMemberRoleDto.projectRole, user._id);
   }
 
   @Delete(':id/members/:userId')
