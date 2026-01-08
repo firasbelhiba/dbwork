@@ -1,7 +1,9 @@
 import {
   Controller,
   Get,
+  Post,
   Put,
+  Delete,
   Body,
   Param,
   Res,
@@ -10,11 +12,12 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Response } from 'express';
-import { AdminService, TimerSettings } from './admin.service';
+import { AdminService, TimerSettings, CreateProjectRoleDto, UpdateProjectRoleDto } from './admin.service';
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@auth/guards/roles.guard';
 import { Roles, CurrentUser } from '@common/decorators';
 import { UserRole } from '@common/enums';
+import { ProjectRoleDefinition } from './schemas/app-settings.schema';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
@@ -121,5 +124,64 @@ export class AdminController {
     } catch (error) {
       throw new BadRequestException(error.message);
     }
+  }
+
+  // =====================
+  // Project Roles Management
+  // =====================
+
+  @Get('settings/project-roles')
+  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER, UserRole.DEVELOPER, UserRole.VIEWER)
+  @ApiOperation({ summary: 'Get all project roles' })
+  @ApiResponse({ status: 200, description: 'Project roles retrieved successfully' })
+  async getProjectRoles(): Promise<ProjectRoleDefinition[]> {
+    return this.adminService.getProjectRoles();
+  }
+
+  @Post('settings/project-roles')
+  @ApiOperation({ summary: 'Create a new project role (Admin only)' })
+  @ApiResponse({ status: 201, description: 'Project role created successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid role data' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
+  async createProjectRole(
+    @Body() dto: CreateProjectRoleDto,
+  ): Promise<ProjectRoleDefinition[]> {
+    return this.adminService.createProjectRole(dto);
+  }
+
+  @Put('settings/project-roles/:roleId')
+  @ApiOperation({ summary: 'Update a project role (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Project role updated successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid role data' })
+  @ApiResponse({ status: 404, description: 'Role not found' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
+  async updateProjectRole(
+    @Param('roleId') roleId: string,
+    @Body() dto: UpdateProjectRoleDto,
+  ): Promise<ProjectRoleDefinition[]> {
+    return this.adminService.updateProjectRole(roleId, dto);
+  }
+
+  @Delete('settings/project-roles/:roleId')
+  @ApiOperation({ summary: 'Delete a project role (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Project role deleted successfully' })
+  @ApiResponse({ status: 400, description: 'Cannot delete default roles' })
+  @ApiResponse({ status: 404, description: 'Role not found' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
+  async deleteProjectRole(
+    @Param('roleId') roleId: string,
+  ): Promise<ProjectRoleDefinition[]> {
+    return this.adminService.deleteProjectRole(roleId);
+  }
+
+  @Post('settings/project-roles/reorder')
+  @ApiOperation({ summary: 'Reorder project roles (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Project roles reordered successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid role IDs' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
+  async reorderProjectRoles(
+    @Body() body: { roleIds: string[] },
+  ): Promise<ProjectRoleDefinition[]> {
+    return this.adminService.reorderProjectRoles(body.roleIds);
   }
 }

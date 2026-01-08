@@ -394,6 +394,16 @@ export const adminAPI = {
     timerAutoStopEnabled?: boolean;
     timerAutoStopWeekdaysOnly?: boolean;
   }) => api.put('/admin/settings/timer', settings),
+  // Project Roles
+  getProjectRoles: () => api.get('/admin/settings/project-roles'),
+  createProjectRole: (data: { name: string; label: string; color: string }) =>
+    api.post('/admin/settings/project-roles', data),
+  updateProjectRole: (roleId: string, data: { label?: string; color?: string }) =>
+    api.put(`/admin/settings/project-roles/${roleId}`, data),
+  deleteProjectRole: (roleId: string) =>
+    api.delete(`/admin/settings/project-roles/${roleId}`),
+  reorderProjectRoles: (roleIds: string[]) =>
+    api.post('/admin/settings/project-roles/reorder', { roleIds }),
 };
 
 // Google Calendar API

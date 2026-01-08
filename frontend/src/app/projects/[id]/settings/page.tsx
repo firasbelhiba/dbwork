@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { projectsAPI, usersAPI, organizationsAPI } from '@/lib/api';
+import { projectsAPI, usersAPI, organizationsAPI, adminAPI } from '@/lib/api';
 import { Organization } from '@/types/organization';
 import { Project, ProjectMember, ProjectRole } from '@/types/project';
 import { User, UserRole } from '@/types/user';
@@ -29,41 +29,31 @@ const getRoleBadgeVariant = (role: UserRole) => {
   }
 };
 
-// Helper function to get badge variant based on project role
-const getProjectRoleBadgeVariant = (role?: string): 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger' => {
-  switch (role) {
-    case 'project_manager':
-      return 'warning';
-    case 'tech_lead':
-      return 'danger';
-    case 'frontend':
-      return 'primary';
-    case 'backend':
-      return 'success';
-    case 'fullstack':
-      return 'primary';
-    case 'designer':
-      return 'secondary';
-    case 'qa':
-      return 'default';
-    case 'devops':
-      return 'success';
-    default:
-      return 'default';
-  }
-};
+// Project role definition interface
+interface ProjectRoleDefinition {
+  id: string;
+  name: string;
+  label: string;
+  color: string;
+  isDefault: boolean;
+  order: number;
+}
 
-// Project role display names
-const PROJECT_ROLE_LABELS: Record<string, string> = {
-  project_manager: 'Project Manager',
-  tech_lead: 'Tech Lead',
-  frontend: 'Frontend',
-  backend: 'Backend',
-  fullstack: 'Fullstack',
-  designer: 'Designer',
-  qa: 'QA',
-  devops: 'DevOps',
-  member: 'Member',
+// Color to badge variant mapping
+const colorToBadgeVariant = (color: string): 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger' => {
+  // Map hex colors to badge variants
+  const colorMap: Record<string, 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger'> = {
+    '#ef4444': 'danger',    // red
+    '#f59e0b': 'warning',   // amber
+    '#22c55e': 'success',   // green
+    '#3b82f6': 'primary',   // blue
+    '#8b5cf6': 'secondary', // violet
+    '#ec4899': 'secondary', // pink
+    '#14b8a6': 'success',   // teal
+    '#6b7280': 'default',   // gray
+    '#9ca3af': 'default',   // gray
+  };
+  return colorMap[color.toLowerCase()] || 'default';
 };
 
 export default function ProjectSettingsPage() {
@@ -100,6 +90,7 @@ export default function ProjectSettingsPage() {
   // Members management
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
+  const [projectRoles, setProjectRoles] = useState<ProjectRoleDefinition[]>([]);
 
   // Organization assignment
   const [organizations, setOrganizations] = useState<Organization[]>([]);
@@ -113,6 +104,7 @@ export default function ProjectSettingsPage() {
       fetchProjectData();
       fetchUsers();
       fetchOrganizations();
+      fetchProjectRoles();
     }
   }, [projectId, currentUser]);
 
@@ -190,6 +182,15 @@ export default function ProjectSettingsPage() {
       setOrganizations(response.data || []);
     } catch (error) {
       console.error('Error fetching organizations:', error);
+    }
+  };
+
+  const fetchProjectRoles = async () => {
+    try {
+      const response = await adminAPI.getProjectRoles();
+      setProjectRoles(response.data || []);
+    } catch (error) {
+      console.error('Error fetching project roles:', error);
     }
   };
 
@@ -685,6 +686,7 @@ export default function ProjectSettingsPage() {
                             projectId={projectId}
                             onRemove={() => handleRemoveMember(memberUser._id)}
                             onRoleChange={fetchProjectData}
+                            projectRoles={projectRoles}
                           />
                         );
                       })}
@@ -994,32 +996,21 @@ export default function ProjectSettingsPage() {
             fetchProjectData();
             setShowAddMemberModal(false);
           }}
+          projectRoles={projectRoles}
         />
       )}
     </DashboardLayout>
   );
 }
 
-// All available project roles
-const ALL_PROJECT_ROLES = [
-  { value: 'project_manager', label: 'Project Manager' },
-  { value: 'tech_lead', label: 'Tech Lead' },
-  { value: 'frontend', label: 'Frontend' },
-  { value: 'backend', label: 'Backend' },
-  { value: 'fullstack', label: 'Fullstack' },
-  { value: 'designer', label: 'Designer' },
-  { value: 'qa', label: 'QA' },
-  { value: 'devops', label: 'DevOps' },
-  { value: 'member', label: 'Member' },
-];
-
 // MemberRow component with multi-select roles
-function MemberRow({ member, memberUser, projectId, onRemove, onRoleChange }: {
+function MemberRow({ member, memberUser, projectId, onRemove, onRoleChange, projectRoles }: {
   member: ProjectMember;
   memberUser: User;
   projectId: string;
   onRemove: () => void;
   onRoleChange: () => void;
+  projectRoles: ProjectRoleDefinition[];
 }) {
   const [updatingRoles, setUpdatingRoles] = useState(false);
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
@@ -1029,6 +1020,11 @@ function MemberRow({ member, memberUser, projectId, onRemove, onRoleChange }: {
     : (member as any).projectRole
       ? [(member as any).projectRole]
       : ['member'];
+
+  // Helper to get role info from projectRoles
+  const getRoleInfo = (roleName: string) => {
+    return projectRoles.find(r => r.name === roleName) || { label: roleName, color: '#9ca3af' };
+  };
 
   const handleRoleToggle = async (role: string) => {
     let newRoles: string[];
@@ -1089,11 +1085,14 @@ function MemberRow({ member, memberUser, projectId, onRemove, onRoleChange }: {
             className="flex items-center gap-1 text-sm px-3 py-1.5 border border-gray-300 dark:border-dark-300 rounded-lg bg-white dark:bg-dark-400 text-gray-900 dark:text-gray-100 hover:border-primary-400 dark:hover:border-primary-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <div className="flex flex-wrap gap-1 max-w-[200px]">
-              {currentRoles.map(role => (
-                <Badge key={role} variant={getProjectRoleBadgeVariant(role)} className="text-xs">
-                  {PROJECT_ROLE_LABELS[role] || role}
-                </Badge>
-              ))}
+              {currentRoles.map(roleName => {
+                const roleInfo = getRoleInfo(roleName);
+                return (
+                  <Badge key={roleName} variant={colorToBadgeVariant(roleInfo.color)} className="text-xs">
+                    {roleInfo.label}
+                  </Badge>
+                );
+              })}
             </div>
             {updatingRoles ? (
               <svg className="w-4 h-4 ml-1 animate-spin text-primary-500 flex-shrink-0" fill="none" viewBox="0 0 24 24">
@@ -1118,15 +1117,18 @@ function MemberRow({ member, memberUser, projectId, onRemove, onRoleChange }: {
                 <div className="px-3 py-2 border-b border-gray-200 dark:border-dark-300">
                   <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Select roles (click to toggle)</p>
                 </div>
-                {ALL_PROJECT_ROLES.map(role => (
+                {projectRoles.map(role => (
                   <button
-                    key={role.value}
-                    onClick={() => handleRoleToggle(role.value)}
-                    disabled={updatingRoles || (currentRoles.length === 1 && currentRoles.includes(role.value))}
+                    key={role.name}
+                    onClick={() => handleRoleToggle(role.name)}
+                    disabled={updatingRoles || (currentRoles.length === 1 && currentRoles.includes(role.name))}
                     className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-dark-300 flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <span className="text-gray-900 dark:text-gray-100">{role.label}</span>
-                    {currentRoles.includes(role.value) && (
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: role.color }} />
+                      <span className="text-gray-900 dark:text-gray-100">{role.label}</span>
+                    </div>
+                    {currentRoles.includes(role.name) && (
                       <svg className="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
@@ -1152,12 +1154,25 @@ function MemberRow({ member, memberUser, projectId, onRemove, onRoleChange }: {
   );
 }
 
-function AddMemberModal({ isOpen, onClose, projectId, allUsers, currentMembers, onSuccess }: any) {
+function AddMemberModal({ isOpen, onClose, projectId, allUsers, currentMembers, onSuccess, projectRoles }: {
+  isOpen: boolean;
+  onClose: () => void;
+  projectId: string;
+  allUsers: User[];
+  currentMembers: ProjectMember[];
+  onSuccess: () => void;
+  projectRoles: ProjectRoleDefinition[];
+}) {
   const [adding, setAdding] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState('');
   const [selectedRoles, setSelectedRoles] = useState<string[]>(['member']);
   const [searchTerm, setSearchTerm] = useState('');
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
+
+  // Helper to get role info from projectRoles
+  const getRoleInfo = (roleName: string) => {
+    return projectRoles.find(r => r.name === roleName) || { label: roleName, color: '#9ca3af' };
+  };
 
   // Filter out users who are already members
   const availableUsers = allUsers.filter((user: User) => {
@@ -1353,11 +1368,14 @@ function AddMemberModal({ isOpen, onClose, projectId, allUsers, currentMembers, 
                   className="w-full flex items-center justify-between px-3 py-2.5 border border-gray-300 dark:border-dark-300 rounded-lg bg-white dark:bg-dark-400 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all disabled:opacity-50"
                 >
                   <div className="flex flex-wrap gap-1">
-                    {selectedRoles.map(role => (
-                      <Badge key={role} variant={getProjectRoleBadgeVariant(role)} className="text-xs">
-                        {PROJECT_ROLE_LABELS[role] || role}
-                      </Badge>
-                    ))}
+                    {selectedRoles.map(roleName => {
+                      const roleInfo = getRoleInfo(roleName);
+                      return (
+                        <Badge key={roleName} variant={colorToBadgeVariant(roleInfo.color)} className="text-xs">
+                          {roleInfo.label}
+                        </Badge>
+                      );
+                    })}
                   </div>
                   <svg className={`w-5 h-5 text-gray-400 transition-transform flex-shrink-0 ml-2 ${showRoleDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -1375,16 +1393,19 @@ function AddMemberModal({ isOpen, onClose, projectId, allUsers, currentMembers, 
                       <div className="px-3 py-2 border-b border-gray-200 dark:border-dark-300">
                         <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Select one or more roles</p>
                       </div>
-                      {ALL_PROJECT_ROLES.map(role => (
+                      {projectRoles.map(role => (
                         <button
-                          key={role.value}
+                          key={role.name}
                           type="button"
-                          onClick={() => handleRoleToggle(role.value)}
-                          disabled={adding || (selectedRoles.length === 1 && selectedRoles.includes(role.value))}
+                          onClick={() => handleRoleToggle(role.name)}
+                          disabled={adding || (selectedRoles.length === 1 && selectedRoles.includes(role.name))}
                           className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-dark-300 flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <span className="text-gray-900 dark:text-gray-100">{role.label}</span>
-                          {selectedRoles.includes(role.value) && (
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: role.color }} />
+                            <span className="text-gray-900 dark:text-gray-100">{role.label}</span>
+                          </div>
+                          {selectedRoles.includes(role.name) && (
                             <svg className="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
@@ -1422,11 +1443,14 @@ function AddMemberModal({ isOpen, onClose, projectId, allUsers, currentMembers, 
                   </p>
                   <p className="text-xs text-gray-600 dark:text-gray-400">{selectedUser.email}</p>
                   <div className="flex items-center gap-2 mt-1 flex-wrap">
-                    {selectedRoles.map(role => (
-                      <Badge key={role} variant={getProjectRoleBadgeVariant(role)} className="text-xs">
-                        {PROJECT_ROLE_LABELS[role] || role}
-                      </Badge>
-                    ))}
+                    {selectedRoles.map(roleName => {
+                      const roleInfo = getRoleInfo(roleName);
+                      return (
+                        <Badge key={roleName} variant={colorToBadgeVariant(roleInfo.color)} className="text-xs">
+                          {roleInfo.label}
+                        </Badge>
+                      );
+                    })}
                     <span className="text-xs text-gray-500 dark:text-gray-400">
                       project {selectedRoles.length === 1 ? 'role' : 'roles'}
                     </span>

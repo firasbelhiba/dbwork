@@ -1,7 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Connection, Model } from 'mongoose';
-import { AppSettings, AppSettingsDocument } from './schemas/app-settings.schema';
+import { AppSettings, AppSettingsDocument, ProjectRoleDefinition, DEFAULT_PROJECT_ROLES } from './schemas/app-settings.schema';
 
 export interface TimerSettings {
   timerAutoStopHour: number;
@@ -9,6 +9,17 @@ export interface TimerSettings {
   timerAutoStopEnabled: boolean;
   timerAutoStopTimezone: string;
   timerAutoStopWeekdaysOnly: boolean;
+}
+
+export interface CreateProjectRoleDto {
+  name: string;
+  label: string;
+  color: string;
+}
+
+export interface UpdateProjectRoleDto {
+  label?: string;
+  color?: string;
 }
 
 @Injectable()
@@ -252,5 +263,164 @@ export class AdminService {
       timerAutoStopTimezone: settings.timerAutoStopTimezone,
       timerAutoStopWeekdaysOnly: settings.timerAutoStopWeekdaysOnly,
     };
+  }
+
+  /**
+   * Get all project roles
+   */
+  async getProjectRoles(): Promise<ProjectRoleDefinition[]> {
+    const settings = await this.getOrCreateSettings();
+    return settings.projectRoles || DEFAULT_PROJECT_ROLES;
+  }
+
+  /**
+   * Create a new project role
+   */
+  async createProjectRole(dto: CreateProjectRoleDto): Promise<ProjectRoleDefinition[]> {
+    this.logger.log('Creating new project role:', dto);
+
+    const settings = await this.getOrCreateSettings();
+    const roles = settings.projectRoles || [...DEFAULT_PROJECT_ROLES];
+
+    // Validate name format (lowercase, underscores only)
+    const nameRegex = /^[a-z][a-z0-9_]*$/;
+    if (!nameRegex.test(dto.name)) {
+      throw new BadRequestException('Role name must be lowercase letters, numbers, and underscores only, starting with a letter');
+    }
+
+    // Check if role with this name already exists
+    if (roles.some(r => r.name === dto.name)) {
+      throw new BadRequestException(`Role with name "${dto.name}" already exists`);
+    }
+
+    const newRole: ProjectRoleDefinition = {
+      id: dto.name,
+      name: dto.name,
+      label: dto.label,
+      color: dto.color,
+      isDefault: false,
+      order: roles.length,
+    };
+
+    roles.push(newRole);
+
+    await this.appSettingsModel.findOneAndUpdate(
+      { key: 'app_settings' },
+      { $set: { projectRoles: roles } },
+      { new: true, upsert: true },
+    ).exec();
+
+    this.logger.log(`Project role "${dto.label}" created successfully`);
+    return roles;
+  }
+
+  /**
+   * Update a project role
+   */
+  async updateProjectRole(roleId: string, dto: UpdateProjectRoleDto): Promise<ProjectRoleDefinition[]> {
+    this.logger.log(`Updating project role ${roleId}:`, dto);
+
+    const settings = await this.getOrCreateSettings();
+    const roles = settings.projectRoles || [...DEFAULT_PROJECT_ROLES];
+
+    const roleIndex = roles.findIndex(r => r.id === roleId);
+    if (roleIndex === -1) {
+      throw new NotFoundException(`Role with id "${roleId}" not found`);
+    }
+
+    // Update the role
+    if (dto.label !== undefined) {
+      roles[roleIndex].label = dto.label;
+    }
+    if (dto.color !== undefined) {
+      roles[roleIndex].color = dto.color;
+    }
+
+    await this.appSettingsModel.findOneAndUpdate(
+      { key: 'app_settings' },
+      { $set: { projectRoles: roles } },
+      { new: true, upsert: true },
+    ).exec();
+
+    this.logger.log(`Project role "${roleId}" updated successfully`);
+    return roles;
+  }
+
+  /**
+   * Delete a project role (only custom roles can be deleted)
+   */
+  async deleteProjectRole(roleId: string): Promise<ProjectRoleDefinition[]> {
+    this.logger.log(`Deleting project role ${roleId}`);
+
+    const settings = await this.getOrCreateSettings();
+    const roles = settings.projectRoles || [...DEFAULT_PROJECT_ROLES];
+
+    const roleIndex = roles.findIndex(r => r.id === roleId);
+    if (roleIndex === -1) {
+      throw new NotFoundException(`Role with id "${roleId}" not found`);
+    }
+
+    // Check if it's a default role
+    if (roles[roleIndex].isDefault) {
+      throw new BadRequestException('Cannot delete default project roles');
+    }
+
+    roles.splice(roleIndex, 1);
+
+    // Re-order remaining roles
+    roles.forEach((role, index) => {
+      role.order = index;
+    });
+
+    await this.appSettingsModel.findOneAndUpdate(
+      { key: 'app_settings' },
+      { $set: { projectRoles: roles } },
+      { new: true, upsert: true },
+    ).exec();
+
+    this.logger.log(`Project role "${roleId}" deleted successfully`);
+    return roles;
+  }
+
+  /**
+   * Reorder project roles
+   */
+  async reorderProjectRoles(roleIds: string[]): Promise<ProjectRoleDefinition[]> {
+    this.logger.log('Reordering project roles:', roleIds);
+
+    const settings = await this.getOrCreateSettings();
+    const roles = settings.projectRoles || [...DEFAULT_PROJECT_ROLES];
+
+    // Validate that all role IDs exist
+    for (const id of roleIds) {
+      if (!roles.some(r => r.id === id)) {
+        throw new BadRequestException(`Role with id "${id}" not found`);
+      }
+    }
+
+    // Reorder based on the provided order
+    const reorderedRoles: ProjectRoleDefinition[] = [];
+    roleIds.forEach((id, index) => {
+      const role = roles.find(r => r.id === id);
+      if (role) {
+        reorderedRoles.push({ ...role, order: index });
+      }
+    });
+
+    // Add any roles that weren't in the reorder list (shouldn't happen, but just in case)
+    roles.forEach(role => {
+      if (!reorderedRoles.some(r => r.id === role.id)) {
+        reorderedRoles.push({ ...role, order: reorderedRoles.length });
+      }
+    });
+
+    await this.appSettingsModel.findOneAndUpdate(
+      { key: 'app_settings' },
+      { $set: { projectRoles: reorderedRoles } },
+      { new: true, upsert: true },
+    ).exec();
+
+    this.logger.log('Project roles reordered successfully');
+    return reorderedRoles;
   }
 }
