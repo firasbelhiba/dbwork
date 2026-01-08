@@ -498,19 +498,26 @@ export class ProjectsService {
   ): Promise<ProjectDocument> {
     const project = await this.findOne(projectId);
 
-    // Find the member
-    const memberIndex = project.members.findIndex(
-      (member) => member.userId.toString() === userId.toString(),
-    );
+    // Find the member - handle both populated and non-populated userId
+    const memberIndex = project.members.findIndex((member) => {
+      const memberId = typeof member.userId === 'object' && member.userId !== null
+        ? (member.userId as any)._id?.toString() || member.userId.toString()
+        : member.userId.toString();
+      return memberId === userId.toString();
+    });
 
     if (memberIndex === -1) {
       throw new NotFoundException('User is not a member of this project');
     }
 
-    // Update the role
-    (project.members[memberIndex] as any).projectRole = projectRole;
+    // Update the role using updateOne to avoid populated object issues
+    await this.projectModel.updateOne(
+      { _id: projectId, 'members.userId': new Types.ObjectId(userId) },
+      { $set: { 'members.$.projectRole': projectRole } },
+    );
 
-    const savedProject = await project.save();
+    // Fetch and return the updated project
+    const savedProject = await this.findOne(projectId);
 
     // Log activity
     if (actionUserId) {
