@@ -61,7 +61,13 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   const fetchConversations = useCallback(async () => {
     try {
       const response = await chatAPI.getConversations();
-      setConversations(response.data);
+      // Sort by most recent activity (lastMessageAt or updatedAt)
+      const sorted = [...response.data].sort((a: Conversation, b: Conversation) => {
+        const dateA = new Date(a.lastMessageAt || a.updatedAt || 0).getTime();
+        const dateB = new Date(b.lastMessageAt || b.updatedAt || 0).getTime();
+        return dateB - dateA; // Most recent first
+      });
+      setConversations(sorted);
     } catch (error) {
       console.error('Error fetching conversations:', error);
     } finally {

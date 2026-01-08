@@ -40,11 +40,17 @@ function ChatPageContent() {
     try {
       setLoading(true);
       const response = await chatAPI.getConversations();
-      setConversations(response.data);
+      // Sort by most recent activity (lastMessageAt or updatedAt)
+      const sorted = [...response.data].sort((a: Conversation, b: Conversation) => {
+        const dateA = new Date(a.lastMessageAt || a.updatedAt || 0).getTime();
+        const dateB = new Date(b.lastMessageAt || b.updatedAt || 0).getTime();
+        return dateB - dateA; // Most recent first
+      });
+      setConversations(sorted);
 
       // If conversation ID is in URL, select it
       if (conversationIdParam) {
-        const conv = response.data.find((c: Conversation) => c._id === conversationIdParam);
+        const conv = sorted.find((c: Conversation) => c._id === conversationIdParam);
         if (conv) {
           setActiveConversation(conv);
         }

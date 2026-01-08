@@ -166,7 +166,7 @@ export class ChatService {
         populate: { path: 'senderId', model: 'User', select: 'firstName lastName avatar' },
       })
       .populate({ path: 'projectId', model: 'Project', select: 'name logo' })
-      .sort({ lastMessageAt: -1 })
+      .sort({ lastMessageAt: -1, updatedAt: -1 })
       .exec();
 
     // Decrypt lastMessage content for each conversation
