@@ -146,8 +146,15 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
           });
         }
 
-        // Add projects
-        projectsRes.data.slice(0, 3).forEach((project: any) => {
+        // Add projects (filter by search term)
+        const searchLowerForProjects = debouncedSearch.toLowerCase();
+        const matchingProjects = projectsRes.data.filter((project: any) => {
+          const projectName = project.name?.toLowerCase() || '';
+          const projectKey = project.key?.toLowerCase() || '';
+          return projectName.includes(searchLowerForProjects) || projectKey.includes(searchLowerForProjects);
+        });
+
+        matchingProjects.slice(0, 3).forEach((project: any) => {
           items.push({
             id: `project-${project._id}`,
             title: project.name,
@@ -332,8 +339,13 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
     }
 
     // Apply title filtering for normal search mode
+    // But skip filtering for dynamic search results (Users, Projects, Issues, Tickets)
+    // as they are already filtered at fetch time
+    const searchResultCategories = ['Users', 'Projects', 'Issues', 'Tickets'];
     return allItems.filter((item) =>
-      item.title.toLowerCase().includes(search.toLowerCase())
+      searchResultCategories.includes(item.category) ||
+      item.title.toLowerCase().includes(search.toLowerCase()) ||
+      item.subtitle?.toLowerCase().includes(search.toLowerCase())
     );
   }, [allItems, search]);
 
