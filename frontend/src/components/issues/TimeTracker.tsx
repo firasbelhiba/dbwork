@@ -343,7 +343,7 @@ export function TimeTracker({ issueId, timeTracking, onUpdate, hasSubIssues }: T
             </div>
           </div>
           <div className={`text-2xl font-mono font-bold ${timerStatus.isPaused ? 'text-yellow-700 dark:text-yellow-300' : 'text-green-700 dark:text-green-300'}`}>
-            {formatDuration(displayTime)}
+            {formatDuration(totalTime + displayTime)}
           </div>
           <div className="flex gap-2 mt-3">
             {timerStatus.isPaused ? (

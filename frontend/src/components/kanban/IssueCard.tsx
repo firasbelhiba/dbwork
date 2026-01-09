@@ -271,7 +271,7 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
                       : 'bg-green-500 animate-pulse'
                     : 'bg-yellow-500'
                 }`} />
-                {formatTimerDisplay(timerSeconds)}
+                {formatTimerDisplay((issue.timeTracking?.totalTimeSpent || 0) + timerSeconds)}
                 {isExtraHours && isTimerRunning && (
                   <span className="ml-1 text-[10px] uppercase font-semibold">Extra</span>
                 )}
