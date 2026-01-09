@@ -387,7 +387,7 @@ export const AffectationFormModal: React.FC<AffectationFormModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={isEditing ? 'Edit Affectation' : 'New Affectation'}
-      size="lg"
+      size="xl"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Preview Card - shows when user and project are selected */}
