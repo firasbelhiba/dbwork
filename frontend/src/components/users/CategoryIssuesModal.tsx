@@ -46,10 +46,12 @@ export const CategoryIssuesModal: React.FC<CategoryIssuesModalProps> = ({
 }) => {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedIssues, setExpandedIssues] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (isOpen && userId && category) {
       fetchIssues();
+      setExpandedIssues(new Set());
     }
   }, [isOpen, userId, category]);
 
@@ -65,6 +67,18 @@ export const CategoryIssuesModal: React.FC<CategoryIssuesModalProps> = ({
     }
   };
 
+  const toggleExpand = (issueId: string) => {
+    setExpandedIssues((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(issueId)) {
+        newSet.delete(issueId);
+      } else {
+        newSet.add(issueId);
+      }
+      return newSet;
+    });
+  };
+
   const formatDate = (date: Date | string | null) => {
     if (!date) return '';
     return new Date(date).toLocaleDateString('en-US', {
@@ -72,6 +86,11 @@ export const CategoryIssuesModal: React.FC<CategoryIssuesModalProps> = ({
       month: 'short',
       day: 'numeric',
     });
+  };
+
+  const formatHours = (hours: number | undefined) => {
+    if (!hours) return '0h';
+    return `${hours}h`;
   };
 
   return (
@@ -108,82 +127,212 @@ export const CategoryIssuesModal: React.FC<CategoryIssuesModalProps> = ({
               {issues.map((issue) => {
                 const project = typeof issue.projectId === 'object' ? issue.projectId : null;
                 const reporter = typeof issue.reporter === 'object' ? issue.reporter as User : null;
+                const isExpanded = expandedIssues.has(issue._id);
 
                 return (
-                  <Link
+                  <div
                     key={issue._id}
-                    href={`/issues/${issue._id}`}
-                    className="block p-4 rounded-lg border border-gray-200 dark:border-dark-400 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-gray-50 dark:hover:bg-dark-500 transition-all"
+                    className="rounded-lg border border-gray-200 dark:border-dark-400 overflow-hidden transition-all"
                   >
-                    <div className="flex items-start gap-3">
-                      {/* Type icon */}
-                      <span className="text-xl flex-shrink-0">
-                        {typeIcons[issue.type] || '📋'}
-                      </span>
+                    {/* Collapsible header */}
+                    <button
+                      onClick={() => toggleExpand(issue._id)}
+                      className="w-full p-4 text-left hover:bg-gray-50 dark:hover:bg-dark-500 transition-colors"
+                    >
+                      <div className="flex items-start gap-3">
+                        {/* Expand/collapse icon */}
+                        <svg
+                          className={`w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
 
-                      {/* Issue details */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs font-mono text-gray-500 dark:text-gray-400">
-                            {issue.key}
-                          </span>
-                          <span className={`px-2 py-0.5 rounded text-xs font-medium capitalize ${priorityColors[issue.priority] || 'bg-gray-100 text-gray-700'}`}>
-                            {issue.priority}
-                          </span>
+                        {/* Type icon */}
+                        <span className="text-xl flex-shrink-0">
+                          {typeIcons[issue.type] || '📋'}
+                        </span>
+
+                        {/* Issue details */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-mono text-gray-500 dark:text-gray-400">
+                              {issue.key}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded text-xs font-medium capitalize ${priorityColors[issue.priority] || 'bg-gray-100 text-gray-700'}`}>
+                              {issue.priority}
+                            </span>
+                            <span className="px-2 py-0.5 rounded text-xs font-medium capitalize bg-gray-100 text-gray-700 dark:bg-dark-400 dark:text-gray-300">
+                              {issue.type}
+                            </span>
+                          </div>
+                          <h4 className="font-medium text-gray-900 dark:text-white truncate">
+                            {issue.title}
+                          </h4>
+                          <div className="flex items-center gap-3 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                            {project && (
+                              <div className="flex items-center gap-1">
+                                {project.logo ? (
+                                  <img src={project.logo} alt={project.name} className="w-4 h-4 rounded" />
+                                ) : (
+                                  <div className="w-4 h-4 rounded bg-gray-300 dark:bg-dark-400 flex items-center justify-center text-[10px] font-bold">
+                                    {project.name?.charAt(0)}
+                                  </div>
+                                )}
+                                <span>{project.name}</span>
+                              </div>
+                            )}
+                            {issue.updatedAt && (
+                              <span>Completed {formatDate(issue.updatedAt)}</span>
+                            )}
+                          </div>
                         </div>
-                        <h4 className="font-medium text-gray-900 dark:text-white truncate">
-                          {issue.title}
-                        </h4>
-                        <div className="flex items-center gap-3 mt-2 text-xs text-gray-500 dark:text-gray-400">
-                          {project && (
-                            <div className="flex items-center gap-1">
-                              {project.logo ? (
-                                <img src={project.logo} alt={project.name} className="w-4 h-4 rounded" />
-                              ) : (
-                                <div className="w-4 h-4 rounded bg-gray-300 dark:bg-dark-400 flex items-center justify-center text-[10px] font-bold">
-                                  {project.name?.charAt(0)}
-                                </div>
-                              )}
-                              <span>{project.name}</span>
+
+                        {/* Assignees */}
+                        <div className="flex -space-x-2 flex-shrink-0">
+                          {issue.assignees?.slice(0, 3).map((assignee, index) => {
+                            const user = typeof assignee === 'object' ? assignee as User : null;
+                            if (!user) return null;
+                            return user.avatar ? (
+                              <img
+                                key={user._id || index}
+                                src={user.avatar}
+                                alt={`${user.firstName} ${user.lastName}`}
+                                className="w-6 h-6 rounded-full border-2 border-white dark:border-dark-600"
+                                title={`${user.firstName} ${user.lastName}`}
+                              />
+                            ) : (
+                              <div
+                                key={user._id || index}
+                                className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-xs font-medium text-blue-600 dark:text-blue-400 border-2 border-white dark:border-dark-600"
+                                title={`${user.firstName} ${user.lastName}`}
+                              >
+                                {user.firstName?.charAt(0)}
+                              </div>
+                            );
+                          })}
+                          {issue.assignees && issue.assignees.length > 3 && (
+                            <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-dark-400 flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-300 border-2 border-white dark:border-dark-600">
+                              +{issue.assignees.length - 3}
                             </div>
-                          )}
-                          {issue.updatedAt && (
-                            <span>Completed {formatDate(issue.updatedAt)}</span>
                           )}
                         </div>
                       </div>
+                    </button>
 
-                      {/* Assignees */}
-                      <div className="flex -space-x-2 flex-shrink-0">
-                        {issue.assignees?.slice(0, 3).map((assignee, index) => {
-                          const user = typeof assignee === 'object' ? assignee as User : null;
-                          if (!user) return null;
-                          return user.avatar ? (
-                            <img
-                              key={user._id || index}
-                              src={user.avatar}
-                              alt={`${user.firstName} ${user.lastName}`}
-                              className="w-6 h-6 rounded-full border-2 border-white dark:border-dark-600"
-                              title={`${user.firstName} ${user.lastName}`}
-                            />
-                          ) : (
-                            <div
-                              key={user._id || index}
-                              className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-xs font-medium text-blue-600 dark:text-blue-400 border-2 border-white dark:border-dark-600"
-                              title={`${user.firstName} ${user.lastName}`}
-                            >
-                              {user.firstName?.charAt(0)}
-                            </div>
-                          );
-                        })}
-                        {issue.assignees && issue.assignees.length > 3 && (
-                          <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-dark-400 flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-300 border-2 border-white dark:border-dark-600">
-                            +{issue.assignees.length - 3}
+                    {/* Expanded content */}
+                    {isExpanded && (
+                      <div className="px-4 pb-4 pt-2 border-t border-gray-100 dark:border-dark-400 bg-gray-50 dark:bg-dark-500">
+                        {/* Description */}
+                        {issue.description && (
+                          <div className="mb-4">
+                            <h5 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
+                              Description
+                            </h5>
+                            <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                              {issue.description || 'No description provided'}
+                            </p>
                           </div>
                         )}
+
+                        {/* Details grid */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+                          {/* Story Points */}
+                          {issue.storyPoints > 0 && (
+                            <div>
+                              <h5 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">
+                                Story Points
+                              </h5>
+                              <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                {issue.storyPoints}
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Time Logged */}
+                          {issue.timeTracking?.loggedHours > 0 && (
+                            <div>
+                              <h5 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">
+                                Time Logged
+                              </h5>
+                              <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                {formatHours(issue.timeTracking.loggedHours)}
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Due Date */}
+                          {issue.dueDate && (
+                            <div>
+                              <h5 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">
+                                Due Date
+                              </h5>
+                              <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                {formatDate(issue.dueDate)}
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Reporter */}
+                          {reporter && (
+                            <div>
+                              <h5 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">
+                                Reporter
+                              </h5>
+                              <div className="flex items-center gap-2">
+                                {reporter.avatar ? (
+                                  <img
+                                    src={reporter.avatar}
+                                    alt={`${reporter.firstName} ${reporter.lastName}`}
+                                    className="w-5 h-5 rounded-full"
+                                  />
+                                ) : (
+                                  <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-xs font-medium text-blue-600 dark:text-blue-400">
+                                    {reporter.firstName?.charAt(0)}
+                                  </div>
+                                )}
+                                <span className="text-sm text-gray-900 dark:text-white">
+                                  {reporter.firstName} {reporter.lastName}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Labels */}
+                        {issue.labels && issue.labels.length > 0 && (
+                          <div className="mb-4">
+                            <h5 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
+                              Labels
+                            </h5>
+                            <div className="flex flex-wrap gap-2">
+                              {issue.labels.map((label, index) => (
+                                <span
+                                  key={index}
+                                  className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                                >
+                                  {label}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* View full issue link */}
+                        <Link
+                          href={`/issues/${issue._id}`}
+                          className="inline-flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                        >
+                          <span>View full issue</span>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
+                        </Link>
                       </div>
-                    </div>
-                  </Link>
+                    )}
+                  </div>
                 );
               })}
             </div>
