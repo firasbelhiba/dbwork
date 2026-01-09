@@ -346,6 +346,26 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) =
             </Link>
           )}
 
+          {/* Affectations link - Admin only */}
+          {user?.role === UserRole.ADMIN && (
+            <Link
+              href="/admin/affectations"
+              onClick={handleLinkClick}
+              className={cn(
+                'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                pathname === '/admin/affectations' || pathname.startsWith('/admin/affectations/')
+                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-400 hover:text-gray-900 dark:hover:text-gray-100'
+              )}
+              title={isCollapsed ? 'Affectations' : undefined}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              {!isCollapsed && <span>Affectations</span>}
+            </Link>
+          )}
+
         </div>
 
         {/* Projects section */}

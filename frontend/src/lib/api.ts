@@ -543,4 +543,61 @@ export const chatAPI = {
   searchMessages: (query: string) => api.get('/chat/search', { params: { q: query } }),
 };
 
+// Affectations API
+export const affectationsAPI = {
+  // CRUD
+  getAll: (params?: {
+    userId?: string;
+    projectId?: string;
+    status?: string;
+    role?: string;
+    isBillable?: string;
+    startDateFrom?: string;
+    startDateTo?: string;
+    endDateFrom?: string;
+    endDateTo?: string;
+  }) => api.get('/affectations', { params }),
+  getById: (id: string) => api.get(`/affectations/${id}`),
+  create: (data: {
+    userId: string;
+    projectId: string;
+    startDate: string;
+    endDate: string;
+    role: string;
+    allocationPercentage?: number;
+    estimatedHours?: number;
+    notes?: string;
+    status?: string;
+    isBillable?: boolean;
+  }) => api.post('/affectations', data),
+  update: (id: string, data: {
+    userId?: string;
+    projectId?: string;
+    startDate?: string;
+    endDate?: string;
+    role?: string;
+    allocationPercentage?: number;
+    estimatedHours?: number;
+    actualHours?: number;
+    notes?: string;
+    status?: string;
+    isBillable?: boolean;
+  }) => api.patch(`/affectations/${id}`, data),
+  delete: (id: string) => api.delete(`/affectations/${id}`),
+
+  // By user/project
+  getByUser: (userId: string) => api.get(`/affectations/user/${userId}`),
+  getByProject: (projectId: string) => api.get(`/affectations/project/${projectId}`),
+
+  // Sync hours
+  syncHours: (id: string) => api.post(`/affectations/${id}/sync-hours`),
+  syncAll: () => api.post('/affectations/sync-all'),
+
+  // Reports
+  getChargeabilityReport: (params: { startDate: string; endDate: string; userId?: string }) =>
+    api.get('/affectations/reports/chargeability', { params }),
+  getResourcePlanningReport: () => api.get('/affectations/reports/resource-planning'),
+  getUserTimeline: (userId: string) => api.get(`/affectations/reports/user-timeline/${userId}`),
+};
+
 export default api;
