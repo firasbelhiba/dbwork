@@ -453,18 +453,26 @@ export class AchievementsService {
     const communicatorAchievement = await this.achievementModel
       .findOne({ key: 'communicator' })
       .exec();
-    if (communicatorAchievement && user.stats.commentsPosted >= 50) {
-      const unlocked = await this.unlockAchievement(userId, communicatorAchievement._id.toString());
-      if (unlocked) unlockedAchievements.push(unlocked);
+    if (communicatorAchievement) {
+      if (user.stats.commentsPosted >= 50) {
+        const unlocked = await this.unlockAchievement(userId, communicatorAchievement._id.toString());
+        if (unlocked) unlockedAchievements.push(unlocked);
+      } else {
+        await this.updateProgress(userId, communicatorAchievement._id.toString(), user.stats.commentsPosted, 50);
+      }
     }
 
     // Check Social Butterfly achievement (25 unique issues commented)
     const socialButterflyAchievement = await this.achievementModel
       .findOne({ key: 'social_butterfly' })
       .exec();
-    if (socialButterflyAchievement && user.stats.uniqueIssuesCommented >= 25) {
-      const unlocked = await this.unlockAchievement(userId, socialButterflyAchievement._id.toString());
-      if (unlocked) unlockedAchievements.push(unlocked);
+    if (socialButterflyAchievement) {
+      if (user.stats.uniqueIssuesCommented >= 25) {
+        const unlocked = await this.unlockAchievement(userId, socialButterflyAchievement._id.toString());
+        if (unlocked) unlockedAchievements.push(unlocked);
+      } else {
+        await this.updateProgress(userId, socialButterflyAchievement._id.toString(), user.stats.uniqueIssuesCommented || 0, 25);
+      }
     }
 
     return unlockedAchievements;
