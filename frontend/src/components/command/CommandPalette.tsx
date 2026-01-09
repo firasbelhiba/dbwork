@@ -3,8 +3,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Modal } from '@/components/common';
-import { projectsAPI, issuesAPI } from '@/lib/api';
+import { projectsAPI, issuesAPI, usersAPI } from '@/lib/api';
 import { useDebounce } from '@/hooks';
+import { useAuth } from '@/contexts/AuthContext';
+import { UserRole } from '@/types/user';
 
 interface CommandItem {
   id: string;
@@ -24,7 +26,10 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [recentItems, setRecentItems] = useState<any[]>([]);
   const router = useRouter();
+  const { user: currentUser } = useAuth();
   const debouncedSearch = useDebounce(search, 300);
+
+  const isAdmin = currentUser?.role === UserRole.ADMIN;
 
   // Open/close with Cmd+K or Ctrl+K
   useEffect(() => {
@@ -104,13 +109,42 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
 
         setRecentItems(items);
       } else {
-        // Normal search mode - search both projects and issues
-        const [projectsRes, issuesRes] = await Promise.all([
+        // Normal search mode - search projects, issues, and users (admin only)
+        const searchPromises: Promise<any>[] = [
           projectsAPI.getAll(),
           issuesAPI.search(debouncedSearch),
-        ]);
+        ];
+
+        // Only search users if admin
+        if (isAdmin) {
+          searchPromises.push(usersAPI.getAll());
+        }
+
+        const results = await Promise.all(searchPromises);
+        const [projectsRes, issuesRes] = results;
+        const usersRes = isAdmin ? results[2] : null;
 
         const items: any[] = [];
+
+        // Add users (admin only) - prioritize user search results
+        if (isAdmin && usersRes?.data) {
+          const searchLower = debouncedSearch.toLowerCase();
+          const matchingUsers = usersRes.data.filter((user: any) => {
+            const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+            const email = user.email?.toLowerCase() || '';
+            return fullName.includes(searchLower) || email.includes(searchLower);
+          });
+
+          matchingUsers.slice(0, 5).forEach((user: any) => {
+            items.push({
+              id: `user-${user._id}`,
+              title: `${user.firstName} ${user.lastName}`,
+              subtitle: user.email,
+              category: 'Users',
+              data: user,
+            });
+          });
+        }
 
         // Add projects
         projectsRes.data.slice(0, 3).forEach((project: any) => {
@@ -222,7 +256,30 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
 
     if (search && recentItems.length > 0) {
       recentItems.forEach((item) => {
-        if (item.category === 'Projects') {
+        if (item.category === 'Users') {
+          // User search results (admin only)
+          items.push({
+            id: item.id,
+            title: item.title,
+            subtitle: item.subtitle,
+            category: 'Users',
+            icon: (
+              <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                {item.data.avatar ? (
+                  <img src={item.data.avatar} alt={item.title} className="w-5 h-5 rounded-full" />
+                ) : (
+                  <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                    {item.data.firstName?.charAt(0)}
+                  </span>
+                )}
+              </div>
+            ),
+            onSelect: () => {
+              router.push(`/users/${item.data._id}`);
+              onClose?.();
+            },
+          });
+        } else if (item.category === 'Projects') {
           items.push({
             id: item.id,
             title: item.title,
@@ -328,7 +385,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
               setSelectedIndex(0);
             }}
             onKeyDown={handleKeyDown}
-            placeholder="Search projects, issues, or type ticket key (e.g., TAI-1)"
+            placeholder={isAdmin ? "Search projects, issues, users..." : "Search projects, issues, or type ticket key (e.g., TAI-1)"}
             className="flex-1 bg-transparent outline-none text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
             autoFocus
           />
