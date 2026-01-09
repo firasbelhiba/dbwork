@@ -170,6 +170,7 @@ export const issuesAPI = {
   getUserBandwidth: (userId: string) => api.get(`/issues/user/${userId}/bandwidth`),
   getUserCalendar: (userId: string, year: number, month: number) =>
     api.get(`/issues/user/${userId}/calendar?year=${year}&month=${month}`),
+  getUserCategoryStats: (userId: string) => api.get(`/issues/user/${userId}/category-stats`),
   create: (data: any) => api.post('/issues', data),
   update: (id: string, data: any) => api.patch(`/issues/${id}`, data),
   delete: (id: string) => api.delete(`/issues/${id}`),

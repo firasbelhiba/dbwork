@@ -13,6 +13,7 @@ import { Organization } from '@/types/organization';
 import { formatDateTime, getRelativeTime } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 interface WorkloadData {
   totalInProgress: number;
@@ -70,6 +71,16 @@ interface UserAchievement {
   viewed: boolean;
 }
 
+interface CategoryStats {
+  categories: Array<{
+    name: string;
+    count: number;
+    percentage: number;
+    color: string;
+  }>;
+  total: number;
+}
+
 export default function UserProfilePage() {
   const params = useParams();
   const router = useRouter();
@@ -81,10 +92,12 @@ export default function UserProfilePage() {
   const [workload, setWorkload] = useState<WorkloadData | null>(null);
   const [bandwidth, setBandwidth] = useState<BandwidthData | null>(null);
   const [achievements, setAchievements] = useState<UserAchievement[]>([]);
+  const [categoryStats, setCategoryStats] = useState<CategoryStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingWorkload, setLoadingWorkload] = useState(false);
   const [loadingBandwidth, setLoadingBandwidth] = useState(false);
   const [loadingAchievements, setLoadingAchievements] = useState(false);
+  const [loadingCategoryStats, setLoadingCategoryStats] = useState(false);
 
   useEffect(() => {
     if (userId) {
@@ -106,6 +119,7 @@ export default function UserProfilePage() {
       fetchWorkload();
       fetchBandwidth();
       fetchAchievements();
+      fetchCategoryStats();
     } catch (error: any) {
       console.error('Error fetching user:', error);
       if (error.response?.status === 404) {
@@ -153,6 +167,22 @@ export default function UserProfilePage() {
     } finally {
       setLoadingAchievements(false);
     }
+  };
+
+  const fetchCategoryStats = async () => {
+    setLoadingCategoryStats(true);
+    try {
+      const response = await issuesAPI.getUserCategoryStats(userId);
+      setCategoryStats(response.data);
+    } catch (error) {
+      console.error('Error fetching category stats:', error);
+    } finally {
+      setLoadingCategoryStats(false);
+    }
+  };
+
+  const formatCategoryName = (name: string): string => {
+    return name.charAt(0).toUpperCase() + name.slice(1).replace(/_/g, ' ');
   };
 
   const formatHours = (hours: number): string => {
@@ -392,6 +422,91 @@ export default function UserProfilePage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Not part of any organization</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Expertise Distribution */}
+              <div className="bg-white dark:bg-dark-400 rounded-xl shadow-sm border border-gray-200 dark:border-dark-300 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                  </svg>
+                  Expertise
+                </h3>
+                {loadingCategoryStats ? (
+                  <div className="flex items-center justify-center py-8">
+                    <LogoLoader size="sm" text="Loading" />
+                  </div>
+                ) : categoryStats && categoryStats.categories.length > 0 ? (
+                  <div className="flex flex-col items-center">
+                    <div className="w-full h-48">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={categoryStats.categories}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={45}
+                            outerRadius={70}
+                            paddingAngle={2}
+                            dataKey="count"
+                            nameKey="name"
+                          >
+                            {categoryStats.categories.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            content={({ active, payload }) => {
+                              if (active && payload && payload.length) {
+                                const data = payload[0].payload;
+                                return (
+                                  <div className="bg-white dark:bg-dark-300 px-3 py-2 rounded-lg shadow-lg border border-gray-200 dark:border-dark-200">
+                                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                      {formatCategoryName(data.name)}
+                                    </p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                      {data.count} issues ({data.percentage}%)
+                                    </p>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="w-full mt-2 space-y-1.5">
+                      {categoryStats.categories.slice(0, 5).map((cat) => (
+                        <div key={cat.name} className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: cat.color }}
+                            />
+                            <span className="text-gray-700 dark:text-gray-300">
+                              {formatCategoryName(cat.name)}
+                            </span>
+                          </div>
+                          <span className="font-medium text-gray-900 dark:text-gray-100">
+                            {cat.percentage}%
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
+                      Based on {categoryStats.total} completed issues
+                    </p>
+                  </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <svg className="w-10 h-10 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                    </svg>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">No completed issues yet</p>
                   </div>
                 )}
               </div>

@@ -83,6 +83,13 @@ export class IssuesController {
     );
   }
 
+  @Get('user/:userId/category-stats')
+  @ApiOperation({ summary: 'Get user category distribution for completed issues' })
+  @ApiResponse({ status: 200, description: 'User category stats for profile chart' })
+  getUserCategoryStats(@Param('userId') userId: string) {
+    return this.issuesService.getUserCategoryStats(userId);
+  }
+
   @Get('project/:projectId')
   @ApiOperation({ summary: 'Get issues by project' })
   @ApiResponse({ status: 200, description: 'Project issues' })

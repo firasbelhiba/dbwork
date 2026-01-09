@@ -1291,6 +1291,67 @@ export class IssuesService {
   }
 
   /**
+   * Get user category distribution for completed issues
+   * Used for profile donut chart showing expertise areas
+   */
+  async getUserCategoryStats(userId: string): Promise<{
+    categories: Array<{
+      name: string;
+      count: number;
+      percentage: number;
+      color: string;
+    }>;
+    total: number;
+  }> {
+    const userIdObj = new Types.ObjectId(userId);
+
+    // Aggregate completed issues by category
+    const categoryStats = await this.issueModel.aggregate([
+      {
+        $match: {
+          assignees: userIdObj,
+          status: 'done',
+        },
+      },
+      {
+        $group: {
+          _id: { $ifNull: ['$category', 'other'] },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { count: -1 },
+      },
+    ]);
+
+    const total = categoryStats.reduce((sum, cat) => sum + cat.count, 0);
+
+    // Color mapping for categories
+    const categoryColors: Record<string, string> = {
+      frontend: '#3B82F6',    // blue
+      backend: '#10B981',     // green
+      fullstack: '#8B5CF6',   // purple
+      devops: '#F59E0B',      // amber
+      design: '#EC4899',      // pink
+      qa: '#06B6D4',          // cyan
+      documentation: '#6B7280', // gray
+      infrastructure: '#EF4444', // red
+      marketing: '#F97316',   // orange
+      development: '#14B8A6', // teal
+      other: '#9CA3AF',       // gray-400
+    };
+
+    const categories = categoryStats.map((cat) => ({
+      name: cat._id || 'other',
+      count: cat.count,
+      percentage: total > 0 ? Math.round((cat.count / total) * 100) : 0,
+      color: categoryColors[cat._id] || categoryColors.other,
+    }));
+
+    return { categories, total };
+  }
+
+  /**
    * Get user's tickets for calendar display
    * Returns tickets grouped by date based on startDate and dueDate
    */
