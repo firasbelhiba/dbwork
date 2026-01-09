@@ -53,6 +53,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
   useEffect(() => {
     if (debouncedSearch) {
       fetchSearchResults();
+    } else {
+      // Clear search results when search is empty
+      setRecentItems([]);
     }
   }, [debouncedSearch]);
 
@@ -262,7 +265,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
   const allItems = useMemo(() => {
     const items = [...staticCommands];
 
-    if (search && recentItems.length > 0) {
+    if (recentItems.length > 0) {
       recentItems.forEach((item) => {
         if (item.category === 'Users') {
           // User search results (admin only)
@@ -324,7 +327,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
     }
 
     return items;
-  }, [staticCommands, recentItems, search, router]);
+  }, [staticCommands, recentItems, router, onClose]);
 
   const filteredItems = useMemo(() => {
     if (!search) return allItems;
