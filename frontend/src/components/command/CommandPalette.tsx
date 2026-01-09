@@ -62,9 +62,10 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
       const isDirectTicketSearch = debouncedSearch.startsWith('/');
       const ticketKey = isDirectTicketSearch ? debouncedSearch.substring(1).trim().toUpperCase() : '';
 
-      // Check if search looks like a ticket key pattern (e.g., "TA", "TAI", "TAI-", "TAI-1")
-      // Pattern: 2+ uppercase letters, optionally followed by dash and numbers
-      const ticketKeyPattern = /^[A-Z]{2,}(-\d*)?$/i;
+      // Check if search looks like a ticket key pattern (e.g., "TAI-", "TAI-1", "DBWR-5")
+      // Pattern: 2-5 uppercase letters followed by a dash (with optional numbers)
+      // This prevents normal words from being treated as ticket keys
+      const ticketKeyPattern = /^[A-Z]{2,5}-\d*$/i;
       const isTicketKeyPattern = ticketKeyPattern.test(debouncedSearch.trim());
 
       if (isDirectTicketSearch && ticketKey) {
@@ -330,7 +331,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
 
     // Check if we're in ticket search mode
     const isDirectTicketSearch = search.startsWith('/');
-    const ticketKeyPattern = /^[A-Z]{2,}(-\d*)?$/i;
+    // Pattern: 2-5 uppercase letters followed by a dash (with optional numbers)
+    const ticketKeyPattern = /^[A-Z]{2,5}-\d*$/i;
     const isTicketKeyPattern = ticketKeyPattern.test(search.trim());
 
     // Skip title filtering for ticket search modes
