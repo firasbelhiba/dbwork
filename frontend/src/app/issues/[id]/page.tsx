@@ -13,6 +13,7 @@ import { SubIssues, SubIssueModal, EditIssueModal, AttachmentSection, TimeTracke
 import { useAuth } from '@/contexts/AuthContext';
 import { getInitials, formatDateTime, getRelativeTime } from '@/lib/utils';
 import { UserAvatar } from '@/components/common/UserAvatar';
+import { UserProfileSidebar } from '@/components/users/UserProfileSidebar';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 
@@ -38,6 +39,8 @@ export default function IssueDetailPage() {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [replyingTo, setReplyingTo] = useState<Comment | null>(null);
   const [replyContent, setReplyContent] = useState('');
+  const [profileUser, setProfileUser] = useState<any>(null);
+  const [showProfileSidebar, setShowProfileSidebar] = useState(false);
 
   useEffect(() => {
     if (issueId && !authLoading) {
@@ -319,6 +322,13 @@ export default function IssueDetailPage() {
       toast.error(error?.response?.data?.message || 'Failed to restore issue');
     } finally {
       setArchiving(false);
+    }
+  };
+
+  const handleAvatarClick = (userObj: any) => {
+    if (userObj) {
+      setProfileUser(userObj);
+      setShowProfileSidebar(true);
     }
   };
 
@@ -639,7 +649,10 @@ export default function IssueDetailPage() {
                         );
                         return (
                           <div key={comment._id} className="flex gap-3">
-                            <div className="flex-shrink-0">
+                            <div
+                              className="flex-shrink-0 cursor-pointer"
+                              onClick={() => handleAvatarClick(commentUser)}
+                            >
                               <UserAvatar
                                 userId={commentUser?._id}
                                 avatar={commentUser?.avatar}
@@ -652,7 +665,10 @@ export default function IssueDetailPage() {
                             <div className="flex-1">
                               <div className="bg-gray-50 dark:bg-dark-500 rounded-lg p-4">
                                 <div className="flex items-center justify-between mb-2">
-                                  <span className="font-medium text-gray-900 dark:text-white">
+                                  <span
+                                    className="font-medium text-gray-900 dark:text-white cursor-pointer hover:text-primary dark:hover:text-primary-400"
+                                    onClick={() => handleAvatarClick(commentUser)}
+                                  >
                                     {commentUser ? `${commentUser.firstName} ${commentUser.lastName}` : 'User'}
                                   </span>
                                   <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -751,7 +767,10 @@ export default function IssueDetailPage() {
                                     const replyUser = typeof reply.userId === 'object' ? reply.userId : null;
                                     return (
                                       <div key={reply._id} className="flex gap-2">
-                                        <div className="flex-shrink-0">
+                                        <div
+                                          className="flex-shrink-0 cursor-pointer"
+                                          onClick={() => handleAvatarClick(replyUser)}
+                                        >
                                           <UserAvatar
                                             userId={replyUser?._id}
                                             avatar={replyUser?.avatar}
@@ -764,7 +783,10 @@ export default function IssueDetailPage() {
                                         <div className="flex-1">
                                           <div className="bg-gray-100 dark:bg-dark-400 rounded-lg p-3">
                                             <div className="flex items-center justify-between mb-1">
-                                              <span className="font-medium text-sm text-gray-900 dark:text-white">
+                                              <span
+                                                className="font-medium text-sm text-gray-900 dark:text-white cursor-pointer hover:text-primary dark:hover:text-primary-400"
+                                                onClick={() => handleAvatarClick(replyUser)}
+                                              >
                                                 {replyUser ? `${replyUser.firstName} ${replyUser.lastName}` : 'User'}
                                               </span>
                                               <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -838,7 +860,11 @@ export default function IssueDetailPage() {
                     {assignees.length > 0 ? (
                       <div className="flex flex-wrap gap-2">
                         {assignees.map((assignee: any) => (
-                          <div key={assignee._id} className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md">
+                          <div
+                            key={assignee._id}
+                            className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                            onClick={() => handleAvatarClick(assignee)}
+                          >
                             <UserAvatar
                               userId={assignee._id}
                               avatar={assignee.avatar}
@@ -861,7 +887,10 @@ export default function IssueDetailPage() {
                   <div>
                     <span className="text-xs text-gray-600 dark:text-gray-400 block mb-1">Reporter</span>
                     {reporter && (
-                      <div className="flex items-center gap-2">
+                      <div
+                        className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => handleAvatarClick(reporter)}
+                      >
                         <UserAvatar
                           userId={reporter._id}
                           avatar={reporter.avatar}
@@ -870,7 +899,7 @@ export default function IssueDetailPage() {
                           size="sm"
                           showOnlineStatus={true}
                         />
-                        <span className="text-sm text-gray-900 dark:text-white">
+                        <span className="text-sm text-gray-900 dark:text-white hover:text-primary dark:hover:text-primary-400">
                           {reporter.firstName} {reporter.lastName}
                         </span>
                       </div>
@@ -1031,6 +1060,16 @@ export default function IssueDetailPage() {
           </div>
         </div>
       )}
+
+      {/* User Profile Sidebar */}
+      <UserProfileSidebar
+        user={profileUser}
+        isOpen={showProfileSidebar}
+        onClose={() => {
+          setShowProfileSidebar(false);
+          setProfileUser(null);
+        }}
+      />
     </DashboardLayout>
   );
 }

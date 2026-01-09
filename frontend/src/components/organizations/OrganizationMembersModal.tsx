@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '@/components/common/Modal';
 import { Button, Input, Select, Badge } from '@/components/common';
 import { UserAvatar } from '@/components/common/UserAvatar';
+import { UserProfileSidebar } from '@/components/users/UserProfileSidebar';
 import { organizationsAPI, usersAPI } from '@/lib/api';
 import { Organization, OrganizationMember } from '@/types/organization';
 import { User, UserRole } from '@/types/user';
@@ -28,6 +29,15 @@ export function OrganizationMembersModal({
   const [searching, setSearching] = useState(false);
   const [selectedRole, setSelectedRole] = useState<UserRole>(UserRole.DEVELOPER);
   const [updatingMember, setUpdatingMember] = useState<string | null>(null);
+  const [profileUser, setProfileUser] = useState<any>(null);
+  const [showProfileSidebar, setShowProfileSidebar] = useState(false);
+
+  const handleAvatarClick = (userObj: any) => {
+    if (userObj) {
+      setProfileUser(userObj);
+      setShowProfileSidebar(true);
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -175,20 +185,26 @@ export function OrganizationMembersModal({
               {searchResults.length > 0 && (
                 <div className="absolute z-10 w-full mt-1 bg-white dark:bg-dark-400 border border-gray-200 dark:border-dark-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                   {searchResults.map((user) => (
-                    <button
+                    <div
                       key={user._id}
-                      onClick={() => handleAddMember(user)}
-                      disabled={loading}
                       className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-dark-300 transition-colors text-left"
                     >
-                      <UserAvatar
-                        userId={user._id}
-                        avatar={user.avatar}
-                        firstName={user.firstName}
-                        lastName={user.lastName}
-                        size="sm"
-                      />
-                      <div className="flex-1 min-w-0">
+                      <div
+                        className="cursor-pointer"
+                        onClick={() => handleAvatarClick(user)}
+                      >
+                        <UserAvatar
+                          userId={user._id}
+                          avatar={user.avatar}
+                          firstName={user.firstName}
+                          lastName={user.lastName}
+                          size="sm"
+                        />
+                      </div>
+                      <div
+                        className="flex-1 min-w-0 cursor-pointer"
+                        onClick={() => handleAddMember(user)}
+                      >
                         <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                           {user.firstName} {user.lastName}
                         </p>
@@ -199,7 +215,14 @@ export function OrganizationMembersModal({
                       <Badge variant={getRoleBadgeVariant(user.role)}>
                         {user.role.replace(/_/g, ' ')}
                       </Badge>
-                    </button>
+                      <button
+                        onClick={() => handleAddMember(user)}
+                        disabled={loading}
+                        className="px-2 py-1 text-xs font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+                      >
+                        Add
+                      </button>
+                    </div>
                   ))}
                 </div>
               )}
@@ -247,16 +270,24 @@ export function OrganizationMembersModal({
                   className="flex items-center justify-between p-3 bg-white dark:bg-dark-400 border border-gray-200 dark:border-dark-300 rounded-lg"
                 >
                   <div className="flex items-center gap-3">
-                    <UserAvatar
-                      userId={userId}
-                      avatar={memberUser.avatar}
-                      firstName={memberUser.firstName || '?'}
-                      lastName={memberUser.lastName || ''}
-                      size="md"
-                    />
+                    <div
+                      className="cursor-pointer"
+                      onClick={() => handleAvatarClick(memberUser)}
+                    >
+                      <UserAvatar
+                        userId={userId}
+                        avatar={memberUser.avatar}
+                        firstName={memberUser.firstName || '?'}
+                        lastName={memberUser.lastName || ''}
+                        size="md"
+                      />
+                    </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        <p
+                          className="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer hover:text-primary dark:hover:text-primary-400"
+                          onClick={() => handleAvatarClick(memberUser)}
+                        >
                           {memberUser.firstName} {memberUser.lastName}
                         </p>
                         {isCreator && (
@@ -311,6 +342,16 @@ export function OrganizationMembersModal({
           </Button>
         </div>
       </div>
+
+      {/* User Profile Sidebar */}
+      <UserProfileSidebar
+        user={profileUser}
+        isOpen={showProfileSidebar}
+        onClose={() => {
+          setShowProfileSidebar(false);
+          setProfileUser(null);
+        }}
+      />
     </Modal>
   );
 }

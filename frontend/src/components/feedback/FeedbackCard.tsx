@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Feedback, FeedbackType, FeedbackStatus } from '@/types/feedback';
 import { Badge } from '@/components/common';
 import { UserAvatar } from '@/components/common/UserAvatar';
+import { UserProfileSidebar } from '@/components/users/UserProfileSidebar';
 import { formatDistanceToNow } from 'date-fns';
 
 interface FeedbackCardProps {
@@ -17,6 +18,17 @@ export const FeedbackCard: React.FC<FeedbackCardProps> = ({
   currentUserId,
 }) => {
   const hasUpvoted = currentUserId && feedback.upvotedBy.some((id: string) => id === currentUserId);
+  const [profileUser, setProfileUser] = useState<any>(null);
+  const [showProfileSidebar, setShowProfileSidebar] = useState(false);
+
+  const handleAvatarClick = (e: React.MouseEvent, userObj: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (userObj) {
+      setProfileUser(userObj);
+      setShowProfileSidebar(true);
+    }
+  };
 
   const getTypeColor = (type: FeedbackType) => {
     switch (type) {
@@ -115,7 +127,10 @@ export const FeedbackCard: React.FC<FeedbackCardProps> = ({
         <div className="flex items-center gap-2">
           {/* User Avatar */}
           {feedback.userId && (
-            <div className="flex items-center gap-2">
+            <div
+              className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={(e) => handleAvatarClick(e, feedback.userId)}
+            >
               <UserAvatar
                 userId={feedback.userId._id}
                 avatar={feedback.userId.avatar}
@@ -124,7 +139,7 @@ export const FeedbackCard: React.FC<FeedbackCardProps> = ({
                 size="sm"
                 showOnlineStatus={true}
               />
-              <span>
+              <span className="hover:text-primary dark:hover:text-primary-400">
                 {feedback.userId.firstName} {feedback.userId.lastName}
               </span>
             </div>
@@ -138,6 +153,16 @@ export const FeedbackCard: React.FC<FeedbackCardProps> = ({
           })}
         </span>
       </div>
+
+      {/* User Profile Sidebar */}
+      <UserProfileSidebar
+        user={profileUser}
+        isOpen={showProfileSidebar}
+        onClose={() => {
+          setShowProfileSidebar(false);
+          setProfileUser(null);
+        }}
+      />
     </Link>
   );
 };

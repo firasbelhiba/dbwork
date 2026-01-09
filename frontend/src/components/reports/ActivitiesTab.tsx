@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { activitiesAPI } from '@/lib/api';
 import { LogoLoader } from '@/components/common';
+import { UserProfileSidebar } from '@/components/users/UserProfileSidebar';
 
 // Simple avatar component
 const UserAvatar: React.FC<{ src: string | null; name: string; size?: 'sm' | 'md' }> = ({ src, name, size = 'sm' }) => {
@@ -165,6 +166,22 @@ export const ActivitiesTab: React.FC<ActivitiesTabProps> = ({ startDate, endDate
   const [showAllUsersModal, setShowAllUsersModal] = useState(false);
   const [allUsersData, setAllUsersData] = useState<UserActivityData[]>([]);
   const [loadingAllUsers, setLoadingAllUsers] = useState(false);
+  const [profileUser, setProfileUser] = useState<any>(null);
+  const [showProfileSidebar, setShowProfileSidebar] = useState(false);
+
+  const handleAvatarClick = (user: { userId?: string; _id?: string; userName?: string; firstName?: string; lastName?: string; userAvatar?: string | null; avatar?: string | null }) => {
+    if (user) {
+      // Create a user object compatible with UserProfileSidebar
+      const profileData = {
+        _id: user.userId || user._id,
+        firstName: user.firstName || (user.userName?.split(' ')[0]) || 'Unknown',
+        lastName: user.lastName || (user.userName?.split(' ').slice(1).join(' ')) || '',
+        avatar: user.userAvatar || user.avatar || null,
+      };
+      setProfileUser(profileData);
+      setShowProfileSidebar(true);
+    }
+  };
 
   useEffect(() => {
     fetchData();
@@ -399,12 +416,20 @@ export const ActivitiesTab: React.FC<ActivitiesTabProps> = ({ startDate, endDate
                 <span className="w-6 text-sm font-medium text-gray-500 dark:text-gray-400">
                   #{index + 1}
                 </span>
-                <UserAvatar
-                  src={user.userAvatar}
-                  name={user.userName}
-                  size="sm"
-                />
-                <span className="flex-1 text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                <div
+                  className="cursor-pointer"
+                  onClick={() => handleAvatarClick(user)}
+                >
+                  <UserAvatar
+                    src={user.userAvatar}
+                    name={user.userName}
+                    size="sm"
+                  />
+                </div>
+                <span
+                  className="flex-1 text-sm font-medium text-gray-900 dark:text-gray-100 truncate cursor-pointer hover:text-primary dark:hover:text-primary-400"
+                  onClick={() => handleAvatarClick(user)}
+                >
                   {user.userName}
                 </span>
                 <span className="text-sm font-bold text-primary-600 dark:text-primary-400">
@@ -486,12 +511,20 @@ export const ActivitiesTab: React.FC<ActivitiesTabProps> = ({ startDate, endDate
                 <span className="w-6 text-sm font-medium text-gray-500 dark:text-gray-400">
                   #{index + 1}
                 </span>
-                <UserAvatar
-                  src={user.userAvatar}
-                  name={user.userName}
-                  size="sm"
-                />
-                <span className="flex-1 text-sm text-gray-700 dark:text-gray-300 truncate">
+                <div
+                  className="cursor-pointer"
+                  onClick={() => handleAvatarClick(user)}
+                >
+                  <UserAvatar
+                    src={user.userAvatar}
+                    name={user.userName}
+                    size="sm"
+                  />
+                </div>
+                <span
+                  className="flex-1 text-sm text-gray-700 dark:text-gray-300 truncate cursor-pointer hover:text-primary dark:hover:text-primary-400"
+                  onClick={() => handleAvatarClick(user)}
+                >
                   {user.userName}
                 </span>
                 <span className="text-sm font-medium text-orange-600 dark:text-orange-400">
@@ -512,14 +545,22 @@ export const ActivitiesTab: React.FC<ActivitiesTabProps> = ({ startDate, endDate
         <div className="space-y-4">
           {data.recentActivities.map((activity) => (
             <div key={activity._id} className="flex items-start gap-3 pb-4 border-b border-gray-100 dark:border-gray-700 last:border-0 last:pb-0">
-              <UserAvatar
-                src={activity.userId?.avatar || null}
-                name={activity.userId ? `${activity.userId.firstName} ${activity.userId.lastName}` : 'Unknown'}
-                size="sm"
-              />
+              <div
+                className="cursor-pointer"
+                onClick={() => activity.userId && handleAvatarClick(activity.userId)}
+              >
+                <UserAvatar
+                  src={activity.userId?.avatar || null}
+                  name={activity.userId ? `${activity.userId.firstName} ${activity.userId.lastName}` : 'Unknown'}
+                  size="sm"
+                />
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-gray-900 dark:text-gray-100">
-                  <span className="font-medium">
+                  <span
+                    className="font-medium cursor-pointer hover:text-primary dark:hover:text-primary-400"
+                    onClick={() => activity.userId && handleAvatarClick(activity.userId)}
+                  >
                     {activity.userId ? `${activity.userId.firstName} ${activity.userId.lastName}` : 'Unknown User'}
                   </span>
                   {' '}
@@ -598,12 +639,20 @@ export const ActivitiesTab: React.FC<ActivitiesTabProps> = ({ startDate, endDate
                           <span className="w-8 text-sm font-medium text-gray-500 dark:text-gray-400">
                             #{index + 1}
                           </span>
-                          <UserAvatar
-                            src={user.userAvatar}
-                            name={user.userName}
-                            size="sm"
-                          />
-                          <span className="flex-1 text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                          <div
+                            className="cursor-pointer"
+                            onClick={() => handleAvatarClick(user)}
+                          >
+                            <UserAvatar
+                              src={user.userAvatar}
+                              name={user.userName}
+                              size="sm"
+                            />
+                          </div>
+                          <span
+                            className="flex-1 text-sm font-medium text-gray-900 dark:text-gray-100 truncate cursor-pointer hover:text-primary dark:hover:text-primary-400"
+                            onClick={() => handleAvatarClick(user)}
+                          >
                             {user.userName}
                           </span>
                           <span className="text-sm font-bold text-primary-600 dark:text-primary-400">
@@ -653,6 +702,16 @@ export const ActivitiesTab: React.FC<ActivitiesTabProps> = ({ startDate, endDate
           </div>
         </div>
       )}
+
+      {/* User Profile Sidebar */}
+      <UserProfileSidebar
+        user={profileUser}
+        isOpen={showProfileSidebar}
+        onClose={() => {
+          setShowProfileSidebar(false);
+          setProfileUser(null);
+        }}
+      />
     </div>
   );
 };

@@ -5,6 +5,7 @@ import { feedbackAPI } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { getInitials } from '@/lib/utils';
 import { UserAvatar } from '@/components/common/UserAvatar';
+import { UserProfileSidebar } from '@/components/users/UserProfileSidebar';
 import { EmojiReactionPicker } from '@/components/common/EmojiReactionPicker';
 import { toast } from 'react-hot-toast';
 import { UserRole } from '@/types/user';
@@ -45,6 +46,15 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ feedbackId }) =>
   const [newComment, setNewComment] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
+  const [profileUser, setProfileUser] = useState<any>(null);
+  const [showProfileSidebar, setShowProfileSidebar] = useState(false);
+
+  const handleAvatarClick = (userObj: any) => {
+    if (userObj) {
+      setProfileUser(userObj);
+      setShowProfileSidebar(true);
+    }
+  };
 
   useEffect(() => {
     loadComments();
@@ -216,7 +226,10 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ feedbackId }) =>
         ) : (
           comments.map((comment) => (
             <div key={comment._id} className="flex items-start gap-3 bg-gray-50 dark:bg-dark-300 p-4 rounded-lg">
-              <div className="flex-shrink-0">
+              <div
+                className="flex-shrink-0 cursor-pointer"
+                onClick={() => handleAvatarClick(comment.userId)}
+              >
                 <UserAvatar
                   userId={comment.userId._id}
                   avatar={comment.userId.avatar}
@@ -229,7 +242,10 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ feedbackId }) =>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-gray-900 dark:text-gray-100">
+                    <span
+                      className="font-medium text-gray-900 dark:text-gray-100 cursor-pointer hover:text-primary dark:hover:text-primary-400"
+                      onClick={() => handleAvatarClick(comment.userId)}
+                    >
                       {comment.userId.firstName} {comment.userId.lastName}
                     </span>
                     <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -301,6 +317,16 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ feedbackId }) =>
           ))
         )}
       </div>
+
+      {/* User Profile Sidebar */}
+      <UserProfileSidebar
+        user={profileUser}
+        isOpen={showProfileSidebar}
+        onClose={() => {
+          setShowProfileSidebar(false);
+          setProfileUser(null);
+        }}
+      />
     </div>
   );
 };

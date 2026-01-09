@@ -9,6 +9,7 @@ import { User, UserRole } from '@/types/user';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDateTime } from '@/lib/utils';
 import { UserAvatar } from '@/components/common/UserAvatar';
+import { UserProfileSidebar } from '@/components/users/UserProfileSidebar';
 import { OrganizationFormModal } from '@/components/organizations/OrganizationFormModal';
 import { OrganizationMembersModal } from '@/components/organizations/OrganizationMembersModal';
 import toast from 'react-hot-toast';
@@ -24,6 +25,15 @@ export default function AdminOrganizationsPage() {
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [selectedOrganization, setSelectedOrganization] = useState<Organization | null>(null);
   const [showArchived, setShowArchived] = useState(false);
+  const [profileUser, setProfileUser] = useState<any>(null);
+  const [showProfileSidebar, setShowProfileSidebar] = useState(false);
+
+  const handleAvatarClick = (userObj: any) => {
+    if (userObj) {
+      setProfileUser(userObj);
+      setShowProfileSidebar(true);
+    }
+  };
 
   useEffect(() => {
     if (authLoading) return;
@@ -253,7 +263,11 @@ export default function AdminOrganizationsPage() {
                       {org.members.slice(0, 5).map((member, index) => {
                         const memberUser = member.userId as User;
                         return (
-                          <div key={index} className="relative">
+                          <div
+                            key={index}
+                            className="relative cursor-pointer hover:z-10 transition-transform hover:scale-110"
+                            onClick={() => handleAvatarClick(memberUser)}
+                          >
                             <UserAvatar
                               userId={memberUser._id || (member.userId as string)}
                               avatar={memberUser.avatar}
@@ -375,6 +389,16 @@ export default function AdminOrganizationsPage() {
         organization={selectedOrganization}
         onSuccess={() => {
           fetchOrganizations();
+        }}
+      />
+
+      {/* User Profile Sidebar */}
+      <UserProfileSidebar
+        user={profileUser}
+        isOpen={showProfileSidebar}
+        onClose={() => {
+          setShowProfileSidebar(false);
+          setProfileUser(null);
         }}
       />
     </DashboardLayout>

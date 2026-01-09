@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Issue } from '@/types/issue';
 import { Badge, Dropdown, DropdownItem } from '@/components/common';
 import { UserAvatar } from '@/components/common/UserAvatar';
+import { UserProfileSidebar } from '@/components/users/UserProfileSidebar';
 import { SprintStatus } from '@/types/sprint';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
@@ -63,6 +64,8 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [isResuming, setIsResuming] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [profileUser, setProfileUser] = useState<any>(null);
+  const [showProfileSidebar, setShowProfileSidebar] = useState(false);
 
   const assignees = issue.assignees?.filter(a => typeof a === 'object' && a !== null).map(a => a as any) || [];
   const sprint = typeof issue.sprintId === 'object' ? issue.sprintId : null;
@@ -180,6 +183,15 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
   const handleDelete = () => {
     if (onDelete) {
       onDelete(issue._id);
+    }
+  };
+
+  const handleAvatarClick = (e: React.MouseEvent, userObj: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (userObj) {
+      setProfileUser(userObj);
+      setShowProfileSidebar(true);
     }
   };
 
@@ -339,6 +351,8 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
                 key={assignee._id}
                 style={{ zIndex: assignees.length - index }}
                 title={`${assignee.firstName} ${assignee.lastName}`}
+                className="cursor-pointer hover:z-50 transition-transform hover:scale-110"
+                onClick={(e) => handleAvatarClick(e, assignee)}
               >
                 <UserAvatar
                   userId={assignee._id}
@@ -375,6 +389,16 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
           </div>
         )}
       </Link>
+
+      {/* User Profile Sidebar */}
+      <UserProfileSidebar
+        user={profileUser}
+        isOpen={showProfileSidebar}
+        onClose={() => {
+          setShowProfileSidebar(false);
+          setProfileUser(null);
+        }}
+      />
     </div>
   );
 };

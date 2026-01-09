@@ -5,6 +5,7 @@ import { Conversation, ConversationProject } from '@/types/chat';
 import { User } from '@/types/user';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserAvatar } from '@/components/common/UserAvatar';
+import { UserProfileSidebar } from '@/components/users/UserProfileSidebar';
 
 interface ChatHeaderProps {
   conversation: Conversation;
@@ -25,6 +26,15 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
   const [showSearchInput, setShowSearchInput] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [profileUser, setProfileUser] = useState<any>(null);
+  const [showProfileSidebar, setShowProfileSidebar] = useState(false);
+
+  const handleAvatarClick = (userObj: any) => {
+    if (userObj) {
+      setProfileUser(userObj);
+      setShowProfileSidebar(true);
+    }
+  };
 
   // Focus input when search opens
   useEffect(() => {
@@ -104,14 +114,19 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
     const otherUser = getOtherUser();
     if (otherUser) {
       return (
-        <UserAvatar
-          userId={otherUser._id}
-          avatar={otherUser.avatar}
-          firstName={otherUser.firstName}
-          lastName={otherUser.lastName}
-          size="lg"
-          showOnlineStatus={true}
-        />
+        <div
+          className="cursor-pointer"
+          onClick={() => handleAvatarClick(otherUser)}
+        >
+          <UserAvatar
+            userId={otherUser._id}
+            avatar={otherUser.avatar}
+            firstName={otherUser.firstName}
+            lastName={otherUser.lastName}
+            size="lg"
+            showOnlineStatus={true}
+          />
+        </div>
       );
     }
     return (
@@ -219,6 +234,16 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
           </div>
         </div>
       )}
+
+      {/* User Profile Sidebar */}
+      <UserProfileSidebar
+        user={profileUser}
+        isOpen={showProfileSidebar}
+        onClose={() => {
+          setShowProfileSidebar(false);
+          setProfileUser(null);
+        }}
+      />
     </div>
   );
 };

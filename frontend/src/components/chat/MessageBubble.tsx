@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { ChatMessage, MessageAttachment, ReadReceipt } from '@/types/chat';
 import { User } from '@/types/user';
 import { useAuth } from '@/contexts/AuthContext';
+import { UserProfileSidebar } from '@/components/users/UserProfileSidebar';
 
 // Message status for check marks
 type MessageStatus = 'sending' | 'sent' | 'delivered' | 'seen';
@@ -41,6 +42,15 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   const [dropdownAbove, setDropdownAbove] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerButtonRef = useRef<HTMLButtonElement>(null);
+  const [profileUser, setProfileUser] = useState<any>(null);
+  const [showProfileSidebar, setShowProfileSidebar] = useState(false);
+
+  const handleAvatarClick = (userObj: any) => {
+    if (userObj) {
+      setProfileUser(userObj);
+      setShowProfileSidebar(true);
+    }
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -247,17 +257,22 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       {!isOwnMessage && (
         <div className="flex-shrink-0 w-8">
           {!isConsecutive && (
-            sender?.avatar ? (
-              <img
-                src={sender.avatar}
-                alt={senderName}
-                className="w-8 h-8 rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-8 h-8 rounded-full bg-gray-400 text-white flex items-center justify-center text-sm font-medium">
-                {senderName.charAt(0).toUpperCase()}
-              </div>
-            )
+            <div
+              className="cursor-pointer"
+              onClick={() => handleAvatarClick(sender)}
+            >
+              {sender?.avatar ? (
+                <img
+                  src={sender.avatar}
+                  alt={senderName}
+                  className="w-8 h-8 rounded-full object-cover hover:opacity-80 transition-opacity"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-gray-400 text-white flex items-center justify-center text-sm font-medium hover:opacity-80 transition-opacity">
+                  {senderName.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
           )}
         </div>
       )}
@@ -266,7 +281,10 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       <div className={`relative max-w-[70%] flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'}`}>
         {/* Sender name for non-own messages - hidden for consecutive */}
         {!isOwnMessage && !isConsecutive && (
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+          <p
+            className="text-xs text-gray-500 dark:text-gray-400 mb-1 cursor-pointer hover:text-primary dark:hover:text-primary-400"
+            onClick={() => handleAvatarClick(sender)}
+          >
             {senderName} {senderLastName}
           </p>
         )}
@@ -469,6 +487,16 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         )}
 
       </div>
+
+      {/* User Profile Sidebar */}
+      <UserProfileSidebar
+        user={profileUser}
+        isOpen={showProfileSidebar}
+        onClose={() => {
+          setShowProfileSidebar(false);
+          setProfileUser(null);
+        }}
+      />
     </div>
   );
 };
