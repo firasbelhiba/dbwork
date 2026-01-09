@@ -543,6 +543,16 @@ export const chatAPI = {
   searchMessages: (query: string) => api.get('/chat/search', { params: { q: query } }),
 };
 
+// Global Search API
+export const searchAPI = {
+  global: (params: { q: string; limit?: number; types?: string[] }) => {
+    const searchParams = new URLSearchParams({ q: params.q });
+    if (params.limit) searchParams.append('limit', params.limit.toString());
+    if (params.types) params.types.forEach(t => searchParams.append('types', t));
+    return api.get(`/search?${searchParams.toString()}`);
+  },
+};
+
 // Affectations API
 export const affectationsAPI = {
   // CRUD

@@ -29,6 +29,7 @@ import { AvailabilityModule } from './availability/availability.module';
 import { ChatModule } from './chat/chat.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { AffectationsModule } from './affectations/affectations.module';
+import { SearchModule } from './search/search.module';
 import { HttpExceptionFilter } from './common/filters';
 import { LoggingInterceptor } from './common/interceptors';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
@@ -68,6 +69,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     ChatModule,
     OrganizationsModule,
     AffectationsModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [
