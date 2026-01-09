@@ -80,4 +80,14 @@ export class AchievementsController {
     const result = await this.achievementsService.grantAchievementByEmail(email, achievementKey);
     return result;
   }
+
+  @Post('admin/sync-my-stats')
+  async syncMyStats(@Req() req: any) {
+    return this.achievementsService.syncUserAchievementStats(req.user._id);
+  }
+
+  @Post('admin/sync-all-stats')
+  async syncAllStats() {
+    return this.achievementsService.syncAllUsersAchievementStats();
+  }
 }

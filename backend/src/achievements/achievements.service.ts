@@ -11,6 +11,7 @@ import {
   UserAchievementDocument,
 } from './schemas/user-achievement.schema';
 import { User, UserDocument } from '../users/schemas/user.schema';
+import { Issue, IssueDocument } from '../issues/schemas/issue.schema';
 import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
@@ -22,6 +23,8 @@ export class AchievementsService {
     private userAchievementModel: Model<UserAchievementDocument>,
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
+    @InjectModel(Issue.name)
+    private issueModel: Model<IssueDocument>,
     private notificationsService: NotificationsService,
   ) {}
 
@@ -559,5 +562,92 @@ export class AchievementsService {
         },
       })
       .exec();
+  }
+
+  // Sync user achievement stats based on actual completed issues
+  async syncUserAchievementStats(userId: string): Promise<any> {
+    const userIdObj = new Types.ObjectId(userId);
+    const user = await this.userModel.findById(userIdObj).exec();
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Count completed issues where user is an assignee
+    const completedIssues = await this.issueModel
+      .find({
+        assignees: userIdObj,
+        status: 'done',
+      })
+      .select('_id type')
+      .exec();
+
+    const issuesCompleted = completedIssues.length;
+    const bugsFixed = completedIssues.filter((i) => i.type === 'bug').length;
+
+    // Update user stats
+    user.stats.issuesCompleted = issuesCompleted;
+    user.stats.bugsFixed = bugsFixed;
+    user.completedIssuesForAchievements = completedIssues.map((i) => i._id);
+    await user.save();
+
+    // Now check and unlock task completion achievements
+    const unlockedAchievements: string[] = [];
+    const taskAchievements = await this.achievementModel
+      .find({ category: AchievementCategory.TASK_COMPLETION })
+      .exec();
+
+    for (const achievement of taskAchievements) {
+      const criteria = achievement.criteria;
+      if (criteria.type === 'issue_completion' && criteria.count) {
+        if (issuesCompleted >= criteria.count) {
+          const unlocked = await this.unlockAchievement(userId, achievement._id.toString());
+          if (unlocked) {
+            unlockedAchievements.push(achievement.name);
+          }
+        } else {
+          // Update progress
+          await this.updateProgress(
+            userId,
+            achievement._id.toString(),
+            issuesCompleted,
+            criteria.count,
+          );
+        }
+      }
+    }
+
+    return {
+      userId,
+      email: user.email,
+      syncedStats: {
+        issuesCompleted,
+        bugsFixed,
+      },
+      unlockedAchievements,
+    };
+  }
+
+  // Sync all users' achievement stats
+  async syncAllUsersAchievementStats(): Promise<any> {
+    const users = await this.userModel.find().select('_id email').exec();
+    const results = [];
+
+    for (const user of users) {
+      try {
+        const result = await this.syncUserAchievementStats(user._id.toString());
+        results.push(result);
+      } catch (error) {
+        results.push({
+          userId: user._id.toString(),
+          email: user.email,
+          error: error.message,
+        });
+      }
+    }
+
+    return {
+      totalUsers: users.length,
+      results,
+    };
   }
 }
