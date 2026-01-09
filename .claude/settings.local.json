@@ -38,7 +38,9 @@
       "Bash(move:*)",
       "Bash(dir:*)",
       "Bash(npx next build)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(findstr:*)",
+      "Bash(python:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,16 +1,16 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AffectationsController } from './affectations.controller';
 import { AffectationsService } from './affectations.service';
 import { Affectation, AffectationSchema } from './schemas/affectation.schema';
-import { IssuesModule } from '../issues/issues.module';
+import { Issue, IssueSchema } from '../issues/schemas/issue.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Affectation.name, schema: AffectationSchema },
+      { name: Issue.name, schema: IssueSchema },
     ]),
-    forwardRef(() => IssuesModule),
   ],
   controllers: [AffectationsController],
   providers: [AffectationsService],
