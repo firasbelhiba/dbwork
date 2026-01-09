@@ -7,6 +7,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Badge, Breadcrumb, Button, LogoLoader } from '@/components/common';
 import { UserAvatar } from '@/components/common/UserAvatar';
 import { TicketCalendar } from '@/components/users/TicketCalendar';
+import { CategoryIssuesModal } from '@/components/users/CategoryIssuesModal';
 import { usersAPI, issuesAPI, organizationsAPI, achievementsAPI } from '@/lib/api';
 import { User, UserRole } from '@/types/user';
 import { Organization } from '@/types/organization';
@@ -93,6 +94,7 @@ export default function UserProfilePage() {
   const [bandwidth, setBandwidth] = useState<BandwidthData | null>(null);
   const [achievements, setAchievements] = useState<UserAchievement[]>([]);
   const [categoryStats, setCategoryStats] = useState<CategoryStats | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<{ name: string; color: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingWorkload, setLoadingWorkload] = useState(false);
   const [loadingBandwidth, setLoadingBandwidth] = useState(false);
@@ -488,7 +490,13 @@ export default function UserProfilePage() {
                               style={{ backgroundColor: cat.color }}
                             />
                             <span className="text-gray-700 dark:text-gray-300">
-                              {formatCategoryName(cat.name)} ({cat.count} {cat.count === 1 ? 'issue' : 'issues'})
+                              {formatCategoryName(cat.name)}{' '}
+                              <button
+                                onClick={() => setSelectedCategory({ name: cat.name, color: cat.color })}
+                                className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                              >
+                                ({cat.count} {cat.count === 1 ? 'issue' : 'issues'})
+                              </button>
                             </span>
                           </div>
                           <span className="font-medium text-gray-900 dark:text-gray-100">
@@ -778,6 +786,17 @@ export default function UserProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Category Issues Modal */}
+      {selectedCategory && (
+        <CategoryIssuesModal
+          isOpen={!!selectedCategory}
+          onClose={() => setSelectedCategory(null)}
+          userId={userId}
+          category={selectedCategory.name}
+          categoryColor={selectedCategory.color}
+        />
+      )}
     </DashboardLayout>
   );
 }

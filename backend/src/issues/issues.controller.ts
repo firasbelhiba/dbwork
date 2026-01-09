@@ -90,6 +90,16 @@ export class IssuesController {
     return this.issuesService.getUserCategoryStats(userId);
   }
 
+  @Get('user/:userId/category/:category')
+  @ApiOperation({ summary: 'Get user completed issues by category' })
+  @ApiResponse({ status: 200, description: 'User issues filtered by category' })
+  getUserIssuesByCategory(
+    @Param('userId') userId: string,
+    @Param('category') category: string,
+  ) {
+    return this.issuesService.getUserIssuesByCategory(userId, category);
+  }
+
   @Get('project/:projectId')
   @ApiOperation({ summary: 'Get issues by project' })
   @ApiResponse({ status: 200, description: 'Project issues' })

@@ -1353,6 +1353,27 @@ export class IssuesService {
   }
 
   /**
+   * Get user's completed issues filtered by category
+   */
+  async getUserIssuesByCategory(userId: string, category: string): Promise<IssueDocument[]> {
+    const userIdObj = new Types.ObjectId(userId);
+
+    const issues = await this.issueModel
+      .find({
+        assignees: userIdObj,
+        status: 'done',
+        category: category,
+      })
+      .populate({ path: 'assignees', select: 'firstName lastName email avatar' })
+      .populate({ path: 'reporter', select: 'firstName lastName email avatar' })
+      .populate({ path: 'projectId', select: 'name key logo' })
+      .sort({ updatedAt: -1 })
+      .exec();
+
+    return issues;
+  }
+
+  /**
    * Get user's tickets for calendar display
    * Returns tickets grouped by date based on startDate and dueDate
    */
