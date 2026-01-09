@@ -252,7 +252,7 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
               </svg>
             </div>
           )}
-          {/* Timer Badge */}
+          {/* Timer Badge - Active timer */}
           {(isTimerRunning || isTimerPaused) && (
             <div className="inline-flex items-center gap-1">
               <div
@@ -296,6 +296,18 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, onArchive, onDelete
                   )}
                 </button>
               )}
+            </div>
+          )}
+          {/* Total Time Spent Badge - Shows when no active timer but time has been logged */}
+          {!hasActiveTimer && issue.timeTracking?.totalTimeSpent > 0 && (
+            <div
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-mono font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+              title="Total time spent"
+            >
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {formatTimerDisplay(issue.timeTracking.totalTimeSpent)}
             </div>
           )}
         </div>
