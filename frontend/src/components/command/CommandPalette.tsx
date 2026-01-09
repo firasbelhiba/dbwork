@@ -119,9 +119,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
           issuesAPI.search(debouncedSearch),
         ];
 
-        // Only search users if admin
+        // Only search users if admin - use search endpoint for better results
         if (isAdmin) {
-          searchPromises.push(usersAPI.getAll());
+          searchPromises.push(usersAPI.search(debouncedSearch));
         }
 
         const results = await Promise.all(searchPromises);
@@ -132,14 +132,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose }) => {
 
         // Add users (admin only) - prioritize user search results
         if (isAdmin && usersRes?.data) {
-          const searchLower = debouncedSearch.toLowerCase();
-          const matchingUsers = usersRes.data.filter((user: any) => {
-            const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
-            const email = user.email?.toLowerCase() || '';
-            return fullName.includes(searchLower) || email.includes(searchLower);
-          });
-
-          matchingUsers.slice(0, 5).forEach((user: any) => {
+          const users = Array.isArray(usersRes.data) ? usersRes.data : [];
+          users.slice(0, 5).forEach((user: any) => {
             items.push({
               id: `user-${user._id}`,
               title: `${user.firstName} ${user.lastName}`,
