@@ -13,30 +13,30 @@ require('dotenv').config();
 // SESSION DETAILS - UPDATE THESE FOR EACH SESSION
 // ============================================================
 const SESSION = {
-  title: 'Reorganize Profile Settings with Tabs UI',
+  title: 'Fix Achievements Display on User Profile Page',
   description: `## Summary
-Reorganize the profile settings page to use a tabbed interface for better organization and user experience.
+Fix the achievements section on the detailed user profile page (/users/[id]) - achievements are showing as empty boxes without content.
 
-## Changes Planned
-- Add tabs to the Admin Settings section in profile page
-- Create "Organizations" tab for managing organizations
-- Organize existing settings (Database, Timer, etc.) into logical tabs
-- Improve navigation and discoverability of admin features
+## Issue
+The achievements grid shows 9 achievements but they appear as empty bordered boxes without any content (icon, title, rarity).
+
+## Root Cause
+Need to investigate how achievements data is returned from the API and ensure proper rendering.
 
 ## Acceptance Criteria
-- [ ] Profile settings uses tabbed navigation
-- [ ] Organizations has its own dedicated tab
-- [ ] All existing functionality preserved
-- [ ] Responsive design maintained`,
+- [ ] Achievements display with icon emoji
+- [ ] Achievement title is visible
+- [ ] Achievement rarity is shown with proper color coding
+- [ ] Hover/tooltip shows achievement description`,
 
   timeSpentMinutes: 0,
   assigneeEmail: 'firasbenhiba49@gmail.com', // Santa Admin
-  projectKey: 'MKT', // Dar Blockchain
-  type: 'task',
+  projectKey: 'DBWR', // DB Work
+  type: 'bug',
   priority: 'medium',
   status: 'in_progress', // Can be: todo, in_progress, in_review, done
   category: 'development',
-  labels: ['ui', 'settings', 'admin'],
+  labels: ['bug', 'profile', 'achievements'],
 };
 // ============================================================
 
@@ -83,6 +83,17 @@ async function main() {
 
     const now = new Date();
 
+    // Create activeTimeEntry if status is in_progress (to start the timer)
+    const status = SESSION.status || 'done';
+    const activeTimeEntry = status === 'in_progress' ? {
+      id: new mongoose.Types.ObjectId().toString(),
+      userId: user._id,
+      startTime: now,
+      lastActivityAt: now,
+      isPaused: false,
+      accumulatedPausedTime: 0,
+    } : null;
+
     // Create the issue with all required fields
     const issue = {
       projectId: project._id,
@@ -92,7 +103,7 @@ async function main() {
       description: SESSION.description,
       type: SESSION.type,
       priority: SESSION.priority,
-      status: SESSION.status || 'done',
+      status: status,
       assignees: [user._id],
       labels: SESSION.labels,
       reporter: user._id,
@@ -100,7 +111,8 @@ async function main() {
         estimatedHours: Math.round(SESSION.timeSpentMinutes / 60 * 10) / 10,
         loggedHours: 0,
         timeLogs: [],
-        activeTimeEntry: null,
+        timeEntries: [],
+        activeTimeEntry: activeTimeEntry,
       },
       attachments: [],
       sprintId: null,
@@ -146,7 +158,8 @@ async function main() {
     console.log(`Title:        ${SESSION.title}`);
     console.log(`Project:      ${project.name} (${SESSION.projectKey})`);
     console.log(`Assignee:     ${user.firstName} ${user.lastName}`);
-    console.log(`Status:       ${SESSION.status || 'done'}`);
+    console.log(`Status:       ${status}`);
+    console.log(`Timer:        ${activeTimeEntry ? 'Started' : 'Not started'}`);
     console.log(`Type:         ${SESSION.type}`);
     console.log(`Priority:     ${SESSION.priority}`);
     console.log(`Category:     ${SESSION.category}`);

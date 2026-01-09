@@ -131,7 +131,6 @@ export class AchievementsService {
     for (const achievement of taskAchievements) {
       const criteria = achievement.criteria;
 
-
       if (criteria.type === 'issue_completion' && criteria.count) {
         if (issuesCompleted >= criteria.count) {
           const unlocked = await this.unlockAchievement(userId, achievement._id.toString());
@@ -144,6 +143,25 @@ export class AchievementsService {
             userId,
             achievement._id.toString(),
             issuesCompleted,
+            criteria.count,
+          );
+        }
+      }
+
+      // Check daily completion achievements (Marathon Runner)
+      if (criteria.type === 'daily_completion' && criteria.count) {
+        const todayIssuesCount = await this.countTodayCompletedIssues(userId);
+        if (todayIssuesCount >= criteria.count) {
+          const unlocked = await this.unlockAchievement(userId, achievement._id.toString());
+          if (unlocked) {
+            unlockedAchievements.push(unlocked);
+          }
+        } else {
+          // Update progress
+          await this.updateProgress(
+            userId,
+            achievement._id.toString(),
+            todayIssuesCount,
             criteria.count,
           );
         }
@@ -195,6 +213,25 @@ export class AchievementsService {
     }
 
     user.stats.lastActivityDate = today;
+  }
+
+  // Count issues completed today by a user
+  private async countTodayCompletedIssues(userId: string): Promise<number> {
+    const userIdObj = new Types.ObjectId(userId);
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+
+    const count = await this.issueModel
+      .countDocuments({
+        assignees: userIdObj,
+        status: 'done',
+        updatedAt: { $gte: todayStart, $lte: todayEnd },
+      })
+      .exec();
+
+    return count;
   }
 
   // Check streak-based achievements
