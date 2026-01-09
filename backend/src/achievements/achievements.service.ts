@@ -243,29 +243,35 @@ export class AchievementsService {
     const currentStreak = user.stats.currentStreak || 0;
 
     // Check Daily Driver (3 days)
-    if (currentStreak >= 3) {
-      const achievement = await this.achievementModel.findOne({ key: 'daily_driver' }).exec();
-      if (achievement) {
-        const unlocked = await this.unlockAchievement(userId, achievement._id.toString());
+    const dailyDriverAchievement = await this.achievementModel.findOne({ key: 'daily_driver' }).exec();
+    if (dailyDriverAchievement) {
+      if (currentStreak >= 3) {
+        const unlocked = await this.unlockAchievement(userId, dailyDriverAchievement._id.toString());
         if (unlocked) unlockedAchievements.push(unlocked);
+      } else {
+        await this.updateProgress(userId, dailyDriverAchievement._id.toString(), currentStreak, 3);
       }
     }
 
     // Check Week Warrior (7 days)
-    if (currentStreak >= 7) {
-      const achievement = await this.achievementModel.findOne({ key: 'week_warrior' }).exec();
-      if (achievement) {
-        const unlocked = await this.unlockAchievement(userId, achievement._id.toString());
+    const weekWarriorAchievement = await this.achievementModel.findOne({ key: 'week_warrior' }).exec();
+    if (weekWarriorAchievement) {
+      if (currentStreak >= 7) {
+        const unlocked = await this.unlockAchievement(userId, weekWarriorAchievement._id.toString());
         if (unlocked) unlockedAchievements.push(unlocked);
+      } else {
+        await this.updateProgress(userId, weekWarriorAchievement._id.toString(), currentStreak, 7);
       }
     }
 
     // Check Monthly Grind (30 days)
-    if (currentStreak >= 30) {
-      const achievement = await this.achievementModel.findOne({ key: 'monthly_grind' }).exec();
-      if (achievement) {
-        const unlocked = await this.unlockAchievement(userId, achievement._id.toString());
+    const monthlyGrindAchievement = await this.achievementModel.findOne({ key: 'monthly_grind' }).exec();
+    if (monthlyGrindAchievement) {
+      if (currentStreak >= 30) {
+        const unlocked = await this.unlockAchievement(userId, monthlyGrindAchievement._id.toString());
         if (unlocked) unlockedAchievements.push(unlocked);
+      } else {
+        await this.updateProgress(userId, monthlyGrindAchievement._id.toString(), currentStreak, 30);
       }
     }
 
