@@ -587,7 +587,7 @@ export class AchievementsService {
     // Update user stats
     user.stats.issuesCompleted = issuesCompleted;
     user.stats.bugsFixed = bugsFixed;
-    user.completedIssuesForAchievements = completedIssues.map((i) => i._id);
+    user.completedIssuesForAchievements = completedIssues.map((i) => i._id) as Types.ObjectId[];
     await user.save();
 
     // Now check and unlock task completion achievements
