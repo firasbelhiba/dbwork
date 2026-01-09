@@ -488,7 +488,7 @@ export default function UserProfilePage() {
                               style={{ backgroundColor: cat.color }}
                             />
                             <span className="text-gray-700 dark:text-gray-300">
-                              {formatCategoryName(cat.name)}
+                              {formatCategoryName(cat.name)} ({cat.count} {cat.count === 1 ? 'issue' : 'issues'})
                             </span>
                           </div>
                           <span className="font-medium text-gray-900 dark:text-gray-100">
