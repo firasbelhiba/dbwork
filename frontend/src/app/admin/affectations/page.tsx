@@ -217,17 +217,29 @@ export default function AdminAffectationsPage() {
           </div>
 
           {/* Filters */}
-          <div className="bg-white dark:bg-dark-400 rounded-lg shadow-sm border border-gray-200 dark:border-dark-300 p-4 mb-6">
-            <div className="flex flex-wrap items-center gap-4">
+          <div className="bg-white dark:bg-dark-400 rounded-xl shadow-sm border border-gray-200 dark:border-dark-300 p-5 mb-6">
+            <div className="flex items-center gap-2 mb-4">
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Filters</h3>
+              {(filterProject || filterUser || filterStatus) && (
+                <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 rounded-full">
+                  {[filterProject, filterUser, filterStatus].filter(Boolean).length} active
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-end gap-4">
               {/* Project Filter */}
               <div className="flex-1 min-w-[200px]">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">
                   Project
                 </label>
                 <select
                   value={filterProject}
                   onChange={(e) => setFilterProject(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-lg bg-white dark:bg-dark-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2.5 border border-gray-200 dark:border-dark-300 rounded-lg bg-gray-50 dark:bg-dark-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:bg-white dark:focus:bg-dark-400 transition-colors text-sm"
                 >
                   <option value="">All Projects</option>
                   {projects.map((project) => (
@@ -240,15 +252,15 @@ export default function AdminAffectationsPage() {
 
               {/* User Filter */}
               <div className="flex-1 min-w-[200px]">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  User
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">
+                  Team Member
                 </label>
                 <select
                   value={filterUser}
                   onChange={(e) => setFilterUser(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-lg bg-white dark:bg-dark-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2.5 border border-gray-200 dark:border-dark-300 rounded-lg bg-gray-50 dark:bg-dark-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:bg-white dark:focus:bg-dark-400 transition-colors text-sm"
                 >
-                  <option value="">All Users</option>
+                  <option value="">All Team Members</option>
                   {users.map((user) => (
                     <option key={user._id} value={user._id}>
                       {user.firstName} {user.lastName}
@@ -259,13 +271,13 @@ export default function AdminAffectationsPage() {
 
               {/* Status Filter */}
               <div className="flex-1 min-w-[150px]">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">
                   Status
                 </label>
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-dark-300 rounded-lg bg-white dark:bg-dark-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2.5 border border-gray-200 dark:border-dark-300 rounded-lg bg-gray-50 dark:bg-dark-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:bg-white dark:focus:bg-dark-400 transition-colors text-sm"
                 >
                   <option value="">All Statuses</option>
                   <option value="planned">Planned</option>
@@ -276,28 +288,34 @@ export default function AdminAffectationsPage() {
 
               {/* View Toggle */}
               <div className="flex-shrink-0">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">
                   View
                 </label>
-                <div className="flex rounded-lg overflow-hidden border border-gray-300 dark:border-dark-300">
+                <div className="flex rounded-lg overflow-hidden border border-gray-200 dark:border-dark-300 bg-gray-50 dark:bg-dark-500">
                   <button
                     onClick={() => setGroupByProject(true)}
-                    className={`px-3 py-2 text-sm font-medium transition-colors ${
+                    className={`px-4 py-2.5 text-sm font-medium transition-all ${
                       groupByProject
-                        ? 'bg-primary-500 text-white'
-                        : 'bg-white dark:bg-dark-500 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-400'
+                        ? 'bg-primary-500 text-white shadow-sm'
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-dark-400'
                     }`}
                   >
-                    By Project
+                    <svg className="w-4 h-4 inline-block mr-1.5 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                    Grouped
                   </button>
                   <button
                     onClick={() => setGroupByProject(false)}
-                    className={`px-3 py-2 text-sm font-medium transition-colors ${
+                    className={`px-4 py-2.5 text-sm font-medium transition-all ${
                       !groupByProject
-                        ? 'bg-primary-500 text-white'
-                        : 'bg-white dark:bg-dark-500 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-400'
+                        ? 'bg-primary-500 text-white shadow-sm'
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-dark-400'
                     }`}
                   >
+                    <svg className="w-4 h-4 inline-block mr-1.5 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                    </svg>
                     Flat
                   </button>
                 </div>
@@ -305,86 +323,101 @@ export default function AdminAffectationsPage() {
 
               {/* Clear Filters */}
               {(filterProject || filterUser || filterStatus) && (
-                <div className="flex-shrink-0 self-end">
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                <div className="flex-shrink-0">
+                  <button
                     onClick={() => {
                       setFilterProject('');
                       setFilterUser('');
                       setFilterStatus('');
                     }}
+                    className="px-4 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                   >
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 inline-block mr-1.5 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
-                    Clear
-                  </Button>
+                    Clear Filters
+                  </button>
                 </div>
               )}
             </div>
           </div>
 
           {/* Stats Summary */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-white dark:bg-dark-400 rounded-lg shadow-sm border border-gray-200 dark:border-dark-300 p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                  <svg className="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            {/* Total */}
+            <div className="bg-white dark:bg-dark-400 rounded-xl shadow-sm border border-gray-200 dark:border-dark-300 p-5 hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{affectations.length}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    {new Set(affectations.map(a => typeof a.userId === 'object' ? a.userId._id : a.userId)).size} unique members
+                  </p>
+                </div>
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shadow-sm">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Active */}
+            <div className="bg-white dark:bg-dark-400 rounded-xl shadow-sm border border-gray-200 dark:border-dark-300 p-5 hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Active</p>
+                  <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+                    {affectations.filter((a) => a.status === 'active').length}
+                  </p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    Currently working
+                  </p>
+                </div>
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-sm">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Planned */}
+            <div className="bg-white dark:bg-dark-400 rounded-xl shadow-sm border border-gray-200 dark:border-dark-300 p-5 hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Planned</p>
+                  <p className="text-3xl font-bold text-amber-600 dark:text-amber-400 mt-1">
+                    {affectations.filter((a) => a.status === 'planned').length}
+                  </p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    Upcoming assignments
+                  </p>
+                </div>
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-sm">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Total Affectations</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{affectations.length}</p>
-                </div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-dark-400 rounded-lg shadow-sm border border-gray-200 dark:border-dark-300 p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                  <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
+            {/* Completed */}
+            <div className="bg-white dark:bg-dark-400 rounded-xl shadow-sm border border-gray-200 dark:border-dark-300 p-5 hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Active</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {affectations.filter((a) => a.status === 'active').length}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white dark:bg-dark-400 rounded-lg shadow-sm border border-gray-200 dark:border-dark-300 p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
-                  <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Planned</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {affectations.filter((a) => a.status === 'planned').length}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white dark:bg-dark-400 rounded-lg shadow-sm border border-gray-200 dark:border-dark-300 p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                  <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Completed</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Completed</p>
+                  <p className="text-3xl font-bold text-slate-600 dark:text-slate-400 mt-1">
                     {affectations.filter((a) => a.status === 'completed').length}
                   </p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    Finished assignments
+                  </p>
+                </div>
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-400 to-slate-600 flex items-center justify-center shadow-sm">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
                 </div>
               </div>
             </div>
@@ -432,46 +465,102 @@ export default function AdminAffectationsPage() {
       {/* Delete Confirmation Modal */}
       {deletingAffectation && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setDeletingAffectation(null)} />
-          <div className="relative bg-white dark:bg-dark-400 rounded-xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-dark-300">
-            <div className="p-6">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                  <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setDeletingAffectation(null)} />
+          <div className="relative bg-white dark:bg-dark-400 rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-dark-300 overflow-hidden">
+            {/* Header with gradient */}
+            <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  <h3 className="text-lg font-semibold text-white">
                     Delete Affectation
                   </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    This action cannot be undone.
+                  <p className="text-sm text-red-100">
+                    This action cannot be undone
                   </p>
                 </div>
               </div>
+            </div>
 
-              <p className="text-gray-700 dark:text-gray-300 mb-6">
-                Are you sure you want to delete the affectation for{' '}
-                <span className="font-medium">
-                  {typeof deletingAffectation.userId === 'object'
-                    ? `${deletingAffectation.userId.firstName} ${deletingAffectation.userId.lastName}`
-                    : 'this user'}
-                </span>{' '}
-                on{' '}
-                <span className="font-medium">
-                  {typeof deletingAffectation.projectId === 'object'
-                    ? deletingAffectation.projectId.name
-                    : 'this project'}
-                </span>
-                ?
+            {/* Content */}
+            <div className="p-6">
+              {/* Affectation Info Card */}
+              <div className="bg-gray-50 dark:bg-dark-500 rounded-xl p-4 mb-5">
+                <div className="flex items-center gap-4">
+                  {/* User */}
+                  <div className="flex items-center gap-2">
+                    {typeof deletingAffectation.userId === 'object' && deletingAffectation.userId.avatar ? (
+                      <img
+                        src={deletingAffectation.userId.avatar}
+                        alt=""
+                        className="w-8 h-8 rounded-full"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                        <span className="text-sm font-medium text-primary-700 dark:text-primary-400">
+                          {typeof deletingAffectation.userId === 'object'
+                            ? deletingAffectation.userId.firstName?.charAt(0)
+                            : '?'}
+                        </span>
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {typeof deletingAffectation.userId === 'object'
+                          ? `${deletingAffectation.userId.firstName} ${deletingAffectation.userId.lastName}`
+                          : 'Unknown'}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {deletingAffectation.role}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Arrow */}
+                  <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+
+                  {/* Project */}
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {typeof deletingAffectation.projectId === 'object'
+                        ? deletingAffectation.projectId.name
+                        : 'Unknown'}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {typeof deletingAffectation.projectId === 'object'
+                        ? deletingAffectation.projectId.key
+                        : ''}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-gray-600 dark:text-gray-300 text-sm mb-5">
+                Are you sure you want to delete this affectation? All associated data including hours tracking will be permanently removed.
               </p>
 
-              <div className="flex justify-end gap-3">
-                <Button variant="outline" onClick={() => setDeletingAffectation(null)}>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setDeletingAffectation(null)}
+                  className="flex-1"
+                >
                   Cancel
                 </Button>
-                <Button variant="danger" onClick={confirmDelete}>
+                <Button
+                  variant="danger"
+                  onClick={confirmDelete}
+                  className="flex-1"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
                   Delete
                 </Button>
               </div>
