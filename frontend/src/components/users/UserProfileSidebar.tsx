@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { User } from '@/types/user';
-import { Badge } from '@/components/common';
+import { Badge, Button } from '@/components/common';
 import { UserAvatar } from '@/components/common/UserAvatar';
 import { formatDateTime, getRelativeTime } from '@/lib/utils';
 import { issuesAPI } from '@/lib/api';
@@ -74,6 +75,7 @@ export const UserProfileSidebar: React.FC<UserProfileSidebarProps> = ({
   isOpen,
   onClose,
 }) => {
+  const router = useRouter();
   const [workload, setWorkload] = useState<WorkloadData | null>(null);
   const [bandwidth, setBandwidth] = useState<BandwidthData | null>(null);
   const [loadingWorkload, setLoadingWorkload] = useState(false);
@@ -249,6 +251,22 @@ export const UserProfileSidebar: React.FC<UserProfileSidebarProps> = ({
                   {user.isActive ? 'Active' : 'Inactive'}
                 </span>
               </div>
+
+              {/* View Details Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-4"
+                onClick={() => {
+                  onClose();
+                  router.push(`/users/${user._id}`);
+                }}
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                View Full Profile
+              </Button>
             </div>
           </div>
 
