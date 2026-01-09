@@ -78,7 +78,8 @@ export const AffectationFormModal: React.FC<AffectationFormModalProps> = ({
         usersAPI.getAll(),
         projectsAPI.getAll(),
       ]);
-      setUsers(usersRes.data || []);
+      // usersAPI.getAll returns paginated data with { items, total, ... }
+      setUsers(usersRes.data?.items || usersRes.data || []);
       setProjects(projectsRes.data || []);
     } catch (error) {
       console.error('Error fetching data:', error);

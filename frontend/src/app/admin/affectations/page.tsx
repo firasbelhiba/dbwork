@@ -58,7 +58,8 @@ export default function AdminAffectationsPage() {
       ]);
       setAffectations(affectationsRes.data || []);
       setProjects(projectsRes.data || []);
-      setUsers(usersRes.data || []);
+      // usersAPI.getAll returns paginated data with { items, total, ... }
+      setUsers(usersRes.data?.items || usersRes.data || []);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load affectations');
