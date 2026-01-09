@@ -1305,17 +1305,18 @@ export class IssuesService {
   }> {
     const userIdObj = new Types.ObjectId(userId);
 
-    // Aggregate completed issues by category
+    // Aggregate completed issues by category (excluding issues without a category)
     const categoryStats = await this.issueModel.aggregate([
       {
         $match: {
           assignees: userIdObj,
           status: 'done',
+          category: { $exists: true, $nin: [null, ''] },
         },
       },
       {
         $group: {
-          _id: { $ifNull: ['$category', 'other'] },
+          _id: '$category',
           count: { $sum: 1 },
         },
       },
@@ -1342,10 +1343,10 @@ export class IssuesService {
     };
 
     const categories = categoryStats.map((cat) => ({
-      name: cat._id || 'other',
+      name: cat._id,
       count: cat.count,
       percentage: total > 0 ? Math.round((cat.count / total) * 100) : 0,
-      color: categoryColors[cat._id] || categoryColors.other,
+      color: categoryColors[cat._id] || '#9CA3AF', // default gray for unknown categories
     }));
 
     return { categories, total };
