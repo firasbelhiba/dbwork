@@ -52,14 +52,22 @@ interface BandwidthData {
   } | null;
 }
 
-interface Achievement {
+interface AchievementData {
   _id: string;
-  title: string;
+  key: string;
+  name: string;
   description: string;
   icon: string;
   category: string;
   rarity: string;
+}
+
+interface UserAchievement {
+  achievementId: AchievementData;
+  unlocked: boolean;
   unlockedAt?: string;
+  progress: number;
+  viewed: boolean;
 }
 
 export default function UserProfilePage() {
@@ -72,7 +80,7 @@ export default function UserProfilePage() {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [workload, setWorkload] = useState<WorkloadData | null>(null);
   const [bandwidth, setBandwidth] = useState<BandwidthData | null>(null);
-  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [achievements, setAchievements] = useState<UserAchievement[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingWorkload, setLoadingWorkload] = useState(false);
   const [loadingBandwidth, setLoadingBandwidth] = useState(false);
@@ -662,17 +670,21 @@ export default function UserProfilePage() {
                   </div>
                 ) : achievements.length > 0 ? (
                   <div className="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto">
-                    {achievements.map((achievement) => (
-                      <div
-                        key={achievement._id}
-                        className={`p-3 rounded-lg border ${getRarityColor(achievement.rarity)}`}
-                        title={achievement.description}
-                      >
-                        <div className="text-2xl mb-1">{achievement.icon}</div>
-                        <p className="text-xs font-medium truncate">{achievement.title}</p>
-                        <p className="text-xs opacity-70 capitalize">{achievement.rarity}</p>
-                      </div>
-                    ))}
+                    {achievements.map((userAchievement) => {
+                      const achievement = userAchievement.achievementId;
+                      if (!achievement) return null;
+                      return (
+                        <div
+                          key={achievement._id}
+                          className={`p-3 rounded-lg border ${getRarityColor(achievement.rarity)}`}
+                          title={achievement.description}
+                        >
+                          <div className="text-2xl mb-1">{achievement.icon}</div>
+                          <p className="text-xs font-medium truncate">{achievement.name}</p>
+                          <p className="text-xs opacity-70 capitalize">{achievement.rarity}</p>
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="text-center py-6">
