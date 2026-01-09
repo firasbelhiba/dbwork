@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common';
 import { affectationsAPI, projectsAPI, usersAPI } from '@/lib/api';
@@ -8,6 +8,248 @@ import { Affectation, AFFECTATION_ROLES, AffectationStatus } from '@/types/affec
 import { User } from '@/types/user';
 import { Project } from '@/types/project';
 import toast from 'react-hot-toast';
+
+// Custom User Dropdown with avatars
+interface UserDropdownProps {
+  users: User[];
+  value: string;
+  onChange: (userId: string) => void;
+  disabled?: boolean;
+}
+
+const UserDropdown: React.FC<UserDropdownProps> = ({ users, value, onChange, disabled }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const selectedUser = users.find(u => u._id === value);
+
+  const filteredUsers = users.filter(user =>
+    `${user.firstName} ${user.lastName}`.toLowerCase().includes(search.toLowerCase()) ||
+    user.email?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        className={`w-full px-3 py-2.5 border border-gray-300 dark:border-dark-300 rounded-lg bg-white dark:bg-dark-500 text-left focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+      >
+        {selectedUser ? (
+          <div className="flex items-center gap-3">
+            {selectedUser.avatar ? (
+              <img src={selectedUser.avatar} alt="" className="w-8 h-8 rounded-full object-cover" />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
+                <span className="text-sm font-bold text-white">{selectedUser.firstName?.charAt(0)}</span>
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-gray-900 dark:text-white truncate">
+                {selectedUser.firstName} {selectedUser.lastName}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{selectedUser.email}</p>
+            </div>
+            <svg className={`w-5 h-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <span className="text-gray-500 dark:text-gray-400">Select team member...</span>
+            <svg className={`w-5 h-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        )}
+      </button>
+
+      {isOpen && (
+        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-500 border border-gray-200 dark:border-dark-300 rounded-lg shadow-lg max-h-64 overflow-hidden">
+          {/* Search */}
+          <div className="p-2 border-b border-gray-100 dark:border-dark-400">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name or email..."
+              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-dark-400 rounded-md bg-gray-50 dark:bg-dark-600 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500"
+              autoFocus
+            />
+          </div>
+          {/* Options */}
+          <div className="overflow-y-auto max-h-48">
+            {filteredUsers.length === 0 ? (
+              <p className="px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">No users found</p>
+            ) : (
+              filteredUsers.map(user => (
+                <button
+                  key={user._id}
+                  type="button"
+                  onClick={() => {
+                    onChange(user._id);
+                    setIsOpen(false);
+                    setSearch('');
+                  }}
+                  className={`w-full px-3 py-2.5 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-dark-400 transition-colors ${value === user._id ? 'bg-primary-50 dark:bg-primary-900/20' : ''}`}
+                >
+                  {user.avatar ? (
+                    <img src={user.avatar} alt="" className="w-9 h-9 rounded-full object-cover ring-2 ring-white dark:ring-dark-400" />
+                  ) : (
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center ring-2 ring-white dark:ring-dark-400">
+                      <span className="text-sm font-bold text-white">{user.firstName?.charAt(0)}</span>
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className="font-medium text-gray-900 dark:text-white truncate">
+                      {user.firstName} {user.lastName}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
+                  </div>
+                  {value === user._id && (
+                    <svg className="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Custom Project Dropdown with logos
+interface ProjectDropdownProps {
+  projects: Project[];
+  value: string;
+  onChange: (projectId: string) => void;
+  disabled?: boolean;
+}
+
+const ProjectDropdown: React.FC<ProjectDropdownProps> = ({ projects, value, onChange, disabled }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const selectedProject = projects.find(p => p._id === value);
+
+  const filteredProjects = projects.filter(project =>
+    project.name.toLowerCase().includes(search.toLowerCase()) ||
+    project.key?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        className={`w-full px-3 py-2.5 border border-gray-300 dark:border-dark-300 rounded-lg bg-white dark:bg-dark-500 text-left focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+      >
+        {selectedProject ? (
+          <div className="flex items-center gap-3">
+            {selectedProject.logo ? (
+              <img src={selectedProject.logo} alt="" className="w-8 h-8 rounded-lg object-cover" />
+            ) : (
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gray-200 to-gray-300 dark:from-dark-300 dark:to-dark-400 flex items-center justify-center">
+                <span className="text-sm font-bold text-gray-600 dark:text-gray-300">{selectedProject.key?.substring(0, 2)}</span>
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-gray-900 dark:text-white truncate">{selectedProject.name}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{selectedProject.key}</p>
+            </div>
+            <svg className={`w-5 h-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <span className="text-gray-500 dark:text-gray-400">Select project...</span>
+            <svg className={`w-5 h-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        )}
+      </button>
+
+      {isOpen && (
+        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-500 border border-gray-200 dark:border-dark-300 rounded-lg shadow-lg max-h-64 overflow-hidden">
+          {/* Search */}
+          <div className="p-2 border-b border-gray-100 dark:border-dark-400">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search projects..."
+              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-dark-400 rounded-md bg-gray-50 dark:bg-dark-600 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500"
+              autoFocus
+            />
+          </div>
+          {/* Options */}
+          <div className="overflow-y-auto max-h-48">
+            {filteredProjects.length === 0 ? (
+              <p className="px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">No projects found</p>
+            ) : (
+              filteredProjects.map(project => (
+                <button
+                  key={project._id}
+                  type="button"
+                  onClick={() => {
+                    onChange(project._id);
+                    setIsOpen(false);
+                    setSearch('');
+                  }}
+                  className={`w-full px-3 py-2.5 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-dark-400 transition-colors ${value === project._id ? 'bg-primary-50 dark:bg-primary-900/20' : ''}`}
+                >
+                  {project.logo ? (
+                    <img src={project.logo} alt="" className="w-9 h-9 rounded-lg object-cover ring-1 ring-gray-200 dark:ring-dark-300" />
+                  ) : (
+                    <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-gray-200 to-gray-300 dark:from-dark-300 dark:to-dark-400 flex items-center justify-center ring-1 ring-gray-200 dark:ring-dark-300">
+                      <span className="text-sm font-bold text-gray-600 dark:text-gray-300">{project.key?.substring(0, 2)}</span>
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className="font-medium text-gray-900 dark:text-white truncate">{project.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{project.key}</p>
+                  </div>
+                  {value === project._id && (
+                    <svg className="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 interface AffectationFormModalProps {
   isOpen: boolean;
@@ -250,19 +492,12 @@ export const AffectationFormModal: React.FC<AffectationFormModalProps> = ({
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                 Team Member <span className="text-red-500">*</span>
               </label>
-              <select
+              <UserDropdown
+                users={users}
                 value={formData.userId}
-                onChange={(e) => setFormData({ ...formData, userId: e.target.value })}
-                className="w-full px-3 py-2.5 border border-gray-300 dark:border-dark-300 rounded-lg bg-white dark:bg-dark-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                onChange={(userId) => setFormData({ ...formData, userId })}
                 disabled={loading}
-              >
-                <option value="">Select team member...</option>
-                {users.map((user) => (
-                  <option key={user._id} value={user._id}>
-                    {user.firstName} {user.lastName}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
 
             {/* Project Select */}
@@ -270,19 +505,12 @@ export const AffectationFormModal: React.FC<AffectationFormModalProps> = ({
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                 Project <span className="text-red-500">*</span>
               </label>
-              <select
+              <ProjectDropdown
+                projects={projects}
                 value={formData.projectId}
-                onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
-                className="w-full px-3 py-2.5 border border-gray-300 dark:border-dark-300 rounded-lg bg-white dark:bg-dark-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                onChange={(projectId) => setFormData({ ...formData, projectId })}
                 disabled={loading}
-              >
-                <option value="">Select project...</option>
-                {projects.map((project) => (
-                  <option key={project._id} value={project._id}>
-                    {project.name} ({project.key})
-                  </option>
-                ))}
-              </select>
+              />
             </div>
           </div>
 
