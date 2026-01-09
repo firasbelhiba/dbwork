@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Button, Badge } from '@/components/common';
 import { Affectation, AffectationStatus } from '@/types/affectation';
 import { affectationsAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -13,37 +14,10 @@ interface AffectationTableProps {
   groupByProject?: boolean;
 }
 
-const statusConfig: Record<AffectationStatus, { label: string; color: string; bgColor: string; icon: React.ReactNode }> = {
-  planned: {
-    label: 'Planned',
-    color: 'text-amber-700 dark:text-amber-400',
-    bgColor: 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800',
-    icon: (
-      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg>
-    ),
-  },
-  active: {
-    label: 'Active',
-    color: 'text-emerald-700 dark:text-emerald-400',
-    bgColor: 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800',
-    icon: (
-      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-      </svg>
-    ),
-  },
-  completed: {
-    label: 'Completed',
-    color: 'text-slate-600 dark:text-slate-400',
-    bgColor: 'bg-slate-100 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700',
-    icon: (
-      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-      </svg>
-    ),
-  },
+const statusColors: Record<AffectationStatus, string> = {
+  planned: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+  active: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+  completed: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
 };
 
 export const AffectationTable: React.FC<AffectationTableProps> = ({
@@ -130,174 +104,111 @@ export const AffectationTable: React.FC<AffectationTableProps> = ({
     const user = typeof aff.userId === 'object' ? aff.userId : null;
     const project = typeof aff.projectId === 'object' ? aff.projectId : null;
     const progressPercent = getProgressPercent(aff.actualHours, aff.estimatedHours);
-    const status = statusConfig[aff.status];
 
     return (
       <tr
         key={aff._id}
-        className="group hover:bg-gray-50 dark:hover:bg-dark-500/50 transition-colors"
+        className="hover:bg-gray-50 dark:hover:bg-dark-500 transition-colors"
       >
         {showProject && (
-          <td className="px-4 py-3.5">
-            <div className="flex items-center gap-3">
+          <td className="px-4 py-3">
+            <div className="flex items-center gap-2">
               {project?.logo ? (
                 <img
                   src={project.logo}
                   alt={project.name}
-                  className="w-8 h-8 rounded-lg object-cover ring-1 ring-gray-200 dark:ring-dark-300"
+                  className="w-6 h-6 rounded"
                 />
               ) : (
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/50 dark:to-primary-800/50 flex items-center justify-center ring-1 ring-primary-200 dark:ring-primary-800">
-                  <span className="text-sm font-bold text-primary-700 dark:text-primary-400">
-                    {project?.key?.substring(0, 2) || '??'}
-                  </span>
+                <div className="w-6 h-6 rounded bg-gray-200 dark:bg-dark-300 flex items-center justify-center text-xs font-bold">
+                  {project?.name?.charAt(0) || '?'}
                 </div>
               )}
-              <div className="min-w-0">
-                <p className="font-medium text-gray-900 dark:text-white truncate">
-                  {project?.name || 'Unknown'}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {project?.key}
-                </p>
-              </div>
+              <span className="font-medium text-gray-900 dark:text-white">
+                {project?.name || 'Unknown'}
+              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                ({project?.key})
+              </span>
             </div>
           </td>
         )}
-        <td className="px-4 py-3.5">
-          <div className="flex items-center gap-3">
+        <td className="px-4 py-3">
+          <div className="flex items-center gap-2">
             {user?.avatar ? (
               <img
                 src={user.avatar}
                 alt={`${user.firstName} ${user.lastName}`}
-                className="w-8 h-8 rounded-full object-cover ring-2 ring-white dark:ring-dark-400"
+                className="w-7 h-7 rounded-full"
               />
             ) : (
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center ring-2 ring-white dark:ring-dark-400">
-                <span className="text-sm font-bold text-white">
+              <div className="w-7 h-7 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                <span className="text-xs font-medium text-primary-700 dark:text-primary-400">
                   {user?.firstName?.charAt(0) || '?'}
                 </span>
               </div>
             )}
-            <div className="min-w-0">
-              <p className="font-medium text-gray-900 dark:text-white truncate">
-                {user ? `${user.firstName} ${user.lastName}` : 'Unknown'}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                {user?.email}
-              </p>
-            </div>
+            <span className="text-gray-900 dark:text-white">
+              {user ? `${user.firstName} ${user.lastName}` : 'Unknown'}
+            </span>
           </div>
         </td>
-        <td className="px-4 py-3.5">
-          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 dark:bg-dark-300 text-gray-700 dark:text-gray-300">
-            {aff.role}
+        <td className="px-4 py-3">
+          <span className="text-sm text-gray-700 dark:text-gray-300">{aff.role}</span>
+        </td>
+        <td className="px-4 py-3">
+          <span className="text-sm text-gray-700 dark:text-gray-300">
+            {formatDate(aff.startDate)}
           </span>
         </td>
-        <td className="px-4 py-3.5">
-          <div className="text-sm">
-            <p className="text-gray-900 dark:text-white font-medium">
-              {formatDate(aff.startDate)}
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              to {formatDate(aff.endDate)}
-            </p>
-          </div>
+        <td className="px-4 py-3">
+          <span className="text-sm text-gray-700 dark:text-gray-300">
+            {formatDate(aff.endDate)}
+          </span>
         </td>
-        <td className="px-4 py-3.5">
-          <div className="flex items-center gap-2">
-            <div className="w-12 h-12 relative">
-              <svg className="w-12 h-12 transform -rotate-90">
-                <circle
-                  cx="24"
-                  cy="24"
-                  r="20"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  fill="none"
-                  className="text-gray-200 dark:text-dark-300"
-                />
-                <circle
-                  cx="24"
-                  cy="24"
-                  r="20"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  fill="none"
-                  strokeDasharray={`${(aff.allocationPercentage / 100) * 125.6} 125.6`}
-                  className="text-primary-500"
-                />
-              </svg>
-              <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-gray-700 dark:text-gray-300">
-                {aff.allocationPercentage}%
+        <td className="px-4 py-3">
+          <span className="text-sm font-medium text-gray-900 dark:text-white">
+            {aff.allocationPercentage}%
+          </span>
+        </td>
+        <td className="px-4 py-3">
+          <div className="flex flex-col gap-1">
+            <div className="flex justify-between text-xs">
+              <span className="text-gray-500 dark:text-gray-400">
+                {aff.actualHours}h / {aff.estimatedHours}h
+              </span>
+              <span className="font-medium text-gray-700 dark:text-gray-300">
+                {progressPercent}%
               </span>
             </div>
-          </div>
-        </td>
-        <td className="px-4 py-3.5">
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-600 dark:text-gray-400 font-medium">
-                {aff.actualHours}h
-              </span>
-              <span className="text-gray-400 dark:text-gray-500">
-                / {aff.estimatedHours}h
-              </span>
-            </div>
-            <div className="w-28 h-2 bg-gray-200 dark:bg-dark-300 rounded-full overflow-hidden">
+            <div className="w-24 h-2 bg-gray-200 dark:bg-dark-300 rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all duration-300 ${
+                className={`h-full rounded-full transition-all ${
                   progressPercent >= 100
-                    ? 'bg-gradient-to-r from-red-400 to-red-500'
+                    ? 'bg-red-500'
                     : progressPercent >= 75
-                    ? 'bg-gradient-to-r from-amber-400 to-amber-500'
-                    : 'bg-gradient-to-r from-emerald-400 to-emerald-500'
+                    ? 'bg-yellow-500'
+                    : 'bg-green-500'
                 }`}
                 style={{ width: `${Math.min(100, progressPercent)}%` }}
               />
             </div>
-            {progressPercent >= 100 && (
-              <p className="text-[10px] text-red-500 font-medium">Over budget</p>
-            )}
           </div>
         </td>
-        <td className="px-4 py-3.5">
-          <div className="flex flex-col gap-1.5">
-            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg border ${status.bgColor} ${status.color}`}>
-              {status.icon}
-              {status.label}
-            </span>
-            {/* Billable indicator */}
-            <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded ${
-              aff.isBillable
-                ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
-            }`}>
-              {aff.isBillable ? (
-                <>
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Billable
-                </>
-              ) : (
-                <>
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                  </svg>
-                  Internal
-                </>
-              )}
-            </span>
-          </div>
+        <td className="px-4 py-3">
+          <span
+            className={`inline-flex px-2 py-1 text-xs font-medium rounded-full capitalize ${statusColors[aff.status]}`}
+          >
+            {aff.status}
+          </span>
         </td>
-        <td className="px-4 py-3.5">
-          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+        <td className="px-4 py-3">
+          <div className="flex items-center gap-1">
             <button
               onClick={() => handleSyncHours(aff._id)}
               disabled={syncingId === aff._id}
-              className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors disabled:opacity-50"
-              title="Sync hours from time tracking"
+              className="p-1.5 text-gray-500 hover:text-primary-600 hover:bg-gray-100 dark:hover:bg-dark-300 rounded transition-colors disabled:opacity-50"
+              title="Sync hours"
             >
               {syncingId === aff._id ? (
                 <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -312,8 +223,8 @@ export const AffectationTable: React.FC<AffectationTableProps> = ({
             </button>
             <button
               onClick={() => onEdit(aff)}
-              className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-              title="Edit affectation"
+              className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-gray-100 dark:hover:bg-dark-300 rounded transition-colors"
+              title="Edit"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -321,8 +232,8 @@ export const AffectationTable: React.FC<AffectationTableProps> = ({
             </button>
             <button
               onClick={() => onDelete(aff)}
-              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-              title="Delete affectation"
+              className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-gray-100 dark:hover:bg-dark-300 rounded transition-colors"
+              title="Delete"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -335,141 +246,111 @@ export const AffectationTable: React.FC<AffectationTableProps> = ({
   };
 
   if (groupByProject && groupedAffectations) {
-    // Calculate project totals
-    const getProjectTotals = (affectations: Affectation[]) => {
-      const totalEstimated = affectations.reduce((sum, a) => sum + a.estimatedHours, 0);
-      const totalActual = affectations.reduce((sum, a) => sum + a.actualHours, 0);
-      const activeCount = affectations.filter(a => a.status === 'active').length;
-      return { totalEstimated, totalActual, activeCount };
-    };
-
     return (
       <div className="space-y-6">
-        {Object.entries(groupedAffectations).map(([projectId, group]) => {
-          const totals = getProjectTotals(group.affectations);
-          return (
-            <div
-              key={projectId}
-              className="bg-white dark:bg-dark-400 rounded-xl shadow-sm border border-gray-200 dark:border-dark-300 overflow-hidden"
-            >
-              {/* Project Header */}
-              <div className="px-5 py-4 bg-gradient-to-r from-gray-50 to-white dark:from-dark-500 dark:to-dark-400 border-b border-gray-200 dark:border-dark-300">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shadow-sm">
-                      <span className="text-sm font-bold text-white">
-                        {group.projectKey?.substring(0, 2) || group.projectName.charAt(0)}
-                      </span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white text-lg">
-                        {group.projectName}
-                      </h3>
-                      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                        <span className="font-mono">{group.projectKey}</span>
-                        <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600" />
-                        <span>{group.affectations.length} team member{group.affectations.length !== 1 ? 's' : ''}</span>
-                        {totals.activeCount > 0 && (
-                          <>
-                            <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600" />
-                            <span className="text-emerald-600 dark:text-emerald-400 font-medium">{totals.activeCount} active</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Project Summary Stats */}
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Estimated</p>
-                      <p className="text-lg font-bold text-gray-900 dark:text-white">{totals.totalEstimated}h</p>
-                    </div>
-                    <div className="w-px h-8 bg-gray-200 dark:bg-dark-300" />
-                    <div className="text-right">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Actual</p>
-                      <p className={`text-lg font-bold ${totals.totalActual > totals.totalEstimated ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>
-                        {totals.totalActual}h
-                      </p>
-                    </div>
-                  </div>
+        {Object.entries(groupedAffectations).map(([projectId, group]) => (
+          <div
+            key={projectId}
+            className="bg-white dark:bg-dark-400 rounded-lg shadow-sm border border-gray-200 dark:border-dark-300 overflow-hidden"
+          >
+            {/* Project Header */}
+            <div className="px-4 py-3 bg-gray-50 dark:bg-dark-500 border-b border-gray-200 dark:border-dark-300">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                  <span className="text-sm font-bold text-primary-700 dark:text-primary-400">
+                    {group.projectName.charAt(0)}
+                  </span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">
+                    {group.projectName}
+                  </h3>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {group.projectKey} - {group.affectations.length} member{group.affectations.length !== 1 ? 's' : ''}
+                  </span>
                 </div>
               </div>
-
-              {/* Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-100 dark:border-dark-300">
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Team Member
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Role
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Period
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Allocation
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Hours
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        <span className="sr-only">Actions</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100 dark:divide-dark-300">
-                    {group.affectations.map((aff) => renderAffectationRow(aff, false))}
-                  </tbody>
-                </table>
-              </div>
             </div>
-          );
-        })}
+
+            {/* Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 dark:bg-dark-500">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      User
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Role
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Start
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      End
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Alloc.
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Progress
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-dark-300">
+                  {group.affectations.map((aff) => renderAffectationRow(aff, false))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
 
   // Flat table view
   return (
-    <div className="bg-white dark:bg-dark-400 rounded-xl shadow-sm border border-gray-200 dark:border-dark-300 overflow-hidden">
+    <div className="bg-white dark:bg-dark-400 rounded-lg shadow-sm border border-gray-200 dark:border-dark-300 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead>
-            <tr className="bg-gray-50 dark:bg-dark-500 border-b border-gray-100 dark:border-dark-300">
-              <th className="px-4 py-3.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          <thead className="bg-gray-50 dark:bg-dark-500">
+            <tr>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Project
               </th>
-              <th className="px-4 py-3.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Team Member
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                User
               </th>
-              <th className="px-4 py-3.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Role
               </th>
-              <th className="px-4 py-3.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Period
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Start
               </th>
-              <th className="px-4 py-3.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Allocation
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                End
               </th>
-              <th className="px-4 py-3.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Hours
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Alloc.
               </th>
-              <th className="px-4 py-3.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Progress
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-4 py-3.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                <span className="sr-only">Actions</span>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Actions
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100 dark:divide-dark-300">
+          <tbody className="divide-y divide-gray-200 dark:divide-dark-300">
             {affectations.map((aff) => renderAffectationRow(aff, true))}
           </tbody>
         </table>
